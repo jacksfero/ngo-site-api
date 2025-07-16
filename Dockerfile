@@ -1,29 +1,15 @@
-# Stage 1: Build
-FROM node:20-alpine AS builder
+# Production Dockerfile
 
-WORKDIR /app
-
-COPY package*.json ./
-
-RUN npm install
-
-
-COPY . .
-
-
-RUN npm run build
-
-
-# Stage 2: Run
 FROM node:20-alpine
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install --only=production
+RUN npm install --production
+RUN npm install -g @nestjs/cli
 
-COPY --from=builder /app/dist ./dist
-
+COPY . .
+RUN npm run build
 EXPOSE 3006
 
 CMD ["node", "dist/main"]
