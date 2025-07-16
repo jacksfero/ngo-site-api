@@ -24,7 +24,7 @@ async function bootstrap() {
     //  new ClassSerializerInterceptor(app.get(Reflector)),
   );
 app.enableCors({
-  origin: ['http://localhost:3000'], // ✅ allow local React frontend
+  origin: ['http://localhost:3000','https://indiagalleri-frontend.vercel.app/'], // ✅ allow local React frontend
   credentials: true, // Optional: allow cookies/auth headers if needed
 });
 
