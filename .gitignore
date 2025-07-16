@@ -2,6 +2,8 @@
 /dist
 /node_modules
 /build
+/local_docker_files
+/production_docker_files
 
 # Logs
 logs
