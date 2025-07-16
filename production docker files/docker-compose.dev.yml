@@ -1,0 +1,56 @@
+version: '3.8'  # Optional, but keeps YAML features consistent
+
+services:
+  mysql-dev:
+    image: mysql:8.0
+    container_name: mysql-dev
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Pass@1234
+      MYSQL_DATABASE: indigalleria_DB_newsite
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      - indigalleria-backend
+
+  nestjs-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev  # <--- if you're using Dockerfile.dev
+    container_name: nestjs-dev
+    restart: always
+    ports:
+      - "3006:3006"
+    env_file:
+      - .env.development
+    depends_on:
+      - mysql-dev
+    networks:
+      - indigalleria-backend
+    command: npm run start:dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mysql-dev
+      MYSQL_ROOT_PASSWORD: Pass@1234
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql-dev
+    networks:
+      - indigalleria-backend
+
+      
+volumes:
+  mysql_data:
+
+networks:
+  indigalleria-backend:

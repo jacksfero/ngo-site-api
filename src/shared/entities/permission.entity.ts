@@ -1,0 +1,31 @@
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
+
+import { Role } from 'src/shared/entities/role.entity'; // For runtime (if absolutely needed)
+
+// console.log(Role); // Now works (but avoid in entities)
+
+console.log(
+  '------Permission Entity--------- DEBUG: In Permission Roles is',
+  Role,
+);
+
+@Entity()
+export class Permission {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ unique: true })
+  name: string; // Example: 'create_user', 'delete_post'
+
+  @Column()
+  description: string;
+
+  @Column()
+  resource: string; // Example: 'user', 'post'
+
+  @Column()
+  action: string; // Example: 'create', 'read', 'update', 'delete'
+
+  @ManyToMany(() => Role, (role) => role.permissions)
+  roles: Role[];
+}

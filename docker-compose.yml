@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: nestjs-api
+    ports:
+      - "3006:3006"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - .:/app
+    command: npm run start:prod
+    env_file:
+      - .env
