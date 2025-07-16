@@ -23,6 +23,11 @@ async function bootstrap() {
     }),
     //  new ClassSerializerInterceptor(app.get(Reflector)),
   );
+app.enableCors({
+  origin: ['http://localhost:3000'], // ✅ allow local React frontend
+  credentials: true, // Optional: allow cookies/auth headers if needed
+});
+
 
  // const port = process.env.PORT ?? 3000;
  // await app.listen(port);
