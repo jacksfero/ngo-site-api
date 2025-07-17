@@ -17,11 +17,14 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
+  @Column({ type: 'varchar', length: 50, default: null })
   username: string;
 
-  @Column({ unique: true })
+  @Column({ type: 'varchar', length: 50, unique: true })
   email: string;
+
+  @Column({ type: 'varchar', length: 50, unique: true })
+  mobile: string;
 
   @Column()
   password: string;
@@ -36,4 +39,23 @@ export class User {
 
   @OneToMany(() => Wishlist, (wishlist) => wishlist.user)
   wishlists: Wishlist[];
+
+  @Column({ type: 'boolean', default: true })
+  email_verified: boolean;
+
+  @Column({ type: 'boolean', default: 0 })
+  status: string;
+
+  @Column({ type: 'varchar', length: 50, default: null })
+  createdBy: string;
+
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
+
+  @Column({
+    type: 'datetime',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
 }

@@ -17,10 +17,9 @@ import { RolesGuard } from 'src/modules/auth/guards/roles.guard';
 import { PermissionsGuard } from 'src/modules/auth/guards/permissions.guard';
 import { Roles } from 'src/modules/auth/decorators/roles.decorator';
 
-
-@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-@Roles('admin')
-@Controller('roles')
+//@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+//@Roles('admin')
+@Controller()
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
@@ -51,6 +50,19 @@ export class RolesController {
     return this.rolesService.deleteRole(+id);
   }
 
-  
+  // @Post(':roleId/permissions')
+  // assignPermissionToRole(
+  //   @Param('id') id: string,
+  //   @Body() updateRoleDto: UpdateRoleDto,
+  // ) {
+  //   return this.rolesService.assignPermissionsToRole(+id, updateRoleDto);
+  // }
 
+  @Post(':id/permissions')
+  assignPermissionToRole(
+    @Param('id') id: string,
+    @Body() updateRoleDto: UpdateRoleDto,
+  ) {
+    return this.rolesService.assignPermissionsToRole(+id, updateRoleDto);
+  }
 }

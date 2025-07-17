@@ -13,8 +13,9 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PermissionsGuard } from 'src/modules/auth/guards/permissions.guard';
 import { RequirePermissions } from 'src/modules/auth/decorators/permissions.decorator';
+import { AssignRolesDto } from './dto/assign-roles.dto';
 
-@Controller('users')
+@Controller()
 //@UseGuards(PermissionsGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -36,10 +37,19 @@ export class UsersController {
     return this.usersService.findOne(+id);
   }
 
+  
+
+  @Post(':userId/roles')
+  async assignRolesaaaaaaaaaa(
+    @Param('userId') userId: string,
+    @Body() dto: UpdateUserDto, // Make sure to use the DTO
+  ) {
+    return this.usersService.assignRolesToUser(+userId, dto);
+  }
+
   @Post(':id/roles')
-  @RequirePermissions('assign_roles')
-  async assignRoles(@Param('id') userId: string, @Body() roleIds: number[]) {
-    return this.usersService.assignRolesToUser(+userId, roleIds);
+  assignRoles(@Param('id') id: string, @Body() dto: UpdateUserDto) {
+    return this.usersService.assignRolesToUser(+id, dto);
   }
 
   @Patch(':id')

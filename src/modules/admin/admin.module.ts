@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { RouterModule } from '@nestjs/core';
+
+
 import { MediumModule } from './medium/medium.module';
 import { ShippingModule } from './shipping/shipping.module';
 import { CurrencyModule } from './currency/currency.module';
@@ -14,6 +17,9 @@ import { ContactusModule } from './contactus/contactus.module';
 import { ExhibitionModule } from './exhibition/exhibition.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { ProductModule } from './product/product.module';
+
+
+import { SurfaceModule } from './surface/surface.module';
 //import { InventoryModule } from './inventory/inventory.module';
 
 @Module({
@@ -34,6 +40,27 @@ import { ProductModule } from './product/product.module';
     WishlistModule,
     ProductModule,
     //  InventoryModule,
+
+    RouterModule.register([
+      {
+        path: 'admin', // Prefix for all child routes
+        children: [
+          {
+            path: 'users',
+            module: UsersModule,
+          },
+          {
+            path: 'roles',
+            module: RolesModule,
+          },
+          {
+            path: 'permissions',
+            module: PermissionsModule,
+          },
+          { path: 'surface', module: SurfaceModule },
+        ],
+      },
+    ]),
   ],
 })
 export class AdminModule {}

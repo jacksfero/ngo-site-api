@@ -23,16 +23,18 @@ async function bootstrap() {
     }),
     //  new ClassSerializerInterceptor(app.get(Reflector)),
   );
-app.enableCors({
-  origin: ['http://localhost:3000','https://indiagalleri-frontend.vercel.app/'], // ✅ allow local React frontend
-  credentials: true, // Optional: allow cookies/auth headers if needed
-});
+  app.enableCors({
+    origin: [
+      'http://localhost:3000',
+      'https://indiagalleri-frontend.vercel.app/',
+    ], // ✅ allow local React frontend
+    credentials: true, // Optional: allow cookies/auth headers if needed
+  });
 
-
- // const port = process.env.PORT ?? 3000;
- // await app.listen(port);
+  // const port = process.env.PORT ?? 3000;
+  // await app.listen(port);
   await app.listen(process.env.PORT ?? 3000);
- // console.log(`🚀 Application is running on: http://localhost:${port}/api`);
+  // console.log(`🚀 Application is running on: http://localhost:${port}/api`);
   // await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
