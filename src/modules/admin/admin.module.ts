@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { RouterModule } from '@nestjs/core';
 
-
 import { MediumModule } from './medium/medium.module';
 import { ShippingModule } from './shipping/shipping.module';
 import { CurrencyModule } from './currency/currency.module';
@@ -18,10 +17,10 @@ import { ExhibitionModule } from './exhibition/exhibition.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { ProductModule } from './product/product.module';
 
-
 import { SurfaceModule } from './surface/surface.module';
+import { SubjectModule } from './subject/subject.module';
 //import { InventoryModule } from './inventory/inventory.module';
-
+ 
 @Module({
   imports: [
     MediumModule,
@@ -45,19 +44,23 @@ import { SurfaceModule } from './surface/surface.module';
       {
         path: 'admin', // Prefix for all child routes
         children: [
-          {
-            path: 'users',
-            module: UsersModule,
-          },
-          {
-            path: 'roles',
-            module: RolesModule,
-          },
-          {
-            path: 'permissions',
-            module: PermissionsModule,
-          },
-          { path: 'surface', module: SurfaceModule },
+          { path: 'users', module: UsersModule },
+          { path: 'roles', module: RolesModule },
+          { path: 'permissions', module: PermissionsModule },
+          { path: 'surfaces', module: SurfaceModule },
+          { path: 'wishlists', module: WishlistModule },
+          { path: 'videos', module: VideoModule },
+          { path: 'subjects', module: SubjectModule },
+          { path: 'shippings', module: ShippingModule },
+          { path: 'styles', module: StyleModule },
+          { path: 'products', module: ProductModule },
+          { path: 'policies', module: PolicyModule },
+          { path: 'mediums', module: MediumModule },
+          { path: 'exhibitions', module: ExhibitionModule },
+          { path: 'currencies', module: CurrencyModule },
+          { path: 'contactus', module: ContactusModule },
+          { path: 'blogs', module: BlogModule },
+          { path: 'contents', module: ContentModule },
         ],
       },
     ]),

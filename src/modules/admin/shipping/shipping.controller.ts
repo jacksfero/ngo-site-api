@@ -3,7 +3,7 @@ import { ShippingService } from './shipping.service';
 import { CreateShippingDto } from './dto/create-shipping.dto';
 import { UpdateShippingDto } from './dto/update-shipping.dto';
 
-@Controller('shipping')
+@Controller()
 export class ShippingController {
   constructor(private readonly shippingService: ShippingService) {}
 

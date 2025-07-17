@@ -20,7 +20,7 @@ import { CurrentUser } from 'src/modules/auth/decorators/current-user.decorator'
 import { privateDecrypt } from 'crypto';
 
 @UseGuards(JwtAuthGuard)
-@Controller('wishlist')
+@Controller()
 export class WishlistController {
   constructor(
     private readonly wishlistService: WishlistService,

@@ -3,7 +3,7 @@ import { CurrencyService } from './currency.service';
 import { CreateCurrencyDto } from './dto/create-currency.dto';
 import { UpdateCurrencyDto } from './dto/update-currency.dto';
 
-@Controller('currency')
+@Controller()
 export class CurrencyController {
   constructor(private readonly currencyService: CurrencyService) {}
 

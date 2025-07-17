@@ -3,7 +3,7 @@ import { VideoService } from './video.service';
 import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
 
-@Controller('video')
+@Controller()
 export class VideoController {
   constructor(private readonly videoService: VideoService) {}
 

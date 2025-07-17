@@ -3,7 +3,7 @@ import { ContentService } from './content.service';
 import { CreateContentDto } from './dto/create-content.dto';
 import { UpdateContentDto } from './dto/update-content.dto';
 
-@Controller('content')
+@Controller()
 export class ContentController {
   constructor(private readonly contentService: ContentService) {}
 

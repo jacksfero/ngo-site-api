@@ -3,7 +3,7 @@ import { MediumService } from './medium.service';
 import { CreateMediumDto } from './dto/create-medium.dto';
 import { UpdateMediumDto } from './dto/update-medium.dto';
 
-@Controller('medium')
+@Controller()
 export class MediumController {
   constructor(private readonly mediumService: MediumService) {}
 

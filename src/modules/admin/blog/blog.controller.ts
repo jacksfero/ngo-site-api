@@ -16,7 +16,7 @@ import { Blog } from 'src/shared/entities/blog.entity';
 import { plainToInstance } from 'class-transformer';
 //import { ClassSerializerInterceptor } from '@nestjs/common';
 
-@Controller('blog')
+@Controller()
 @UseInterceptors(ClassSerializerInterceptor) // 👈 Required for @Expose
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}

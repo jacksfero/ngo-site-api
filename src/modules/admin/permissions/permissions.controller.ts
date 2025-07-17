@@ -17,7 +17,7 @@ import { PermissionsGuard } from 'src/modules/auth/guards/permissions.guard';
 import { Roles } from 'src/modules/auth/decorators/roles.decorator';
 import { RequirePermissions } from 'src/modules/auth/decorators/permissions.decorator';
 
-@Controller('permissions')
+@Controller()
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
 @Roles('admin')
 export class PermissionsController {

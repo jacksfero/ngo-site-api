@@ -3,7 +3,7 @@ import { PolicyService } from './policy.service';
 import { CreatePolicyDto } from './dto/create-policy.dto';
 import { UpdatePolicyDto } from './dto/update-policy.dto';
 
-@Controller('policy')
+@Controller()
 export class PolicyController {
   constructor(private readonly policyService: PolicyService) {}
 

@@ -11,7 +11,7 @@ import { SurfaceService } from './surface.service';
 import { CreateSurfaceDto } from './dto/create-surface.dto';
 import { UpdateSurfaceDto } from './dto/update-surface.dto';
 
-@Controller('surface')
+@Controller()
 export class SurfaceController {
   constructor(private readonly surfaceService: SurfaceService) {}
 

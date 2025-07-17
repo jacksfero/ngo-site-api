@@ -98,15 +98,41 @@ export class RolesService {
     await this.roleRepository.delete(id);
   }
 
-  async assignPermissionsToRole(
+  async assignPermissionsToRole_backup(
     roleId: number,
     permissionIds: number[],
   ): Promise<Role> {
     const role = await this.findRoleById(roleId);
+
     const permissions =
       await this.permissionRepository.findByIds(permissionIds);
 
     role.permissions = permissions;
+    return this.roleRepository.save(role);
+  }
+
+  // id: number, dto: UpdateRoleDto permissionIds: number[],
+
+  async assignPermissionsToRole(
+    roleId: number,
+    dto: UpdateRoleDto,
+  ): Promise<Role> {
+    // 1. Find the role
+    const role = await this.findRoleById(roleId);
+    // const permissions =
+    //   await this.permissionRepository.findByIds(permissionIds);
+    // 2. Find the new permissions
+    if (dto.permissionsIds?.length) {
+      const permissions = await this.permissionRepository.findBy({
+        id: In(dto.permissionsIds),
+      });
+
+      // 3. Update the role's permissions
+      role.permissions = permissions;
+      return this.roleRepository.save(role);
+    }
+    // 4. If no permissions provided, clear existing ones
+    role.permissions = [];
     return this.roleRepository.save(role);
   }
 

@@ -1,5 +1,9 @@
 // src/users/users.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -65,17 +69,40 @@ export class UsersService {
     return `This action removes a #${id} user`;
   }
 
-  async assignRolesToUser(userId: number, roleIds: number[]): Promise<User> {
+  async assignRolesToUser(userId: number, dto: UpdateUserDto): Promise<User> {
+    // 1. Find user with roles
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['roles'],
     });
-    if (!user) {
-      throw new NotFoundException(`User with ID ${userId} not found`);
+    if (!user) throw new NotFoundException(`User ${userId} not found`);
+
+     let roles: Role[] = []; // ✅ Declare type explicitly
+
+    // 2. If roleIds is provided, fetch roles
+    if (dto.roleIds?.length) {
+      roles = await this.roleRepository.findBy({
+        id: In(dto.roleIds),
+      });
+
+      // 3. Check for missing roles
+      if (roles.length !== dto.roleIds.length) {
+        const missingIds = dto.roleIds.filter(
+          (id) => !roles.some((role) => role.id === id),
+        );
+        throw new NotFoundException(
+          `Roles not found: ${missingIds.join(', ')}`,
+        );
+      }
+
+      // 4. Assign roles to user
+      user.roles = roles;
+    } else {
+      // 5. Clear roles if roleIds is empty or undefined
+      user.roles = [];
     }
 
-    const roles = await this.roleRepository.findByIds(roleIds);
-    user.roles = roles;
+    // 6. Save user with updated roles
     return this.userRepository.save(user);
   }
 
