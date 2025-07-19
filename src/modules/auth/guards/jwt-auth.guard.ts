@@ -29,11 +29,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
 
 
- console.log(`Checking ${context.getHandler().name}, isPublic: ${isPublic}`);
+//  console.log(`Checking ${context.getHandler().name}, isPublic: ${isPublic}`);
 
-  console.log(`Checking ${className}.${handler.name}`);
-  console.log(this.reflector.get(IS_PUBLIC_KEY, handler));
-  console.log(this.reflector.get(IS_PUBLIC_KEY, context.getClass()));
+//   console.log(`Checking ${className}.${handler.name}`);
+//   console.log(this.reflector.get(IS_PUBLIC_KEY, handler));
+//   console.log(this.reflector.get(IS_PUBLIC_KEY, context.getClass()));
 
 
     if (isPublic) {
