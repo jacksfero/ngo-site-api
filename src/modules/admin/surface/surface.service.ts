@@ -4,9 +4,9 @@ import { UpdateSurfaceDto } from './dto/update-surface.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Surface } from '../../../shared/entities/surface.entity';
 import { Repository } from 'typeorm';
-import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
+ 
 
-UseGuards(JwtAuthGuard);
+ 
 @Injectable()
 export class SurfaceService {
   constructor(

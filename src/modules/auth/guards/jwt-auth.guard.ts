@@ -15,11 +15,26 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     super();
   }
   canActivate(context: ExecutionContext) {
+
+
+      const handler = context.getHandler();
+  const className = context.getClass().name;
+
+  
     // 1. Check for @Public() decorator first
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
+
+
+
+ console.log(`Checking ${context.getHandler().name}, isPublic: ${isPublic}`);
+
+  console.log(`Checking ${className}.${handler.name}`);
+  console.log(this.reflector.get(IS_PUBLIC_KEY, handler));
+  console.log(this.reflector.get(IS_PUBLIC_KEY, context.getClass()));
+
 
     if (isPublic) {
       return true;
@@ -37,3 +52,4 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return user;
   }
 }
+ 

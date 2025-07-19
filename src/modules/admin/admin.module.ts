@@ -41,7 +41,7 @@ import { PermissionsGuard } from '../auth/guards/permissions.guard';
     ExhibitionModule,
     WishlistModule,
     ProductModule,
-    //  InventoryModule,
+    SubjectModule,
 
     RouterModule.register([
       {
@@ -51,9 +51,9 @@ import { PermissionsGuard } from '../auth/guards/permissions.guard';
           { path: 'roles', module: RolesModule },
           { path: 'permissions', module: PermissionsModule },
           { path: 'surfaces', module: SurfaceModule },
+           { path: 'subjects', module: SubjectModule },
           { path: 'wishlists', module: WishlistModule },
-          { path: 'videos', module: VideoModule },
-          { path: 'subjects', module: SubjectModule },
+          { path: 'videos', module: VideoModule },         
           { path: 'shippings', module: ShippingModule },
           { path: 'styles', module: StyleModule },
           { path: 'products', module: ProductModule },

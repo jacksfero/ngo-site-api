@@ -1,4 +1,4 @@
-import { IsString, Length } from 'class-validator';
+import { IsString, Length, IsOptional, IsBoolean } from 'class-validator';
 
 export class CreateSubjectDto {
   @Length(3, 30)
@@ -7,4 +7,8 @@ export class CreateSubjectDto {
 
   @IsString()
   description: string;
+
+  @IsOptional()
+  @IsBoolean()
+  status?: boolean;
 }
