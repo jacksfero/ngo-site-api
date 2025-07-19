@@ -8,11 +8,14 @@ export class Medium {
   @Column({ type: 'varchar', length: 255 })
   name: string;
 
-  @Column({ type: 'boolean', default: 0 })
-  status: string;
+  @Column({ type: 'boolean', default: false })
+  status: boolean; // ✅ correct type: boolean
 
-  @Column({ type: 'int', default: null })
+  @Column({ type: 'varchar', length: 50, nullable: true })
   createdBy: string;
+
+   @Column({ type: 'varchar', length: 50, nullable: true })
+  updatedBy: string;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;

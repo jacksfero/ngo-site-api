@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('surface')
 export class Surface {
@@ -14,12 +8,14 @@ export class Surface {
   @Column({ type: 'varchar', length: 255 })
   surfaceName: string;
 
- 
-  @Column({ type: 'boolean', default: 0 })
-  status: string;
+  @Column({ type: 'boolean', default: false })
+  status: boolean; // ✅ correct type: boolean
 
-  @Column({ type: 'varchar', length: 50, default: null })
+  @Column({ type: 'varchar', length: 50, nullable: true })
   createdBy: string;
+
+   @Column({ type: 'varchar', length: 50, nullable: true })
+  updatedBy: string;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
@@ -29,5 +25,5 @@ export class Surface {
     default: () => 'CURRENT_TIMESTAMP',
     onUpdate: 'CURRENT_TIMESTAMP',
   })
-  updatedAt: Date; 
+  updatedAt: Date;
 }

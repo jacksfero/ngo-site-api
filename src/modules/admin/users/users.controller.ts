@@ -37,8 +37,6 @@ export class UsersController {
     return this.usersService.findOne(+id);
   }
 
-  
-
   @Post(':userId/roles')
   async assignRolesaaaaaaaaaa(
     @Param('userId') userId: string,

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { RouterModule } from '@nestjs/core';
+import { APP_GUARD, RouterModule } from '@nestjs/core';
 
 import { MediumModule } from './medium/medium.module';
 import { ShippingModule } from './shipping/shipping.module';
@@ -19,6 +19,9 @@ import { ProductModule } from './product/product.module';
 
 import { SurfaceModule } from './surface/surface.module';
 import { SubjectModule } from './subject/subject.module';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { PermissionsGuard } from '../auth/guards/permissions.guard';
 //import { InventoryModule } from './inventory/inventory.module';
  
 @Module({
@@ -65,5 +68,11 @@ import { SubjectModule } from './subject/subject.module';
       },
     ]),
   ],
+  providers: [
+     { provide: APP_GUARD, useClass: JwtAuthGuard },
+  //{ provide: APP_GUARD, useClass: RolesGuard },
+  //{ provide: APP_GUARD, useClass: PermissionsGuard },
+  ],
+
 })
 export class AdminModule {}

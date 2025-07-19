@@ -15,11 +15,16 @@ import { UpdateAuthDto } from './dto/update-auth.dto';
 import { CreateUserDto } from 'src/modules/admin/users/dto/create-user.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
+import { Public } from 'src/core/decorators/public.decorator';
+import { PublicGuard } from 'src/core/guards/public.guard';
+
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+ //@UseGuards(PublicGuard)
+  @Public()
   @Post('register')
   create(@Body() createUserDto: CreateUserDto) {
     return this.authService.create(createUserDto);
@@ -32,12 +37,11 @@ export class AuthController {
     return this.authService.login(req.user); // user is attached by LocalStrategy
   }
 
-@UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'))
   @Post('profile')
   getProfile(@Request() req) {
     return req.user;
   }
-
 
   @Get()
   findAll() {

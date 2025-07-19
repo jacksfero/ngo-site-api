@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable,NotFoundException } from '@nestjs/common';
 import { CreateMediumDto } from './dto/create-medium.dto';
 import { UpdateMediumDto } from './dto/update-medium.dto';
 
@@ -13,23 +13,55 @@ export class MediumService {
     private mediumRepository: Repository<Medium>,
   ) {}
 
-  async create(createMediumDto: CreateMediumDto): Promise<Medium> {
-    return this.mediumRepository.save(createMediumDto);
+  async create(createMediumDto: CreateMediumDto, user: any,): Promise<Medium> {
+     const medium = this.mediumRepository.create({
+      ...createMediumDto,
+      // createdBy: user.username, // or user.sub (ID), depending on your use case
+      createdBy: user.sub.toString(), //userid
+    });
+    return this.mediumRepository.save(medium);
   }
 
   async findAll(): Promise<Medium[]> {
-    return this.mediumRepository.find();
+    return this.mediumRepository.find({
+      order: {
+        createdAt: 'DESC', // sort by newest first
+      },
+      /* where: {
+        status: true, // only active surfaces
+      },*/
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} medium`;
+  async findOne(id: number): Promise<Medium> {
+     const medium = await this.mediumRepository.findOne({ where: { id } });
+     if (!medium) throw new NotFoundException(`Surface ${id} not found`);
+     return medium;
+   }
+
+ async update(id: number, updateMediumDto: UpdateMediumDto, user: any):Promise<Medium> {
+    const medium = await this.findOne(id);
+    Object.assign(medium,updateMediumDto);
+    medium.updatedBy = user.save.toString();
+    return this.mediumRepository.save(medium);
+
   }
 
-  update(id: number, updateMediumDto: UpdateMediumDto) {
-    return `This action updates a #${id} medium`;
+ 
+async remove(id: number): Promise<void> {
+    const medium = await this.findOne(id);
+    await this.mediumRepository.remove(medium);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} medium`;
+  // surface.service.ts
+  async toggleStatus(id: number, user: any): Promise<Medium> {
+    const medium = await this.mediumRepository.findOne({ where: { id } });
+    if (!medium) {
+      throw new NotFoundException(`Medium   with ID ${id} not found`);
+    }
+    medium.status = !medium.status;
+    medium.updatedBy = user.sub.toString(); // or user.sub.toString()
+
+    return this.mediumRepository.save(medium);
   }
 }
