@@ -26,7 +26,7 @@ import { RolesSeed } from './seeds/roles.seed';
         /* synchronize:
           configService.get<string>('DATABASE_SYNCHRONIZE', 'false') === 'true',*/
         synchronize:
-          configService.get<string>('DATABASE_SYNCHRONIZE','true') === 'true',
+          configService.get<string>('DATABASE_SYNCHRONIZE') === 'true',
 
         logging: configService.get('DB_LOGGING') === 'true',
       }),

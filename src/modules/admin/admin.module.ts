@@ -42,6 +42,7 @@ import { PermissionsGuard } from '../auth/guards/permissions.guard';
     WishlistModule,
     ProductModule,
     SubjectModule,
+    SurfaceModule,
 
     RouterModule.register([
       {
