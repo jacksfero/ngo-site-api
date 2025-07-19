@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable,NotFoundException } from '@nestjs/common';
 import { CreatePolicyDto } from './dto/create-policy.dto';
 import { UpdatePolicyDto } from './dto/update-policy.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,10 +12,13 @@ export class PolicyService {
     private policyRepository: Repository<Policy>,
   ) {}
 
-  async create(createPolicyDto: CreatePolicyDto): Promise<Policy> {
-    const result = await this.policyRepository.save(createPolicyDto);
-
-    return result;
+  async create(createPolicyDto: CreatePolicyDto,user:any): Promise<Policy> {
+    const policy = this.policyRepository.create({
+      ...createPolicyDto,
+      // createdBy: user.username, // or user.sub (ID), depending on your use case
+      createdBy: user.sub.toString(), //userid
+    });
+    return this.policyRepository.save(policy);
   }
 
   async findAll(): Promise<Policy[]> {
@@ -23,15 +26,33 @@ export class PolicyService {
     return result;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} policy`;
+ async findOne(id: number): Promise<Policy> {
+      const policy = await this.policyRepository.findOne({ where: { id } });
+     if (!policy) throw new NotFoundException(`policy ${id} not found`);
+     return policy;
   }
 
-  update(id: number, updatePolicyDto: UpdatePolicyDto) {
-    return `This action updates a #${id} policy`;
+ async update(id: number, updatePolicyDto: UpdatePolicyDto,user:any): Promise<Policy> {
+      const policy = await this.findOne(id);
+    Object.assign(policy,updatePolicyDto);
+    policy.updatedBy = user.sub.toString();
+    return this.policyRepository.save(policy);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} policy`;
+async remove(id: number): Promise<void> {
+    const policy = await this.findOne(id);
+    await this.policyRepository.remove(policy);
+  }
+
+  
+  async toggleStatus(id: number, user: any): Promise<Policy> {
+    const policy = await this.policyRepository.findOne({ where: { id } });
+    if (!policy) {
+      throw new NotFoundException(`policy   with ID ${id} not found`);
+    }
+    policy.status = !policy.status;
+    policy.updatedBy = user.sub.toString(); // or user.sub.toString()
+
+    return this.policyRepository.save(policy);
   }
 }

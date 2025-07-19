@@ -14,11 +14,14 @@ export class Policy {
   @Column({ type: 'varchar', length: 255 })
   remarks: string;
 
-  @Column({ type: Boolean, default: false })
+  @Column({ type: 'boolean', default: false })
   status: boolean;
 
-  @Column({ type: 'int', default: null })
-  createdBy: number;
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  createdBy: string;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  updatedBy: string;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
