@@ -23,7 +23,7 @@ async function bootstrap() {
     }),
     //  new ClassSerializerInterceptor(app.get(Reflector)),
   );
-  app.enableCors({
+   app.enableCors({
     origin: [
       'http://localhost:3000',
       'https://indiagalleri-frontend.vercel.app/',

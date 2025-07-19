@@ -1,18 +1,15 @@
 import { Module, Logger, OnModuleInit } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+ 
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
 //import { TypeOrmModule } from '@nestjs/typeorm';
-import { SurfaceModule } from './modules/admin/surface/surface.module';
-//import { Surface } from './admin/surface/entities/surface.entity';
+ 
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { DatabaseModule } from './shared/database/database.module';
-import { SubjectModule } from './modules/admin/subject/subject.module';
-import { CurrencyModule } from './modules/admin/currency/currency.module';
-import { ShippingModule } from './modules/admin/shipping/shipping.module';
+ 
 import { AdminModule } from './modules/admin/admin.module';
 import { ClientModule } from './modules/client/client.module';
 import { APP_GUARD } from '@nestjs/core';
@@ -20,6 +17,7 @@ import { RolesSeed } from './shared/database/seeds/roles.seed';
 import { PermissionsGuard } from './modules/auth/guards/permissions.guard';
 import { GlobalModule } from './global/global.module';
 import { PublicGuard } from './core/guards/public.guard';
+import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -30,10 +28,7 @@ import { PublicGuard } from './core/guards/public.guard';
     DatabaseModule,
     AuthModule,
 
-    SurfaceModule,
-    SubjectModule,
-    CurrencyModule,
-    ShippingModule,
+   
     AdminModule,
     ClientModule,
     GlobalModule,
@@ -41,7 +36,12 @@ import { PublicGuard } from './core/guards/public.guard';
 
   controllers: [AppController],
   providers: [
-    /*//  RolesSeed,
+ /*
+     {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard, // Now applies globally BUT respects @Public()
+    },
+   //  RolesSeed,
     {
       provide: APP_GUARD,
       useClass: PermissionsGuard,
