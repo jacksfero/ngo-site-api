@@ -1,7 +1,7 @@
 // src/users/users.service.ts
 import {
   Injectable,
-  NotFoundException,
+  NotFoundException,  
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -41,12 +41,23 @@ export class UsersService {
   async findByUsername(username: string): Promise<User | undefined> {
     const user = await this.userRepository.findOne({
       where: { username },
-      relations: ['roles'], // Include roles if you need them in JWT
+       relations: ['roles'], // Include roles if you need them in JWT
     });
 
     return user ?? undefined;
   }
-
+async findByUsername_bk(username: string): Promise<User | null> {
+   console.log(`User searchsssssssssssssssssss failed for ${username}` );
+  try {
+    return await this.userRepository.findOne({ 
+      where: { username },
+      select: ['id', 'username', 'password'] // Customize as needed
+    });
+  } catch (error) {
+    console.log(`User search failed for ${username}`, error.stack);
+    return null; // Explicit null (TypeORM's standard)
+  }
+}
   async findByEmail(email: string): Promise<User | null> {
     return this.userRepository.findOne({
       where: { email },

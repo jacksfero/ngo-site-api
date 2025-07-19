@@ -20,8 +20,9 @@ export class AuthService {
 
   async validateUser(username: string, password: string): Promise<any> {
     const user = await this.usersService.findByUsername(username);
-    console.log('--------------------', username);
+    console.log('---------username-----------', username,'-----user------',user);
     if (user && (await bcrypt.compare(password, user.password))) {
+       console.log('-------------Password-------', user.password);
       const { password, ...result } = user;
       return result; // return user info without password
     }
