@@ -30,9 +30,11 @@ export class AuthController {
     return this.authService.create(createUserDto);
   }
 
-  // @UseGuards(AuthGuard('local'))
-  //@UseGuards(LocalAuthGuard)
+    
+    
   @Public()
+  //  @UseGuards(AuthGuard('local'))
+  @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Request() req) {
     return this.authService.login(req.user); // user is attached by LocalStrategy
