@@ -26,9 +26,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
       envFilePath: ['.env', '.env.development', '.env.production'],
     }),
     DatabaseModule,
-    AuthModule,
-
-   
+    AuthModule,  
     AdminModule,
     ClientModule,
     GlobalModule,

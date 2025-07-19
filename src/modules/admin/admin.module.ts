@@ -23,7 +23,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 //import { InventoryModule } from './inventory/inventory.module';
- 
+
 @Module({
   imports: [
     MediumModule,
@@ -52,9 +52,9 @@ import { PermissionsGuard } from '../auth/guards/permissions.guard';
           { path: 'roles', module: RolesModule },
           { path: 'permissions', module: PermissionsModule },
           { path: 'surfaces', module: SurfaceModule },
-           { path: 'subjects', module: SubjectModule },
+          { path: 'subjects', module: SubjectModule },
           { path: 'wishlists', module: WishlistModule },
-          { path: 'videos', module: VideoModule },         
+          { path: 'videos', module: VideoModule },
           { path: 'shippings', module: ShippingModule },
           { path: 'styles', module: StyleModule },
           { path: 'products', module: ProductModule },
@@ -70,10 +70,10 @@ import { PermissionsGuard } from '../auth/guards/permissions.guard';
     ]),
   ],
   providers: [
-     { provide: APP_GUARD, useClass: JwtAuthGuard },
-  //{ provide: APP_GUARD, useClass: RolesGuard },
-  //{ provide: APP_GUARD, useClass: PermissionsGuard },
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    //{ provide: APP_GUARD, useClass: RolesGuard },
+    //{ provide: APP_GUARD, useClass: PermissionsGuard },
   ],
 
 })
-export class AdminModule {}
+export class AdminModule { }

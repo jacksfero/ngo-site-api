@@ -1,4 +1,4 @@
-import { IsString, Length } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, Length } from 'class-validator';
 
 export class CreateStyleDto {
   @Length(5, 100)
@@ -7,4 +7,9 @@ export class CreateStyleDto {
 
   @IsString()
   description: string;
+
+
+  @IsOptional()
+  @IsBoolean()
+  status?: boolean;
 }

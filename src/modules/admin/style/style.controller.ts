@@ -1,15 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Req, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { StyleService } from './style.service';
 import { CreateStyleDto } from './dto/create-style.dto';
 import { UpdateStyleDto } from './dto/update-style.dto';
 
 @Controller()
 export class StyleController {
-  constructor(private readonly styleService: StyleService) {}
+  constructor(private readonly styleService: StyleService) { }
 
   @Post()
-  create(@Body() createStyleDto: CreateStyleDto) {
-    return this.styleService.create(createStyleDto);
+  create(@Body() createStyleDto: CreateStyleDto, @Req() req) {
+    return this.styleService.create(createStyleDto, req.user);
   }
 
   @Get()
@@ -23,7 +23,7 @@ export class StyleController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateStyleDto: UpdateStyleDto) {
+  update(@Param('id') id: string, @Body() updateStyleDto: UpdateStyleDto, @Req() req) {
     return this.styleService.update(+id, updateStyleDto);
   }
 

@@ -12,9 +12,15 @@ export class StyleService {
     private styleRepository: Repository<Style>,
   ) {}
 
-  async create(createStyleDto: CreateStyleDto): Promise<Style> {
-    const result = await this.styleRepository.save(createStyleDto);
-    return result;
+  async create(createStyleDto: CreateStyleDto,user: any): Promise<Style> {
+
+      const style = this.styleRepository.create({
+      ...createStyleDto,
+      // createdBy: user.username, // or user.sub (ID), depending on your use case
+      createdBy: user.sub.toString(), //userid
+    });
+    return this.styleRepository.save(style);
+ 
   }
 
   async findAll(): Promise<Style[]> {

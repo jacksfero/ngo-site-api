@@ -17,7 +17,7 @@ import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 
 import { JwtPayload } from 'src/modules/auth/interfaces/jwt-payload.interface';
 import { CurrentUser } from 'src/modules/auth/decorators/current-user.decorator';
-import { privateDecrypt } from 'crypto';
+ 
 
 @UseGuards(JwtAuthGuard)
 @Controller()

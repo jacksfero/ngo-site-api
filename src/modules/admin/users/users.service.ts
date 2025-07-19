@@ -47,15 +47,15 @@ export class UsersService {
     return user ?? undefined;
   }
 async findByUsername_bk(username: string): Promise<User | null> {
-   console.log(`User searchsssssssssssssssssss failed for ${username}` );
+   //console.log(`User searchsssssssssssssssssss failed for ${username}` );
   try {
     return await this.userRepository.findOne({ 
       where: { username },
       select: ['id', 'username', 'password'] // Customize as needed
     });
   } catch (error) {
-    console.log(`User search failed for ${username}`, error.stack);
-    return null; // Explicit null (TypeORM's standard)
+    throw new Error(`User search failed for ${username}`, error.stack);
+   // return null; // Explicit null (TypeORM's standard)
   }
 }
   async findByEmail(email: string): Promise<User | null> {
@@ -64,12 +64,28 @@ async findByUsername_bk(username: string): Promise<User | null> {
     });
   }
 
-  findAll() {
-    return `This action returns all users`;
+    async findAll(): Promise<User[]> {
+      try {
+        return this.userRepository.find({
+      relations: ['roles'], // include relations if needed
+    });
+      } catch (error) {
+        throw new Error(`User search failed for  node found` );
+      }
+    
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+ async findOne(id: number) {
+    try {
+    return await this.userRepository.findOne({ 
+      where: { id },
+      relations: ['roles'], // include relations if needed
+      select: ['id', 'username', 'password'] // Customize as needed
+    });
+  } catch (error) {
+    throw new Error(`User search failed for ${id}`, error.stack);
+   // return null; // Explicit null (TypeORM's standard)
+  }
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

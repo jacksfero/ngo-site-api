@@ -11,11 +11,14 @@ export class Style {
   @Column({ type: 'text' })
   description: string;
 
-   @Column({ type: 'boolean', default: 0 })
+  @Column({ type: 'boolean', default: false })
   status: boolean;
 
-  @Column({ type: 'int', default: null })
+  @Column({ type: 'varchar', length: 50, nullable: true })
   createdBy: string;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  updatedBy: string;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;

@@ -13,12 +13,17 @@ export class SubjectService {
   ) { }
 
   async create(createSubjectDto: CreateSubjectDto,user: any,): Promise<Subject> {
-     const subject = this.subjectRepository.create({
+    try {
+      const subject = this.subjectRepository.create({
       ...createSubjectDto,
       // createdBy: user.username, // or user.sub (ID), depending on your use case
       createdBy: user.sub.toString(), //userid
     });
     return this.subjectRepository.save(subject);
+    } catch (error) {
+      throw new  error("Subject Noe save ")
+    }
+     
   }
 
   async findAll(): Promise<Subject[]> {

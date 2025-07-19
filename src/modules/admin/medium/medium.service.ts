@@ -42,7 +42,7 @@ export class MediumService {
  async update(id: number, updateMediumDto: UpdateMediumDto, user: any):Promise<Medium> {
     const medium = await this.findOne(id);
     Object.assign(medium,updateMediumDto);
-    medium.updatedBy = user.save.toString();
+    medium.updatedBy = user.sub.toString();
     return this.mediumRepository.save(medium);
 
   }
