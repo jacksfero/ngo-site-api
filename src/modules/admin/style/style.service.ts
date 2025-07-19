@@ -49,12 +49,12 @@ export class StyleService {
 
   }
 
-  remove(id: number) {
+ async remove(id: number) {
      const style = await this.findOne(id);
     return this.styleRepository.remove(style);
   }
 
-  async toggleStatus(id: number, user: any): Promise<Subject> {
+  async toggleStatus(id: number, user: any): Promise<Style> {
       const style = await this.styleRepository.findOne({ where: { id } });
       if (!style) throw new NotFoundException(`style ${id} not found`);
       style.status = !style.status;
