@@ -26,7 +26,7 @@ async function bootstrap() {
    app.enableCors({
     origin: [
       'http://localhost:3000',
-      'https://indiagalleri-frontend.vercel.app/',
+      'https://indiagalleri-frontend.vercel.app',
     ], // ✅ allow local React frontend
     credentials: true, // Optional: allow cookies/auth headers if needed
   });
