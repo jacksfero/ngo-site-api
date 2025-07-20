@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, Length } from 'class-validator';
+import { IsNotEmpty, IsBoolean, IsOptional, IsString, Length } from 'class-validator';
 
 export class CreateContentDto {
   @Length(5, 100)
@@ -13,4 +13,9 @@ export class CreateContentDto {
   @IsNotEmpty()
   @IsString()
   remarks: string;
+
+
+  @IsOptional()
+  @IsBoolean()
+  status?: boolean;
 }

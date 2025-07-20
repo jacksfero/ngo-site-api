@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateContentDto } from './dto/create-content.dto';
 import { UpdateContentDto } from './dto/update-content.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,10 +10,15 @@ export class ContentService {
   constructor(
     @InjectRepository(Content)
     private contentRepository: Repository<Content>,
-  ) {}
+  ) { }
 
-  async create(createContentDto: CreateContentDto): Promise<Content> {
-    const result = await this.contentRepository.save(createContentDto);
+  async create(createContentDto: CreateContentDto, user: any): Promise<Content> {
+    const content = await this.contentRepository.create({
+      ...createContentDto,
+      createdBy: user.sub.toString()
+    })
+
+    const result = await this.contentRepository.save(content);
     return result;
   }
 
@@ -22,15 +27,38 @@ export class ContentService {
     return result;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} content`;
+  async findOne(id: number): Promise<Content> {
+    const content = await this.contentRepository.findOne({ where: { id } })
+    if (!content) throw new NotFoundException(`content ${id} not found`);
+    return content;
   }
 
-  update(id: number, updateContentDto: UpdateContentDto) {
-    return `This action updates a #${id} content`;
+  async update(id: number, updateContentDto: UpdateContentDto, user: any): Promise<Content> {
+
+    const content = await this.findOne(id)
+    if (!content) throw new NotFoundException(`content ${id} not found`);
+    Object.assign(content, updateContentDto);
+    content.updatedBy = user.sub.toString();
+    return this.contentRepository.save(content);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} content`;
+  async remove(id: number): Promise<void> {
+    const content = await this.findOne(id);
+    await this.contentRepository.remove(content);
   }
+
+  // content.service.ts
+  async toggleStatus(id: number, user: any): Promise<Content> {
+    const content = await this.contentRepository.findOne({ where: { id } });
+    if (!content) {
+      throw new NotFoundException(`content   with ID ${id} not found`);
+    }
+    content.status = !content.status;
+    content.updatedBy = user.sub.toString(); // or user.sub.toString()
+
+    return this.contentRepository.save(content);
+  }
+
+
+
 }
