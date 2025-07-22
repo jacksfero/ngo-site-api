@@ -10,6 +10,8 @@ import {
 
 import { Role } from 'src/shared/entities/role.entity';
 import { Wishlist } from 'src/shared/entities/wishlist.entity';
+import { Blog } from './blog.entity';
+
 //console.log('----User Entiry---------- DEBUG:In User Role is', Role);
 
 @Entity()
@@ -39,6 +41,9 @@ export class User {
 
   @OneToMany(() => Wishlist, (wishlist) => wishlist.user)
   wishlists: Wishlist[];
+
+@OneToMany(() => Blog, (blog) => blog.author)
+blogs: Blog[];
 
   @Column({ type: 'boolean', default: true })
   email_verified: boolean;

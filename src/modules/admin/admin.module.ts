@@ -23,6 +23,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 //import { InventoryModule } from './inventory/inventory.module';
+import { CategoryModule } from './category/category.module';
+import { TagModule } from './tag/tag.module';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { PermissionsGuard } from '../auth/guards/permissions.guard';
     PolicyModule,
     ContentModule,
     BlogModule,
+    CategoryModule,
+    TagModule,
     PermissionsModule,
     RolesModule,
     UsersModule,
@@ -64,10 +68,16 @@ import { PermissionsGuard } from '../auth/guards/permissions.guard';
           { path: 'currencies', module: CurrencyModule },
           { path: 'contactus', module: ContactusModule },
           { path: 'blogs', module: BlogModule },
+          { path: 'categories', module: CategoryModule },
+           { path: 'tags', module: TagModule },
           { path: 'contents', module: ContentModule },
         ],
       },
     ]),
+
+    CategoryModule,
+
+    TagModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

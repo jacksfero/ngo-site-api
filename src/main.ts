@@ -1,10 +1,17 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
 import { AppModule } from './app.module';
+
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 // backend/src/main.ts
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+ // const app = await NestFactory.create(AppModule);
+
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.useStaticAssets(join(__dirname, '..', 'uploads'));
+
   // Apply PublicGuard globally
   // app.useGlobalGuards(new PublicGuard());
   //  app.useGlobalPipes(new ValidationPipe());

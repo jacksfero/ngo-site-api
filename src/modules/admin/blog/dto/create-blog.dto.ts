@@ -1,31 +1,37 @@
+import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
   IsOptional,
   IsDateString,
-  IsEnum,
+  
   IsString,
   Length,
+  IsInt,
+  IsArray,
 } from 'class-validator';
-import { Category } from '../enums/category.enum';
+
 
 export class CreateBlogDto {
-  @IsEnum(Category)
-  categoryId: Category;
 
   @IsNotEmpty()
   @IsString()
   @Length(5, 50)
   title: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  @Length(5, 50)
-  slug: string;
+  @Length(3, 50)
+  slug?: string;
 
   @IsNotEmpty()
   @IsString()
-  @Length(5, 50)
+  @Length(5, 80)
   h1Title: string;
+
+ 
+  @IsOptional()
+  @IsString()
+  titleImage?: string;
 
   @IsNotEmpty()
   @IsString()
@@ -33,5 +39,17 @@ export class CreateBlogDto {
 
   @IsOptional()
   @IsDateString()
+ 
   scheduledPublishDate?: Date;
+
+  @IsInt()
+  @Type(() => Number) // 👈 convert string to number
+  categoryId: number;
+
+  @IsArray()
+  @IsOptional()
+  tagIds?: number[];
+
+  // @IsInt()
+  // authorId: number;
 }

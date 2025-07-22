@@ -1,21 +1,35 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, JoinTable, ManyToMany, ManyToOne, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { Expose } from 'class-transformer';
-import { Category } from 'src/modules/admin/blog/enums/category.enum';
+
+import { Category } from './category.entity';
+import { Tag } from './tag.entity';
+import { User } from './user.entity';
+
 
 @Entity('blog')
 export class Blog {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({
-    type: 'enum',
-    enum: Category,
-    default: Category.TECHNOLOGY,
+  @ManyToOne(() => Category, (category) => category.blogs, { eager: true })
+  category: Category;
+
+  @ManyToMany(() => Tag, { eager: true, cascade: true })
+  @JoinTable({
+    name: 'blog_posts_tags',
+    joinColumn: { name: 'blog_post_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'tag_id', referencedColumnName: 'id' },
   })
-  categoryId: number;
+  tags: Tag[];
+
+  @ManyToOne(() => User, (user) => user.blogs, { eager: true })
+  author: User;
 
   @Column({ type: 'varchar', length: 200 })
   title: string;
+
+@Column({ type: 'varchar', length: 200, nullable: true, default: null })
+titleImage: string | null;
 
   @Column({ type: 'varchar', length: 150 })
   slug: string;
@@ -36,8 +50,7 @@ export class Blog {
   @Column({ type: 'varchar', length: 255, default: null })
   descriptionTag: string;
 
-  @Column({ type: 'varchar', length: 100, default: null })
-  tags: string;
+
 
   @Column({ type: 'varchar', length: 150, default: null })
   optionalTitle: string;
@@ -48,12 +61,10 @@ export class Blog {
   @Column({ type: Boolean, default: false })
   status: boolean;
 
+
   @Column({ default: false })
-  @Expose({ groups: ['admin'] })
   isPublished: boolean;
 
-  @Column({ type: 'int', default: null })
-  createdBy: string;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
@@ -71,4 +82,6 @@ export class Blog {
     default: null, // 👈 Default value (optional)
   })
   scheduledPublishDate: Date | null; // 👈 Union type with null
+
+
 }

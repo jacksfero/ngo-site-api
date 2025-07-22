@@ -3,8 +3,11 @@ import { BlogService } from './blog.service';
 import { BlogController } from './blog.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Blog } from 'src/shared/entities/blog.entity';
+import { Category } from 'src/shared/entities/category.entity';
+import { Tag } from 'src/shared/entities/tag.entity';
+import { User } from 'src/shared/entities/user.entity';
 @Module({
-  imports: [TypeOrmModule.forFeature([Blog])],
+  imports: [TypeOrmModule.forFeature([Blog, Category, Tag, User])],
   controllers: [BlogController],
   providers: [BlogService],
 })

@@ -1,26 +1,83 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { In, Repository } from 'typeorm';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Blog } from 'src/shared/entities/blog.entity';
-import { Repository } from 'typeorm';
+import { Category } from 'src/shared/entities/category.entity';
+import { Tag } from 'src/shared/entities/tag.entity';
+import { User } from 'src/shared/entities/user.entity';
+import { slugify } from 'src/shared/utils/slugify';
+
 
 @Injectable()
 export class BlogService {
   constructor(
     @InjectRepository(Blog)
     private blogRepository: Repository<Blog>,
-  ) {}
 
-  async create(createBlogDto: CreateBlogDto): Promise<Blog> {
-    console.log();
-    const result = await this.blogRepository.save(createBlogDto);
-    return result;
+    @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
+
+    @InjectRepository(Tag)
+    private tagRepository: Repository<Tag>,
+
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+
+  ) { }
+
+  async create(dto: CreateBlogDto, user: any, imagePath?: string): Promise<Blog> {
+
+    const category = await this.categoryRepository.findOneBy({ id: dto.categoryId });
+    if (!category) throw new NotFoundException('Category not found');
+
+    const tags = await this.tagRepository.findBy({ id: In(dto.tagIds || []) });
+
+
+    const author = await this.userRepository.findOneBy({ id: user.sub.toString() });
+    if (!author) throw new NotFoundException('Author not found');
+
+    const uniqueSlug = await this.generateUniqueSlug(dto.title);
+
+    const blog = this.blogRepository.create({
+      title: dto.title,
+      slug: uniqueSlug,
+      h1Title: dto.h1Title,
+      blogContent: dto.blogContent,
+      // titleImage:dto.titleImage,
+      titleImage: imagePath ? `/uploads/blog-images/${imagePath}` : null,
+      status: true,
+      isPublished: true,
+      scheduledPublishDate: dto.scheduledPublishDate || null,
+      category,
+      tags,
+      author,
+    });
+    return this.blogRepository.save(blog);
+
+  }
+
+
+  async generateUniqueSlug(title: string): Promise<string> {
+    const baseSlug = slugify(title);
+    let slug = baseSlug;
+    let count = 1;
+
+    while (await this.blogRepository.findOne({ where: { slug } })) {
+      slug = `${baseSlug}-${count}`;
+      count++;
+    }
+
+    return slug;
   }
 
   async findAll(): Promise<Blog[]> {
-    const result = await this.blogRepository.find();
-    return result;
+    return this.blogRepository.find({
+      relations: ['category', 'tags', 'user'],
+      order: { createdAt: 'DESC' },
+    });
+
   }
 
   async publish(id: number) {
@@ -38,21 +95,41 @@ export class BlogService {
   }
 
   // Service
-async resetPublishSchedule(id: number) {
-  return this.blogRepository.update(id, {
-    scheduledPublishDate: null // Works perfectly now
-  });
-}
-
-  findOne(id: number) {
-    return `This action returns a #${id} blog`;
+  async resetPublishSchedule(id: number) {
+    return this.blogRepository.update(id, {
+      scheduledPublishDate: null // Works perfectly now
+    });
+  }
+  async findOne(id: number): Promise<Blog> {
+    const blog = await this.blogRepository.findOne({
+      where: { id },
+      relations: ['category', 'tags', 'user'],
+    });
+    if (!blog) throw new NotFoundException('Blog post not found');
+    return blog;
   }
 
-  update(id: number, updateBlogDto: UpdateBlogDto) {
-    return `This action updates a #${id} blog`;
+  async update(id: number, dto: UpdateBlogDto): Promise<Blog> {
+    const blog = await this.findOne(id);
+
+    if (dto.categoryId) {
+      const category = await this.categoryRepository.findOneBy({ id: dto.categoryId });
+      if (!category) throw new NotFoundException('Category not found');
+      blog.category = category;
+    }
+
+    if (dto.tagIds?.length) {
+      blog.tags = await this.tagRepository.findBy({ id: In(dto.tagIds) });
+    }
+
+    Object.assign(blog, dto);
+    return this.blogRepository.save(blog);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} blog`;
+  async remove(id: number): Promise<void> {
+    const result = await this.blogRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException('Blog post not found');
+    }
   }
 }
