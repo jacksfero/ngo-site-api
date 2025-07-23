@@ -22,7 +22,7 @@ import { RequirePermissions } from 'src/modules/auth/decorators/permissions.deco
 //@Roles('admin')
 export class PermissionsController {
   constructor(private readonly permissionsService: PermissionsService) {}
-
+ 
   @Post()
   //@RequirePermissions('create_permission')
   create(@Body() createPermissionDto: CreatePermissionDto) {
