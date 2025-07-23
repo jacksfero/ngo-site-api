@@ -4,6 +4,7 @@
 /build
 /local_docker_files
 /production_docker_files
+/uploads
 
 # Logs
 logs
