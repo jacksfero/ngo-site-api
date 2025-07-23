@@ -4,10 +4,10 @@ import { Role } from 'src/shared/entities/role.entity'; // For runtime (if absol
 
 // console.log(Role); // Now works (but avoid in entities)
 
-console.log(
-  '------Permission Entity--------- DEBUG: In Permission Roles is',
-  Role,
-);
+// console.log(
+//   '------Permission Entity--------- DEBUG: In Permission Roles is',
+//   Role,
+// );
 
 @Entity()
 export class Permission {

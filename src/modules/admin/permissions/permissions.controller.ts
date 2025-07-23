@@ -19,30 +19,30 @@ import { RequirePermissions } from 'src/modules/auth/decorators/permissions.deco
 
 @Controller()
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-@Roles('admin')
+//@Roles('admin')
 export class PermissionsController {
   constructor(private readonly permissionsService: PermissionsService) {}
 
   @Post()
-  @RequirePermissions('create_permission')
+  //@RequirePermissions('create_permission')
   create(@Body() createPermissionDto: CreatePermissionDto) {
     return this.permissionsService.createPermission(createPermissionDto);
   }
 
   @Get()
-  @RequirePermissions('read_permission')
+  //@RequirePermissions('read_permission')
   findAll() {
     return this.permissionsService.findAllPermissions();
   }
 
   @Get(':id')
-  @RequirePermissions('read_permission')
+ // @RequirePermissions('read_permission')
   findOne(@Param('id') id: string) {
     return this.permissionsService.findPermissionById(+id);
   }
 
   @Patch(':id')
-  @RequirePermissions('update_permission')
+  //@RequirePermissions('update_permission')
   update(
     @Param('id') id: string,
     @Body() updatePermissionDto: UpdatePermissionDto,
@@ -51,7 +51,7 @@ export class PermissionsController {
   }
 
   @Delete(':id')
-  @Roles('admin')
+  //@Roles('admin')
   @RequirePermissions('delete_permission')
   remove(@Param('id') id: string) {
     return this.permissionsService.deletePermission(+id);
