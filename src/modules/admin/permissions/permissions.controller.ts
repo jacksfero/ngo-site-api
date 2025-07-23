@@ -52,7 +52,7 @@ export class PermissionsController {
 
   @Delete(':id')
   //@Roles('admin')
-  @RequirePermissions('delete_permission')
+ // @RequirePermissions('delete_permission')
   remove(@Param('id') id: string) {
     return this.permissionsService.deletePermission(+id);
   }
