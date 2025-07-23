@@ -13,6 +13,7 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+ 
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
@@ -20,6 +21,7 @@ import { BlogService } from './blog.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import { blogImageStorage } from './utils/blog-image-upload';
+ 
 import { Blog } from 'src/shared/entities/blog.entity';
 
 
@@ -53,15 +55,16 @@ export class BlogController {
     return this.blogService.create(dto, user, imagePath);
   }*/
 
-    @Post()
-@UseInterceptors(FileInterceptor('titleImage', blogImageStorage))
-create(
-  @Body() dto: CreateBlogDto,
-  @Req() req,
-  @UploadedFile() file: Express.Multer.File,
-) {
-  return this.blogService.create(dto, req.user, file?.filename);
-}
+ 
+  @Post()
+  @UseInterceptors(FileInterceptor('titleImage', blogImageStorage))
+  create(
+    @Body() dto: CreateBlogDto,
+    @Req() req,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.blogService.create(dto, req.user, file?.filename);
+  }
  
 
 @Post()

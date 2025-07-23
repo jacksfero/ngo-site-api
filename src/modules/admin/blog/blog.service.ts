@@ -27,7 +27,7 @@ export class BlogService {
 
   ) { }
 
-  async create(dto: CreateBlogDto, user: any, imagePath?: string): Promise<Blog> {
+  async create(dto: CreateBlogDto, user: any, imageFilename?: string): Promise<Blog> {
 
     const category = await this.categoryRepository.findOneBy({ id: dto.categoryId });
     if (!category) throw new NotFoundException('Category not found');
@@ -46,7 +46,7 @@ export class BlogService {
       h1Title: dto.h1Title,
       blogContent: dto.blogContent,
       // titleImage:dto.titleImage,
-      titleImage: imagePath ? `/uploads/blog-images/${imagePath}` : null,
+      titleImage: imageFilename ? `/uploads/blog-images/${imageFilename}` : null,
       status: true,
       isPublished: true,
       scheduledPublishDate: dto.scheduledPublishDate || null,
