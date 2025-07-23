@@ -1,5 +1,7 @@
 import { Wishlist } from 'src/shared/entities/wishlist.entity';
-import { Column, OneToMany, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, OneToMany, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { User } from './user.entity';
+import { ExhibitionProduct } from './exhibition-product.entity';
 
 @Entity()
 export class Product {
@@ -114,6 +116,11 @@ export class Product {
   @Column({ type: Boolean, default: false })
   status: boolean;
 
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'ownerId' })
+  owner: User;
+
+
   @Column({ type: 'int', default: null })
   createdBy: number;
 
@@ -132,4 +139,9 @@ export class Product {
 
   @OneToMany(() => Wishlist, (wishlist) => wishlist.product)
   wishlists: Wishlist[];
+
+   @OneToMany(() => ExhibitionProduct, (map) => map.product)
+  displayMappings: ExhibitionProduct[];
+
+  
 }

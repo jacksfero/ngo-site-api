@@ -11,6 +11,7 @@ import {
 import { Role } from 'src/shared/entities/role.entity';
 import { Wishlist } from 'src/shared/entities/wishlist.entity';
 import { Blog } from './blog.entity';
+import { ExhibitionProduct } from './exhibition-product.entity';
 
 //console.log('----User Entiry---------- DEBUG:In User Role is', Role);
 
@@ -44,6 +45,10 @@ export class User {
 
 @OneToMany(() => Blog, (blog) => blog.author)
 blogs: Blog[];
+
+ @OneToMany(() => ExhibitionProduct, (map) => map.user)
+  displayMappings: ExhibitionProduct[];
+
 
   @Column({ type: 'boolean', default: true })
   email_verified: boolean;
