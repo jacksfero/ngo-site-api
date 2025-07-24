@@ -32,8 +32,8 @@ export class ExhibitionService {
       imageURL: 'test',
       // imageURL: imagePath ? `/uploads/exhibition-images/${imagePath}` : null,
 
-      DateStart: dto.DateStart,
-      DateEnd: dto.DateEnd,
+     dateStart: dto.dateStart,
+      dateEnd: dto.dateEnd,
       createdBy:user.sub.toString(),
 
     });

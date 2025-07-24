@@ -13,10 +13,10 @@ export class Exhibition {
     description: string;
 
     @Column({ type: 'datetime', nullable: true })
-    DateStart: Date;
+    dateStart: Date;
 
     @Column({ type: 'datetime', nullable: true })
-    DateEnd: Date;
+    dateEnd: Date;
 
 
 

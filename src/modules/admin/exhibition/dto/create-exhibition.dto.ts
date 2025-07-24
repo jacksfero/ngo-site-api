@@ -10,11 +10,11 @@ export class CreateExhibitionDto {
 
     @IsOptional()
     @IsDateString()
-    DateStart: Date;
+    dateStart: Date;
 
     @IsOptional()
     @IsDateString()
-    DateEnd: Date;
+    dateEnd: Date;
 
 
     @IsOptional()
