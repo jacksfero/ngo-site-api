@@ -103,7 +103,7 @@ export class BlogService {
   async findOne(id: number): Promise<Blog> {
     const blog = await this.blogRepository.findOne({
       where: { id },
-      relations: ['category', 'tags', 'user'],
+      relations: ['category', 'tags', 'author'],
     });
     if (!blog) throw new NotFoundException('Blog post not found');
     return blog;
