@@ -74,7 +74,7 @@ export class BlogService {
 
   async findAll(): Promise<Blog[]> {
     return this.blogRepository.find({
-      relations: ['category', 'tags', 'user'],
+       relations: ['category', 'tags', 'author'],
       order: { createdAt: 'DESC' },
     });
 
