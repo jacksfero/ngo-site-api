@@ -1,21 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ContactusService } from './contactus.service';
-import { CreateContactusDto } from './dto/create-contactus.dto';
-import { UpdateContactusDto } from './dto/update-contactus.dto';
+import { Controller,   Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { ContactUsService } from './contactus.service';
+import { CreateContactUsDto } from './dto/create-contactus.dto';
+import { UpdateContactUsDto } from './dto/update-contactus.dto';
+import { PaginationDto } from 'src/shared/dto/pagination.dto';
 
 @Controller()
-export class ContactusController {
-  constructor(private readonly contactusService: ContactusService) {}
+export class ContactUsController {
+  constructor(private readonly contactusService: ContactUsService) {}
 
   @Post()
-  create(@Body() createContactusDto: CreateContactusDto) {
+  create(@Body() createContactusDto: CreateContactUsDto) {
     return this.contactusService.create(createContactusDto);
   }
+ 
+
 
   @Get()
-  findAll() {
-    return this.contactusService.findAll();
-  }
+findAll(@Query() query: PaginationDto) {
+  return this.contactusService.findAll(query);
+}
 
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -23,7 +26,7 @@ export class ContactusController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateContactusDto: UpdateContactusDto) {
+  update(@Param('id') id: string, @Body() updateContactusDto: UpdateContactUsDto) {
     return this.contactusService.update(+id, updateContactusDto);
   }
 

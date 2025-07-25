@@ -1,8 +1,9 @@
 import { Wishlist } from 'src/shared/entities/wishlist.entity';
-import { Column, OneToMany, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Column, OneToMany, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
 import { User } from './user.entity';
 import { ExhibitionProduct } from './exhibition-product.entity';
 import { ProductImage } from './product-image.entity';
+import { ContactUs } from './contactus.entity';
 
 @Entity()
 export class Product {
@@ -157,6 +158,8 @@ images: ProductImage[];
   @OneToMany(() => ExhibitionProduct, (map) => map.product)
   displayMappings: ExhibitionProduct[];
 
+@OneToOne(() => ContactUs, (contactUs) => contactUs.product)
+contact: ContactUs;
 
 /*
 🔧 What You Should Do Now:
