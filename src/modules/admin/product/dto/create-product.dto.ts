@@ -1,9 +1,158 @@
-import { IsString } from 'class-validator';
+import {   IsArray, IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateProductDto {
-  @IsString()
+    @IsString()
+  @MaxLength(150)
+  @IsNotEmpty()
   productTitle: string;
 
   @IsString()
+  @MaxLength(150)
+  @IsNotEmpty()
   description: string;
+
+   @IsOptional()
+  @IsInt()
+  artist_price?: number;
+
+  @IsOptional()
+  @IsInt()
+  size_id?: number;
+
+  @IsOptional()
+  @IsInt()
+  category_id?: number;
+
+  @IsOptional()
+  @IsInt()
+  medium_id?: number;
+
+   @IsOptional()
+  @IsInt()
+  surface_id?: number;
+
+  @IsOptional()
+  @IsInt()
+  orientation_id?: number;
+
+  @IsOptional()
+  @IsInt()
+  width?: number;
+
+  @IsOptional()
+  @IsInt()
+  height?: number;
+
+  @IsOptional()
+  @IsInt()
+  depth?: number;
+
+
+  @IsOptional()
+  @IsInt()
+  weight?: number;
+
+   @IsOptional()
+  @IsInt()
+  commission?: number;
+
+  @IsOptional()
+  @IsInt()
+  packingMode_id?: number;
+
+  @IsOptional()
+  @IsInt()
+  shippingTime?: number;
+
+  @IsOptional()
+  @IsInt()
+  created_in?: number;
+
+ /* @IsOptional()
+  @IsInt()
+  exhibition_id?: number;*/
+
+   @IsOptional()
+  @IsString()
+  tags?: string;
+
+   // Boolean Flags
+  @IsOptional()
+  @IsBoolean()
+  original_painting?: boolean;
+
+
+   @IsOptional()
+  @IsBoolean()
+  new_arrival?: boolean;
+
+   @IsOptional()
+  @IsBoolean()
+  eliteChoice?: boolean;
+
+
+   @IsOptional()
+  @IsBoolean()
+  affordable_art?: boolean;
+
+
+   @IsOptional()
+  @IsBoolean()
+  price_on_demand?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  negotiable?: boolean;
+
+    @IsOptional()
+  @IsBoolean()
+  printing_rights?: boolean;
+
+    @IsOptional()
+  @IsBoolean()
+  featured?: boolean;
+
+    @IsOptional()
+  @IsBoolean()
+  refundable?: boolean;
+
+   @IsOptional()
+  @IsBoolean()
+  certificate?: boolean;
+
+   @IsOptional()
+  @IsBoolean()
+  is_lock?: boolean;
+
+   @IsOptional()
+  @IsBoolean()
+  inventory?: boolean;
+
+   @IsOptional()
+  @IsBoolean()
+  status?: boolean;
+
+ @IsOptional()
+  @IsString()
+  remark_to_indigalleria?: string;
+
+    @IsOptional()
+  @IsString()
+  remark_to_artist?: string;
+
+   @IsOptional()
+  @IsString()
+  conditions?: string;
+
+ @IsOptional()
+  @IsString()
+  defaultImage?: string; // optional, populated by upload if provided
+
+
+   // For File Upload (image URL or path)
+@IsOptional()
+@IsArray()
+@IsString({ each: true }) // Accept array of image paths (after upload)
+imagePaths?: string[];
+
 }

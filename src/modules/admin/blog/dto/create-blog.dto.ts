@@ -38,8 +38,7 @@ export class CreateBlogDto {
   blogContent: string;
 
   @IsOptional()
-  @IsDateString()
- 
+  @IsDateString() 
   scheduledPublishDate?: Date;
 
   @IsInt()
