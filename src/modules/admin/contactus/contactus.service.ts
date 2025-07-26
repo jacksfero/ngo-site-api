@@ -50,7 +50,7 @@ export class ContactUsService {
     where: whereClause,
     take: limit,
     skip,
-    order: { created_at: 'DESC' },
+    order: { createdAt: 'DESC' },
   });
 
  const data = plainToInstance(CreateContactUsDto, result); // returns CreateContactUsDto[]

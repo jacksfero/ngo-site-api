@@ -12,6 +12,7 @@ import { Role } from 'src/shared/entities/role.entity';
 import { Wishlist } from 'src/shared/entities/wishlist.entity';
 import { Blog } from './blog.entity';
 import { ExhibitionProduct } from './exhibition-product.entity';
+import { Video } from './video.entity';
 
 //console.log('----User Entiry---------- DEBUG:In User Role is', Role);
 
@@ -42,6 +43,9 @@ export class User {
 
   @OneToMany(() => Wishlist, (wishlist) => wishlist.user)
   wishlists: Wishlist[];
+
+  @OneToMany(() => Video, (video) => video.user)
+videos: Video[];
 
 @OneToMany(() => Blog, (blog) => blog.author)
 blogs: Blog[];

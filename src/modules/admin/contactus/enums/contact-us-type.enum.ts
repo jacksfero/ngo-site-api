@@ -1,6 +1,6 @@
 export enum ContactUsType {
   GENERAL = 'general',
-  ORDER = 'order',
-  SUPPORT = 'support',
-  FEEDBACK = 'feedback',
+  NEGOTIATE = 'negotiate',
+  PRICE_REQUEST = 'price_request',
+  CONTACT_ART = 'contact_art',
 }

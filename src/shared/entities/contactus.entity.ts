@@ -31,10 +31,16 @@ export class ContactUs {
    @ManyToOne(() => Product, { eager: true, nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'product_id' })
   product: Product;
+ @Column({ type: 'varchar', length: 50, nullable: true })
+  updatedBy: string;
 
-    @CreateDateColumn()
-    created_at: Date;
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
 
-    @UpdateDateColumn()
-    updated_at: Date;
+  @Column({
+    type: 'datetime',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
 }
