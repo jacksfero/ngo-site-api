@@ -49,15 +49,10 @@ titleImage: string | null;
 
   @Column({ type: 'varchar', length: 255, default: null })
   descriptionTag: string;
-
-
-
+ 
   @Column({ type: 'varchar', length: 150, default: null })
   optionalTitle: string;
-
-  @Column({ type: 'varchar', length: 150, default: null })
-  titleImageURL: string;
-
+ 
   @Column({ type: Boolean, default: false })
   status: boolean;
 

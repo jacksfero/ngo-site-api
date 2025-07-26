@@ -29,9 +29,7 @@ import { MailModule } from './shared/mail/mail.module';
     DatabaseModule,
     AuthModule,  
     AdminModule,
-    ClientModule,
-   
-   
+    ClientModule, 
     MailModule,
   ],
 

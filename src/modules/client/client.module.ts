@@ -1,14 +1,28 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { BlogClientController } from './blog/blog-client.controller';
-import { BlogClientService } from './blog/blog-client.service';
-import { Blog } from '../../shared/entities/blog.entity';
+import { RouterModule } from '@nestjs/core';
+
+import { BlogClientModule } from './blog/blog-client.module';
+
 
 @Module({
+
   imports: [
-    TypeOrmModule.forFeature([Blog]), // 👈 This makes BlogRepository available
+    BlogClientModule,
+
+
+    RouterModule.register([
+      {
+        path: 'client', // Prefix for all child routes
+        children: [
+          { path: 'blogs', module: BlogClientModule },
+          //  { path: 'blogs', module: BlogClientModule },
+
+        ],
+      },
+    ]),
+
+
   ],
-  controllers: [BlogClientController],
-  providers: [BlogClientService],
+
 })
-export class ClientModule {}
+export class ClientModule { }
