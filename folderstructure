@@ -27,7 +27,7 @@ please check below folder structure
 my-app/
 ├── backend/                → NestJS API (REST or GraphQL)
 │   ├── src/
-│   │   ├── modules for adminpanel api/        → Feature modules (users, auth, products, etc.)
+│   │   ├── modules for adminpanel api/        → Feature modules crude operations (users, auth, products, etc.)
 	├── modules for frontend api/        → Feature modules (users login, blog listing, products listing cart orders, etc.)
 │   │   ├── common/         → Shared pipes, guards, interceptors
 │   │   ├── config/         → Environment and configuration settings
@@ -279,3 +279,197 @@ src/
 │       ├── seeds/             # Test data seeds
 │       └── repositories/      # Custom repositories
 │           └── user.repository.ts
+
+======================================================
+
+Since you have separate folders for adminpanel and client-side (public API), I recommend Method 2 (RouterModule) for explicit route organization or Method 4 (Dynamic Module Registration) for automation. Below are detailed implementations for both:
+Option 1: Method 2 (RouterModule) – Recommended for Clarity
+Step-by-Step Setup
+1. Folder Structure
+markdown
+
+src/
+├── admin/                      # Admin-specific controllers
+│   ├── users/
+│   │   ├── users.controller.ts
+│   │   └── users.module.ts
+│   ├── products/
+│   │   ├── products.controller.ts
+│   │   └── products.module.ts
+│   └── admin.module.ts  # Aggregates admin routes
+│
+├── client/                     # Public API controllers
+│   ├── blog/
+│   └── client.module.ts
+│
+└── app.module.ts               # Root module
+
+2. Admin Controllers (No Prefix Needed)
+typescript
+
+// src/admin/users/users.controller.ts
+@Controller('users') // Will become `/admin/users`
+export class UsersController {
+  @Get()
+  getAllUsers() { return 'Admin users'; }
+}
+
+3. Use RouterModule to Prefix Admin Routes
+typescript
+
+// src/admin/admin.module.ts
+import { Module } from '@nestjs/common';
+import { RouterModule } from '@nestjs/core';
+import { UsersModule } from './users/users.module';
+import { ProductsModule } from './products/products.module';
+
+@Module({
+  imports: [
+    UsersModule,
+    ProductsModule,
+    RouterModule.register([{
+      path: 'admin', // Prefix for all child routes
+      children: [
+        { path: 'users', module: UsersModule },
+        { path: 'products', module: ProductsModule },
+      ],
+    }]),
+  ],
+})
+export class AdminModule {}
+
+✅ Result:
+
+    GET /admin/users → UsersController
+
+    POST /admin/products → ProductsController
+
+4. Public API (Client-Side)
+typescript
+
+// src/client/client.module.ts
+@Module({
+  controllers: [BlogController], // No prefix needed
+})
+export class ClientModule {}
+
+    Routes like GET /blog remain public.
+
+5. Register Modules in AppModule
+typescript
+
+// src/app.module.ts
+@Module({
+  imports: [AdminModule, ClientModule],
+})
+export class AppModule {}
+
+Option 2: Method 4 (Dynamic Registration) – Advanced Automation
+Step-by-Step Setup
+1. Auto-Prefix Admin Controllers
+typescript
+
+// src/admin/admin.module.ts
+import { Module, Controller } from '@nestjs/common';
+import { UsersController } from './users/users.controller';
+import { ProductsController } from './products/products.controller';
+
+const adminControllers = [UsersController, ProductsController];
+
+@Module({
+  controllers: adminControllers,
+  providers: [{
+    provide: 'ADMIN_PREFIX',
+    useValue: 'admin', // Centralized prefix
+  }],
+})
+export class AdminModule {
+  static register() {
+    return {
+      module: AdminModule,
+      // Dynamically prepend 'admin/' to all paths
+      controllers: adminControllers.map(controller => ({
+        ...controller,
+        path: `admin/${controller.path}`,
+      })),
+    };
+  }
+}
+
+2. Update Controllers (Optional)
+typescript
+
+// src/admin/users/users.controller.ts
+@Controller() // Path will be set dynamically
+export class UsersController {
+  @Get('users') // Final route: `GET /admin/users`
+  getUsers() { return 'Users'; }
+}
+
+3. Register in AppModule
+typescript
+
+// src/app.module.ts
+@Module({
+  imports: [AdminModule.register(), ClientModule],
+})
+export class AppModule {}
+
+Key Differences
+Method	Pros	Cons
+RouterModule	Explicit, NestJS-native	Slightly verbose setup
+Dynamic Registration	Fully automated	Complex, less readable
+Recommendation
+
+    Use RouterModule (Method 2) if you prefer:
+
+        Clear visibility of route mappings.
+
+        Native NestJS support.
+
+    Use Dynamic Registration (Method 4) if you:
+
+        Need to scale with many admin controllers.
+
+        Prefer convention-over-configuration.
+
+Final Notes
+
+    Guards for Admin Routes
+    Add a global AdminGuard in admin.module.ts:
+    typescript
+
+    @Module({
+      providers: [AdminGuard],
+      exports: [AdminGuard],
+    })
+
+    Swagger Documentation
+    Annotate routes with @ApiTags('Admin') for clear API docs.
+
+Let me know if you'd like help integrating guards or Swagger! 🔒📜
+
+
+
+sudo kill -9 $(sudo lsof -t -i:3006)
+
+
+Register User
+request
+{
+  "username":"jayjain1",
+  "email":"jay1@mail.com",
+  "mobile":1234567892,
+ "password":"123456",
+ "roleIds":[12]
+  
+}
+
+response
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjMsInVzZXJuYW1lIjoiamF5amFpbjEiLCJyb2xlcyI6W3siaWQiOjEyLCJuYW1lIjoiYWRtaW4iLCJkZXNjcmlwdGlvbiI6IkZ1bGwgQWRtaW4gUGFuZWwgQWNjZXNzIiwicGVybWlzc2lvbnMiOlt7ImlkIjoxLCJuYW1lIjoiY3JlYXRlX3VzZXIiLCJkZXNjcmlwdGlvbiI6IkNyZWF0ZSBuZXcgdXNlcnMiLCJyZXNvdXJjZSI6InVzZXIiLCJhY3Rpb24iOiJjcmVhdGUifSx7ImlkIjoyLCJuYW1lIjoicmVhZF91c2VyIiwiZGVzY3JpcHRpb24iOiJWaWV3IHVzZXIgaW5mb3JtYXRpb24iLCJyZXNvdXJjZSI6InVzZXIiLCJhY3Rpb24iOiJyZWFkIn0seyJpZCI6MywibmFtZSI6InVwZGF0ZV91c2VyIiwiZGVzY3JpcHRpb24iOiJNb2RpZnkgdXNlciBkYXRhIiwicmVzb3VyY2UiOiJ1c2VyIiwiYWN0aW9uIjoidXBkYXRlIn0seyJpZCI6NCwibmFtZSI6ImRlbGV0ZV91c2VyIiwiZGVzY3JpcHRpb24iOiJSZW1vdmUgdXNlcnMiLCJyZXNvdXJjZSI6InVzZXIiLCJhY3Rpb24iOiJkZWxldGUifSx7ImlkIjo1LCJuYW1lIjoiYXNzaWduX3JvbGVzIiwiZGVzY3JpcHRpb24iOiJBc3NpZ24gcm9sZXMgdG8gdXNlcnMiLCJyZXNvdXJjZSI6InJvbGUiLCJhY3Rpb24iOiJhc3NpZ24ifV19XSwicGVybWlzc2lvbnMiOiJqYXkxQG1haWwuY29tIiwiaWF0IjoxNzUyNzQ3MzYwLCJleHAiOjIxMTI3NDczNjB9.pn2I14NckUJ_1u7QbRZZJQim1SLegqbetFfVhe9bdLw"
+}
+
+
+
+
