@@ -7,6 +7,7 @@ import { ContactUs } from 'src/shared/entities/contactus.entity';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { MailService } from 'src/shared/mail/mail.service';
  
 
 @Injectable()
@@ -16,6 +17,8 @@ export class ContactUsService {
   constructor(
     @InjectRepository(ContactUs)
     private contactRepo: Repository<ContactUs>,
+
+      private readonly mailService: MailService,
   ) { }
 
  async create(dto: CreateContactUsDto) {
@@ -25,7 +28,18 @@ export class ContactUsService {
 });
 
   await this.contactRepo.save(contact);
- // await this.mailService.sendContactEmail(contact);
+  /*await this.mailService.sendMail({
+  to: 'admin@example.com',
+  subject: `New Contact Enquiry: ${dto.subject}`,
+  template: 'contact-us', // ⬅️ matches contact-us.hbs
+  context: {
+    name: contact.name,
+    email: contact.email,
+    mobile: contact.mobile,
+    subject: contact.subject,
+    message: contact.message,
+  },
+});*/
   return contact;
 }
  

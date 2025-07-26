@@ -15,9 +15,10 @@ import { ClientModule } from './modules/client/client.module';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesSeed } from './shared/database/seeds/roles.seed';
 import { PermissionsGuard } from './modules/auth/guards/permissions.guard';
-import { GlobalModule } from './global/global.module';
+ 
 import { PublicGuard } from './core/guards/public.guard';
-import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard'; 
+import { MailModule } from './shared/mail/mail.module';
 
 @Module({
   imports: [
@@ -29,7 +30,9 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
     AuthModule,  
     AdminModule,
     ClientModule,
-    GlobalModule,
+   
+   
+    MailModule,
   ],
 
   controllers: [AppController],
@@ -53,7 +56,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
   ],
 })
 export class AppModule {
-  constructor(private configService: ConfigService) {
+ /* constructor(private configService: ConfigService) {
     // Access and print the environment variables here
     console.log(
       '=================================' +
@@ -67,7 +70,7 @@ export class AppModule {
       'Database Port (as number):',
       this.configService.get<number>('DB_PORT'),
     );
-  }
+  }*/
 }
 
 /*
