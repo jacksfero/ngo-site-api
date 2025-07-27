@@ -7,6 +7,9 @@ export class TagDto {
 
   @Expose()
   name: string;
+
+  @Expose()
+  slug: string;
 }
 
 @Exclude()
@@ -16,6 +19,9 @@ export class CategoryDto {
 
   @Expose()
   name: string;
+
+  @Expose()
+  slug: string;
 }
 
 @Exclude()
