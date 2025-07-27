@@ -8,6 +8,7 @@ import {
   Length,
   IsInt,
   IsArray,
+  IsBoolean,
 } from 'class-validator';
 
 
@@ -40,7 +41,11 @@ export class CreateBlogDto {
   @IsOptional()
   @IsDateString() 
   scheduledPublishDate?: Date;
-
+  
+  @IsOptional()
+  @IsBoolean() 
+  isPublished?: boolean;
+  
   @IsInt()
   @Type(() => Number) // 👈 convert string to number
   categoryId: number;
