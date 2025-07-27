@@ -3,12 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Blog } from 'src/shared/entities/blog.entity';
 import { BlogClientController } from './blog-client.controller';
 import { BlogClientService } from './blog-client.service';
+import { Category } from 'src/shared/entities/category.entity';
 
 
 @Module({
 
     imports: [
-        TypeOrmModule.forFeature([Blog])
+        TypeOrmModule.forFeature([Blog,Category])
     ],
     controllers: [BlogClientController],
     providers: [BlogClientService],

@@ -1,5 +1,28 @@
-// src/client/blog/dto/blog-list.dto.ts
 import { Exclude, Expose, Type } from 'class-transformer';
+
+@Exclude()
+export class TagDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  name: string;
+}
+
+@Exclude()
+export class CategoryDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  name: string;
+}
+
+@Exclude()
+export class AuthorDto {
+  @Expose()
+  username: string;
+}
 
 @Exclude()
 export class BlogListDto {
@@ -12,7 +35,7 @@ export class BlogListDto {
   @Expose()
   slug: string;
 
-   @Expose()
+  @Expose()
   titleImage: string;
 
   @Expose()
@@ -25,37 +48,23 @@ export class BlogListDto {
   keywordsTag: string;
 
   @Expose()
-  descriptionTag: string;  
+  descriptionTag: string;
 
   @Expose()
   optionalTitle: string;
 
   @Expose()
-  created_at: Date;
+  createdAt: Date;
 
   @Expose()
-  category?: {
-    id: number;
-    name: string;
-  };
-
+  @Type(() => CategoryDto)
+  category?: CategoryDto;
 
   @Expose()
-  author?: {    
-    username: string;
-  };
-
+  @Type(() => AuthorDto)
+  author?: AuthorDto;
 
   @Expose()
   @Type(() => TagDto)
   tags?: TagDto[];
-}
-
-@Exclude()
-export class TagDto {
-  @Expose()
-  id: number;
-
-  @Expose()
-  name: string;
 }

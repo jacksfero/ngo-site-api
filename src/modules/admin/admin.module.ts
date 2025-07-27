@@ -25,9 +25,12 @@ import { PermissionsGuard } from '../auth/guards/permissions.guard';
 //import { InventoryModule } from './inventory/inventory.module';
 import { CategoryModule } from './category/category.module';
 import { TagModule } from './tag/tag.module';
+import { AdminCompositeGuard } from 'src/core/guards/admin-composite.guard';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
+    AuthModule,
     MediumModule,
     ShippingModule,
     CurrencyModule,
@@ -47,7 +50,8 @@ import { TagModule } from './tag/tag.module';
     ProductModule,
     SubjectModule,
     SurfaceModule,
-
+    CategoryModule,
+    TagModule,
     RouterModule.register([
       {
         path: 'admin', // Prefix for all child routes
@@ -69,20 +73,19 @@ import { TagModule } from './tag/tag.module';
           { path: 'contactus', module: ContactusModule },
           { path: 'blogs', module: BlogModule },
           { path: 'categories', module: CategoryModule },
-           { path: 'tags', module: TagModule },
+          { path: 'tags', module: TagModule },
           { path: 'contents', module: ContentModule },
         ],
       },
     ]),
 
-    CategoryModule,
 
-    TagModule,
   ],
   providers: [
-    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    //  { provide: APP_GUARD, useClass: JwtAuthGuard },
     //{ provide: APP_GUARD, useClass: RolesGuard },
     //{ provide: APP_GUARD, useClass: PermissionsGuard },
+    { provide: APP_GUARD, useClass: AdminCompositeGuard }// Combines JwtAuth + Roles + Permissions for admin only
   ],
 
 })
