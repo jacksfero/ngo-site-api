@@ -33,7 +33,7 @@ export class BlogClientService {
   const searchTerm = search?.toLowerCase() || '';
 
  const where: any = {
-    isPublished: false,
+    isPublished: true,
    // category: { slug },
   };
 
@@ -89,7 +89,7 @@ async findBlogsByCategorySlug(
   const searchTerm = search?.toLowerCase() || '';
 
  const where: any = {
-    isPublished: false,
+    isPublished: true,
     category: { slug },
   };
    // Optional title/h1Title search (simple LIKE)
@@ -161,7 +161,7 @@ async findBlogsByTagSlug(
 async getCategoriesWithBlogCount(): Promise<CategoryWithBlogCountDto[]> {
   const raw = await this.categoryRepo
     .createQueryBuilder('category')
-    .leftJoin('category.blogs', 'blog', 'blog.isPublished = false')
+    .leftJoin('category.blogs', 'blog', 'blog.isPublished = true')
     .select(['category.id', 'category.name', 'category.slug'])
     .addSelect('COUNT(blog.id)', 'blogCount')
     .groupBy('category.id')
