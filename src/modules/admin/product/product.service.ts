@@ -22,34 +22,16 @@ export class ProductService {
      @InjectRepository(ProductImage)
     private imageRepo: Repository<ProductImage>,
   ) { }
-/*async create(dto: CreateProductDto,files: Express.Multer.File[], user:any): Promise<Product> {
- //   return this.productRepository.save(dto);
-
-    const product = this.productRepository.create({
-      ...dto,
-      // createdBy: user.username, // or user.sub (ID), depending on your use case
-      createdBy: user.sub.toString(), //userid
-    });
-     if (files?.length) {
-      const images = files.map((file) => {
-        const img = new ProductImage();
-        img.imagePath = `/uploads/product-images/${file.filename}`;
-        return img;
-      });
-      product.images = images;
-    }
-    return this.productRepository.save(product);
-  }*/
-
- async create(dto: CreateProductDto, imagePathsss?: string): Promise<Product> {
+ 
+async create(dto: CreateProductDto, user: any, imageFilename?: string): Promise<Product> {
   const product = this.productRepository.create({
     ...dto,
-    defaultImage: imagePathsss ? `/uploads/products/${imagePathsss}` : null,
+    defaultImage: imageFilename ? `/product-images/${imageFilename}` : null,
+    createdBy: user.sub.toString(),
   });
 
   return this.productRepository.save(product);
 }
-
  
  
   async paginate(
@@ -106,34 +88,35 @@ export class ProductService {
     return product;
   }
 
-  async update(id: number, updateProductDto: UpdateProductDto,user:any, newImagePath?: string,): Promise<Product> {
-    const product = await this.findOne(id);
+  async update(
+  id: number,
+  updateProductDto: UpdateProductDto,
+  user: any,
+  newImageFilename?: string,
+): Promise<Product> {
+  const product = await this.findOne(id);
+  if (!product) throw new NotFoundException('Product not found');
 
-  /*    // Handle slug regeneration if name is changed
-    if (updateProductDto.name && updateProductDto.name !== product.name) {
-      product.slug = await this.generateUniqueSlug(updateProductDto.name);
-    }
-*/
-// Handle default image replacement
-    if (newImagePath) {
-      if (product.defaultImage) {
-        const oldImagePath = path.join(
-          process.cwd(),
-          product.defaultImage.replace(/^\/+/, ''),
-        );
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
-        }
+  // ✅ Delete old image if new one is uploaded
+  if (newImageFilename) {
+    if (product.defaultImage) {
+      const oldImagePath = path.join(
+        process.cwd(),
+        product.defaultImage.replace(/^\/+/, '')
+      );
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
       }
-      product.defaultImage = `/uploads/products/${newImagePath}`;
     }
 
-
-    const updated = Object.assign(product, updateProductDto);
-  //  Object.assign(policy,updatePolicyDto);
-    updated.updatedBy = user.sub.toString();
-    return this.productRepository.save(updated);
+    product.defaultImage = `/product-images/${newImageFilename}`;
   }
+
+  const updated = Object.assign(product, updateProductDto);
+  updated.updatedBy = user.sub.toString();
+  return this.productRepository.save(updated);
+}
+
 
  async remove(id: number): Promise<void> {
     const product = await this.findOne(id);
@@ -142,16 +125,17 @@ export class ProductService {
 
 
   async addImage(productId: number, fileName: string) {
-    const product = await this.productRepository.findOne({ where: { id: productId } });
-    if (!product) throw new NotFoundException('Product not found');
+  const product = await this.productRepository.findOne({ where: { id: productId } });
+  if (!product) throw new NotFoundException('Product not found');
 
-    const image = this.imageRepo.create({
-      imagePath: `/uploads/product-images/${fileName}`,
-      product,
-    });
+  const image = this.imageRepo.create({
+    imagePath: `/product-images/${fileName}`,
+    product,
+  });
 
-    return this.imageRepo.save(image);
-  }
+  return this.imageRepo.save(image);
+}
+
  
    async deleteImage(imageId: number) {
     const image = await this.imageRepo.findOne({ where: { id: imageId }, relations: ['product'] });
