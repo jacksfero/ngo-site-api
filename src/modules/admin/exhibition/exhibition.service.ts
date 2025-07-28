@@ -86,7 +86,7 @@ async  findOne(id: number):Promise<Exhibition> {
  async getMappedProducts(displayId: number): Promise<
   {
     displayId: number;
-    product: { id: number; title: string, image:string};
+    product: { id: number; title: string, image:string|null};
     user: { id: number; name: string };
   }[]
 > {
@@ -95,19 +95,18 @@ async  findOne(id: number):Promise<Exhibition> {
     relations: ['product', 'exhibition', 'user'], // include user too
   });
 
-  return mappings.map((m) => ({
-    displayId: m.exhibition.id,
-    product:{
-       id: m.product.id,
-      title: m.product.productTitle,
-      image:m.product.defaultImage?null,
-    }  ,
-    user: {
-      id: m.user.id,
-      name: m.user.username,
-      // limit to fields you want to send
-    },
-  }));
+ return mappings.map((m) => ({
+  displayId: m.exhibition.id,
+  product: {
+    id: m.product.id,
+    title: m.product.productTitle,
+    image: m.product.defaultImage ?? null,
+  },
+  user: {
+    id: m.user.id,
+    name: m.user.username,
+  },
+}));
 }
 
     async addProductMapping(displayId: number, productId: number, userId: number): Promise<ExhibitionProduct> {
