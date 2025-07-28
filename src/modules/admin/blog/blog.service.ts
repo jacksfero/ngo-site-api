@@ -35,8 +35,8 @@ export class BlogService {
     if (!category) throw new NotFoundException('Category not found');
 
     const tags = await this.tagRepository.findBy({ id: In(dto.tagIds || []) });
-
-
+console.log(imageFilename,'creat--------------------')
+   
     const author = await this.userRepository.findOneBy({ id: user.sub.toString() });
     if (!author) throw new NotFoundException('Author not found');
 
@@ -48,7 +48,7 @@ export class BlogService {
       h1Title: dto.h1Title,
       blogContent: dto.blogContent,
       // titleImage:dto.titleImage,
-      titleImage: imageFilename ? `/uploads/blog-images/${imageFilename}` : null,
+      titleImage: imageFilename ? `/blog-images/${imageFilename}` : null,
       status: true,
       isPublished: true,
       scheduledPublishDate: dto.scheduledPublishDate || null,
@@ -136,14 +136,14 @@ export class BlogService {
   // ✅ Delete old image if new one is uploaded
   if (imageFilename) {
     if (blog.titleImage) {
-      const oldImagePath = path.join(__dirname, '..', '..',  '..', '..',  blog.titleImage);
+      const oldImagePath = path.join(__dirname, '..', '..',  '..', 'uploads',  blog.titleImage);
      console.log(oldImagePath,'--------------------');
       if (fs.existsSync(oldImagePath)) {
         fs.unlinkSync(oldImagePath); // deletes old image file
       }
     }
 
-    blog.titleImage = `/uploads/blog-images/${imageFilename}`;
+    blog.titleImage = `/blog-images/${imageFilename}`;
   }
  
     return this.blogRepository.save(blog);
