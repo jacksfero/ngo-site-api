@@ -88,22 +88,17 @@ async update(
 
 
 
- @Post('upload-image')
-@UseInterceptors(FileInterceptor('image', productImageUploadOptions)) // single file
+@Post(':product_id/upload-image')
+@UseInterceptors(FileInterceptor('image', productImageUploadOptions))
 async uploadImage(
-  @UploadedFile() file: Express.Multer.File, // not @UploadedFiles
-  @Body() body: UploadProductImageDto,
+  @Param('product_id', ParseIntPipe) productId: number,
+  @UploadedFile() file: Express.Multer.File,
 ) {
   if (!file) {
     throw new BadRequestException('Image file is required');
   }
-  return this.productService.addImage(body.productId, file.filename);
+  return this.productService.addImage(productId, file.filename);
 }
-
-  @Delete('delete-image/:imageId')
-  async deleteImage(@Param('imageId') imageId: number) {
-    return this.productService.deleteImage(imageId);
-  }
 
 
 

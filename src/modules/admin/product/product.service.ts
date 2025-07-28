@@ -124,12 +124,12 @@ async create(dto: CreateProductDto, user: any, imageFilename?: string): Promise<
   }
 
 
-  async addImage(productId: number, fileName: string) {
+async addImage(productId: number, fileName: string) {
   const product = await this.productRepository.findOne({ where: { id: productId } });
   if (!product) throw new NotFoundException('Product not found');
 
   const image = this.imageRepo.create({
-    imagePath: `/product-images/${fileName}`,
+    imagePath: `/product-images/${fileName}`, // just the relative path
     product,
   });
 
