@@ -17,14 +17,10 @@ export class Exhibition {
 
     @Column({ type: 'datetime', nullable: true })
     dateEnd: Date;
-
-
-
+ 
     @Column({ type: 'varchar', length: 200, nullable: true })
     imageURL: string;
-
-
-
+ 
     @Column({ type: 'boolean', default: false })
     exhibitionStatus: boolean;
 
