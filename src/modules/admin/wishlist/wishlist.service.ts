@@ -77,7 +77,9 @@ export class WishlistService {
     return `This action updates a #${id} wishlist`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} wishlist`;
+ async remove(id: number) : Promise<void> {
+    const wishlist = await this.wishlistRepository.findOne({ where: { id } });
+      if (!wishlist) throw new NotFoundException(`wishlist ${id} not found`);
+    await this.wishlistRepository.remove(wishlist);
   }
 }
