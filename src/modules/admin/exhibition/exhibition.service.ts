@@ -7,6 +7,7 @@ import { Equal, Repository } from 'typeorm';
  
 import { ExhibitionProduct } from 'src/shared/entities/exhibition-product.entity';
 import { Product } from 'src/shared/entities/product.entity';
+import { User } from 'src/shared/entities/user.entity';
 
 @Injectable()
 export class ExhibitionService {
@@ -42,9 +43,21 @@ export class ExhibitionService {
   }
 
  async findAll() :Promise<Exhibition[]> {
-    const result = await this.exhibitionRepository.find();
-    return result;
+     const result = await this.exhibitionRepository.find();
+     return result;
+
+  /*   return this.exhibitionRepository.find({
+      relations: [
+      'displayMappings',
+      'displayMappings.product',
+      'displayMappings.user',
+    ],
+      order: { createdAt: 'DESC' },
+    });*/
   }
+
+
+  
 
 async  findOne(id: number):Promise<Exhibition> {
       const exhibition = await this.exhibitionRepository.findOne({ where: { id } });
@@ -70,14 +83,32 @@ async  findOne(id: number):Promise<Exhibition> {
     await this.exhibitionRepository.remove(mapping);
   }
 
- async getMappedProducts(displayId: number): Promise<Product[]> {
-    const mappings = await this.exhibitionProductRepository.find({
-      where: { exhibition: { id: displayId } },
-      relations: ['product'],
-    });
+ async getMappedProducts(displayId: number): Promise<
+  {
+    displayId: number;
+    product: { id: number; title: string, image:string};
+    user: { id: number; name: string };
+  }[]
+> {
+  const mappings = await this.exhibitionProductRepository.find({
+    where: { exhibition: { id: displayId } },
+    relations: ['product', 'exhibition', 'user'], // include user too
+  });
 
-    return mappings.map((m) => m.product);
-  }
+  return mappings.map((m) => ({
+    displayId: m.exhibition.id,
+    product:{
+       id: m.product.id,
+      title: m.product.productTitle,
+      image:m.product.defaultImage?null,
+    }  ,
+    user: {
+      id: m.user.id,
+      name: m.user.username,
+      // limit to fields you want to send
+    },
+  }));
+}
 
     async addProductMapping(displayId: number, productId: number, userId: number): Promise<ExhibitionProduct> {
     const mapping = this.exhibitionProductRepository.create({
