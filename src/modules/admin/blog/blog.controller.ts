@@ -96,9 +96,9 @@ findOne(@Param('id', ParseIntPipe) id: number) {
 update(
   @Param('id', ParseIntPipe) id: number,
   @Body() dto: UpdateBlogDto,
-  @UploadedFile() file?: Express.Multer.File
+  @UploadedFile() file: Express.Multer.File
 ) {
-  return this.blogService.update(id, dto,file?.filename);
+  return this.blogService.update(id, dto, file.filename);
 }
 
 @Patch(':id/publish')

@@ -8,6 +8,8 @@ import { Category } from 'src/shared/entities/category.entity';
 import { Tag } from 'src/shared/entities/tag.entity';
 import { User } from 'src/shared/entities/user.entity';
 import { slugify } from 'src/shared/utils/slugify';
+import * as fs from 'fs';
+import * as path from 'path';
 
 
 @Injectable()
@@ -109,8 +111,17 @@ export class BlogService {
     return blog;
   }
 
-  async update(id: number, dto: UpdateBlogDto): Promise<Blog> {
+  async update(id: number, dto: UpdateBlogDto,imageFilename?: string): Promise<Blog> {
     const blog = await this.findOne(id);
+     if (!blog) throw new NotFoundException('blog not found');
+     if (dto.title && dto.title !== blog.title) {
+    blog.slug = await this.generateUniqueSlug(dto.title);
+    blog.title = dto.title;
+  }
+
+    blog.h1Title = dto.h1Title ?? blog.h1Title;
+  blog.blogContent = dto.blogContent ?? blog.blogContent;
+   
 
     if (dto.categoryId) {
       const category = await this.categoryRepository.findOneBy({ id: dto.categoryId });
@@ -121,8 +132,20 @@ export class BlogService {
     if (dto.tagIds?.length) {
       blog.tags = await this.tagRepository.findBy({ id: In(dto.tagIds) });
     }
+     // 1. Handle Image Update if New File is Provided
+  // ✅ Delete old image if new one is uploaded
+  if (imageFilename) {
+    if (blog.titleImage) {
+      const oldImagePath = path.join(__dirname, '..', '..',  '..', '..',  blog.titleImage);
+     console.log(oldImagePath,'--------------------');
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath); // deletes old image file
+      }
+    }
 
-    Object.assign(blog, dto);
+    blog.titleImage = `/uploads/blog-images/${imageFilename}`;
+  }
+ 
     return this.blogRepository.save(blog);
   }
 
