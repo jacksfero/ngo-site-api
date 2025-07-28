@@ -18,9 +18,7 @@ export class ExhibitionProduct {
 
     @ManyToOne(() => User, (user) => user.displayMappings)
     user: User; // Product owner
-
-
-
+ 
 
     @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date;

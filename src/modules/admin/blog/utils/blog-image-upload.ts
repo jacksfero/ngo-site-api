@@ -47,7 +47,15 @@ export const blogImageStorage = {
       callback: (error: Error | null, filename: string) => void,
     ) => {
       const ext = extname(file.originalname).toLowerCase();
-      const uniqueName = `${uuidv4()}${ext}`;
+      const timestamp = Date.now(); 
+       const originalName = file.originalname
+        .toLowerCase() /// lower case
+       .replace(ext, '') // Remove existing extension
+        .replace(/[^\w\-]/g, '_') // Replace special chars with underscores
+        .substring(0, 50); // Limit length to 50 chars
+     
+     const uniqueName = `${originalName}_${timestamp}${ext}`;
+        // const uniqueName = `${uuidv4()}${ext}`;
       callback(null, uniqueName);
     },
   }),
@@ -68,6 +76,6 @@ export const blogImageStorage = {
     }
   },
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
+    fileSize: 3 * 1024 * 1024, // 3MB
   },
 };

@@ -100,7 +100,7 @@ async  findOne(id: number):Promise<Exhibition> {
   product: {
     id: m.product.id,
     title: m.product.productTitle,
-    image: m.product.defaultImage ?? null,
+    image: m.product.defaultImage ? m.product.defaultImage: null,
   },
   user: {
     id: m.user.id,

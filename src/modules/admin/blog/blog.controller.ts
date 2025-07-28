@@ -65,7 +65,7 @@ export class BlogController {
   ) {
     return this.blogService.create(dto, req.user, file?.filename);
   }
- 
+  
 
 @Post()
 createaaaa(@Body() createBlogDto: CreateBlogDto, @Req() req) {
@@ -92,11 +92,13 @@ findOne(@Param('id', ParseIntPipe) id: number) {
 }
 
 @Patch(':id')
+@UseInterceptors(FileInterceptor('titleImage', blogImageStorage))
 update(
   @Param('id', ParseIntPipe) id: number,
   @Body() dto: UpdateBlogDto,
+  @UploadedFile() file?: Express.Multer.File
 ) {
-  return this.blogService.update(id, dto);
+  return this.blogService.update(id, dto,file?.filename);
 }
 
 @Patch(':id/publish')
