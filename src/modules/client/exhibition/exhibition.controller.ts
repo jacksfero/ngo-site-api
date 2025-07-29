@@ -8,13 +8,13 @@ import { PaginationDto } from 'src/shared/dto/pagination.dto';
 export class ExhibitionController {
   constructor(private readonly exhibitionService: ExhibitionService) {}
 
-  @Get('/public')
+  @Get('')
 findAllPublic(@Query() paginationDto: PaginationDto) {
  // console.log('aaaaaaaaaaaaaaaa================');
   return this.exhibitionService.findPublicAll(paginationDto);
 }
 
-@Get('/public/:id')
+@Get(':id')
 findOnePublic(@Param('id', ParseIntPipe) id: number) {
   return this.exhibitionService.findOnePublic(id);
 }
