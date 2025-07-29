@@ -3,6 +3,7 @@ import { RouterModule } from '@nestjs/core';
 
 import { BlogClientModule } from './blog/blog-client.module';
 import { ProductsModule } from './products/products.module';
+import { ExhibitionModule } from './exhibition/exhibition.module';
 
 
 @Module({
@@ -10,6 +11,7 @@ import { ProductsModule } from './products/products.module';
   imports: [
     BlogClientModule,
     ProductsModule,
+    ExhibitionModule,
 
     RouterModule.register([
       {
@@ -17,15 +19,11 @@ import { ProductsModule } from './products/products.module';
         children: [
           { path: 'blogs', module: BlogClientModule },
           { path: 'products', module: ProductsModule },
+          { path: 'exhibitions', module: ExhibitionModule },
         ],
       },
     ]),
-
-
-
-
-
-
+ 
 
 
   ],
