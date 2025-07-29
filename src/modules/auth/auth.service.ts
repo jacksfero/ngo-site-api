@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
@@ -10,6 +11,7 @@ import { CreateUserDto } from 'src/modules/admin/users/dto/create-user.dto';
 import { UsersService } from 'src/modules/admin/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { UserListByRoleNameDto } from '../admin/users/dto/user-list-byrole.dto';
 
 @Injectable()
 export class AuthService {
@@ -65,6 +67,18 @@ export class AuthService {
     // return 'This action adds a new auth';
     return this.login(user);
   }
+
+    async findUsersByRole(roleName: string) : Promise<UserListByRoleNameDto[]> {
+     const users = await this.usersService.findUsersByRole(roleName);
+     if (!users || users.length === 0) {
+    throw new NotFoundException('No users found for the specified role');
+  }
+    return users;
+  }
+
+
+
+
 
   findAll() {
     return `This action returns all auth`;

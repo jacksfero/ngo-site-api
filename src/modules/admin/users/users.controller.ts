@@ -18,7 +18,7 @@ import { AssignRolesDto } from './dto/assign-roles.dto';
 @Controller()
 //@UseGuards(PermissionsGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   //@RequirePermissions('create_user')
@@ -31,19 +31,20 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+
+  @Get('by-role/:roleName')
+  async getUsersByRole(@Param('roleName') roleName: string) {
+    const users = await this.usersService.findUsersByRole(roleName);
+    return users;
+  }
+
   @Get(':id')
-  @RequirePermissions('read_user')
+  //@RequirePermissions('read_user')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }
 
-  @Post(':userId/roles')
-  async assignRolesaaaaaaaaaa(
-    @Param('userId') userId: string,
-    @Body() dto: UpdateUserDto, // Make sure to use the DTO
-  ) {
-    return this.usersService.assignRolesToUser(+userId, dto);
-  }
+
 
   @Post(':id/roles')
   assignRoles(@Param('id') id: string, @Body() dto: UpdateUserDto) {
@@ -59,4 +60,7 @@ export class UsersController {
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
   }
+
+
+
 }

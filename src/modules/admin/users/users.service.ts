@@ -11,6 +11,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 import { User } from '../../../shared/entities/user.entity';
 import { Role } from '../../../shared/entities/role.entity';
+import { plainToInstance } from 'class-transformer';
+import { UserListByRoleNameDto } from './dto/user-list-byrole.dto';
 
 @Injectable()
 export class UsersService {
@@ -46,6 +48,26 @@ export class UsersService {
 
     return user ?? undefined;
   }
+
+  async findUsersByRole(roleName: string):  Promise<UserListByRoleNameDto[]> {
+   const users = await this.userRepository
+    .createQueryBuilder('user')
+    .leftJoinAndSelect('user.roles', 'role')
+    .where('role.name = :roleName', { roleName })
+   .andWhere('user.status = :status', { status: true })
+    .select([
+      'user.id',
+      'user.username',
+      
+    ])
+    .getMany();
+ if (!users || users.length === 0) {
+      throw new NotFoundException('No users found with the given role');
+    }
+    return plainToInstance(UserListByRoleNameDto, users, { excludeExtraneousValues: true });
+}
+
+
 async findByUsername_bk(username: string): Promise<User | null> {
    //console.log(`User searchsssssssssssssssssss failed for ${username}` );
   try {

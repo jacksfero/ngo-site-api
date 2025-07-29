@@ -30,7 +30,12 @@ export class AuthController {
     return this.authService.create(createUserDto);
   }
 
-    
+    @Public()
+  @Get('by-role/:roleName')
+  async getUsersByRole(@Param('roleName') roleName: string) {
+ return  this.authService.findUsersByRole(roleName);
+      ;
+  }
     
   @Public()
   //  @UseGuards(AuthGuard('local'))
@@ -40,11 +45,18 @@ export class AuthController {
     return this.authService.login(req.user); // user is attached by LocalStrategy
   }
 
+  
+
+
+
+
   @UseGuards(AuthGuard('jwt'))
   @Post('profile')
   getProfile(@Request() req) {
     return req.user;
   }
+
+  
 
   @Get()
   findAll() {
