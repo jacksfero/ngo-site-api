@@ -5,17 +5,18 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../../../shared/entities/user.entity';
 import { Role } from '../../../shared/entities/role.entity';
 import { Permission } from '../../../shared/entities/permission.entity';
+import { UsersAbout } from '../../../shared/entities/users-about.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Role, Permission])],
+  imports: [TypeOrmModule.forFeature([User, Role, Permission,UsersAbout])],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService],
 })
 export class UsersModule {
-  constructor() {
+ /* constructor() {
     console.log('----User in Module-----User  :', User); // 👈 Should print the class
     console.log('---User in Module------Role  :', Role);
     console.log('-User in Module--------Permission in  :', Permission);
-  }
+  }*/
 }

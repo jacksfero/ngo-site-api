@@ -13,6 +13,9 @@ import { User } from '../../../shared/entities/user.entity';
 import { Role } from '../../../shared/entities/role.entity';
 import { plainToInstance } from 'class-transformer';
 import { UserListByRoleNameDto } from './dto/user-list-byrole.dto';
+import { UsersAbout } from '../../../shared/entities/users-about.entity';
+import { CreateUsersAboutDto } from './dto/create-users-about.dto';
+import { UpdateUsersAboutDto } from './dto/update-users-about.dto';
 
 @Injectable()
 export class UsersService {
@@ -21,6 +24,11 @@ export class UsersService {
     private userRepository: Repository<User>,
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
+
+
+     @InjectRepository(UsersAbout)
+    private aboutRepo: Repository<UsersAbout>,
+
   ) {}
 
   async create(dto: CreateUserDto): Promise<User> {
@@ -165,4 +173,94 @@ async findByUsername_bk(username: string): Promise<User | null> {
     }
     return User;
   }
+
+
+
+
+/** Start User about us section */
+ async createUserAbout(dto: CreateUsersAboutDto,userId: number,users:any) {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) throw new NotFoundException('User not found');
+
+    const about = this.aboutRepo.create({ ...dto, user });
+       about.createdBy = users.sub.toString();
+    return this.aboutRepo.save(about);
+  }
+
+    async findOneAboutByUserId(userId: number) {
+    return this.aboutRepo.findOne({
+      where: { user: { id: userId } },
+      relations: ['user'],
+    });
+  }
+
+
+   async updateUserAbout(userId: number, dto: UpdateUsersAboutDto) {
+   const about = await this.aboutRepo.findOne({
+  where: { user: { id: userId } },
+  relations: ['user'], // optional, only if you need full user object
+});
+    if (!about) throw new NotFoundException('User About not found');
+
+    if (userId) {
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) throw new NotFoundException('User not found');
+      about.user = user;
+    }
+
+    Object.assign(about, dto);
+    return this.aboutRepo.save(about);
+  }
+
+
+  async deleteUserAbout(id: number) {
+    const result = await this.aboutRepo.delete(id);
+    if (result.affected === 0) throw new NotFoundException('About not found');
+    return { deleted: true };
+  }
+
+
+
+
+
 }
+
+
+/*************
+ * 
+ * 
+ * 
+@Post()
+  create(@Body() createUserDto: CreateUserDto) {
+    return this.userService.create(createUserDto);
+  }
+
+  @Put(':id')
+  update(@Param('id') id: number, @Body() dto: UpdateUserDto) {
+    return this.userService.update(id, dto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: number) {
+    return this.userService.remove(id);
+  }
+} 
+
+
+
+async create(dto: CreateUserDto) {
+  const user = this.userRepo.create(dto);
+  return this.userRepo.save(user);
+}
+
+async update(id: number, dto: UpdateUserDto) {
+  await this.userRepo.update(id, dto);
+  return this.findOne(id);
+}
+
+async remove(id: number) {
+  await this.userRepo.softDelete(id); // or hard delete
+}
+ * 
+ * 
+ * */
