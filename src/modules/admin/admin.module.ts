@@ -27,6 +27,7 @@ import { CategoryModule } from './category/category.module';
 import { TagModule } from './tag/tag.module';
 import { AdminCompositeGuard } from 'src/core/guards/admin-composite.guard';
 import { AuthModule } from '../auth/auth.module';
+import { ProductcategoryModule } from './productcategory/productcategory.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { AuthModule } from '../auth/auth.module';
     ExhibitionModule,
     WishlistModule,
     ProductModule,
+    ProductcategoryModule,
     SubjectModule,
     SurfaceModule,
     CategoryModule,
@@ -66,6 +68,7 @@ import { AuthModule } from '../auth/auth.module';
           { path: 'shippings', module: ShippingModule },
           { path: 'styles', module: StyleModule },
           { path: 'products', module: ProductModule },
+          { path: 'productcategory', module: ProductcategoryModule },
           { path: 'policies', module: PolicyModule },
           { path: 'mediums', module: MediumModule },
           { path: 'exhibitions', module: ExhibitionModule },
@@ -78,6 +81,7 @@ import { AuthModule } from '../auth/auth.module';
         ],
       },
     ]),
+    
 
 
   ],
