@@ -1,7 +1,7 @@
 import {
   Controller,
-  Get,
-  Request,
+  Get,Req,
+   Request,
   UseGuards,
   Post,
   Body,
@@ -10,18 +10,51 @@ import {
   Delete,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-
+//import { Request } from 'express';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { CreateUserDto } from 'src/modules/admin/users/dto/create-user.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { Public } from 'src/core/decorators/public.decorator';
 import { PublicGuard } from 'src/core/guards/public.guard';
+import { StartRegistrationDto } from './dto/start-registration.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { CompleteRegistrationDto } from './dto/ complete-registration.dto';
 
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+
+
+ 
+/**
+   * Step 1: Start Registration - Send OTP
+   * POST /auth/start-registration
+   */
+  @Public()
+  @Post('start-registration')
+  async startRegistration(
+    @Body() dto: StartRegistrationDto,
+    //@Req() req: Request
+  ) {
+   // const ipAddress = req.ip || req.connection?.remoteAddress;
+    return this.authService.startRegistration(dto);
+  }
+
+@Public()
+@Post('verify-otp')
+verifyOtp(@Body() dto: VerifyOtpDto) {
+  return this.authService.verifyOtp(dto);
+}
+/*
+@Public()
+@Post('complete-registration')
+async complete(@Body() dto: CompleteRegistrationDto) {
+  return this.authService.completeRegistration(dto);
+}
+*/
+
 
  //@UseGuards(PublicGuard)
   @Public()

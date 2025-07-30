@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   ConflictException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
@@ -12,14 +13,172 @@ import { UsersService } from 'src/modules/admin/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { UserListByRoleNameDto } from '../admin/users/dto/user-list-byrole.dto';
+import { StartRegistrationDto } from './dto/start-registration.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { User } from 'src/shared/entities/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { OtpVerification } from 'src/shared/entities/OtpVerification.entity';
+import { CompleteRegistrationDto } from './dto/ complete-registration.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+
+     @InjectRepository(User)
+  private readonly userRepository: Repository<User>,
+  
+  @InjectRepository(OtpVerification)
+  private readonly otpveriRepo: Repository<OtpVerification>,
+
   ) {}
 
+async startRegistration(dto: StartRegistrationDto, ipAddress?: string) {
+  const { identifier, type, userType } = dto;
+
+  // ✅ Build where clause cleanly to avoid TypeScript errors
+  const whereClause: any = {};
+  if (type === 'email') {
+    whereClause.email = identifier;
+  } else {
+    whereClause.mobile = identifier;
+  }
+
+  // ✅ Check if user already registered
+  const existingUser = await this.userRepository.findOne({
+    where: whereClause,
+  });
+
+  if (existingUser) {
+    throw new ConflictException(`${type} is already registered`);
+  }
+
+  // ✅ Generate 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // ✅ Set OTP expiry (10 minutes from now)
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+  // ✅ Clean up previous unverified OTP records for same identifier/type
+  await this.otpveriRepo.delete({
+    identifier,
+    type,
+    isVerified: false,
+  });
+
+  // ✅ Save new OTP record
+  const otpRecord = this.otpveriRepo.create({
+    identifier,
+    type,
+    userType,
+    otp,
+    expiresAt,
+    ipAddress,
+  });
+
+  await this.otpveriRepo.save(otpRecord);
+
+  // TODO: Integrate email or SMS service
+  // await this.emailService.sendOtp(identifier, otp);
+  // or await this.smsService.sendOtp(identifier, otp);
+
+  return {
+    message: `OTP sent successfully to ${type} ${identifier}`,
+    expiresInMinutes: 10,
+    otp, // ⚠️ Only return OTP in dev/testing, not in production
+  };
+}
+
+ 
+
+async verifyOtp(dto: VerifyOtpDto): Promise<{ message: string }> {
+  const { identifier, otp, type } = dto;
+
+  const record = await this.otpveriRepo.findOne({
+    where: {
+      identifier,
+      otp,
+      type,
+      isVerified: false,
+    },
+  });
+
+  if (!record) {
+    throw new NotFoundException('Invalid or expired OTP.');
+  }
+
+  const now = new Date();
+  if (record.expiresAt < now) {
+    throw new BadRequestException('OTP has expired.');
+  }
+
+  // Mark OTP as verified
+  record.isVerified = true;
+  await this.otpveriRepo.save(record);
+
+  return { message: 'OTP verified successfully.' };
+}
+
+/*
+
+ async completeRegistration(dto: CompleteRegistrationDto) {
+  const { identifier, type, name, password } = dto;
+
+  // 1. Check verified OTP
+  const otpRecord = await this.otpveriRepo.findOne({
+    where: {
+      identifier,
+      type,
+      isVerified: true,
+    },
+  });
+
+  if (!otpRecord) {
+    throw new NotFoundException('OTP not verified or expired.');
+  }
+
+  // 2. Check existing user
+  const existing = await this.userRepository.findOne({
+    where: type === 'email' ? { email: identifier } : { mobile: identifier },
+  });
+
+  if (existing) {
+    throw new BadRequestException('User already registered.');
+  }
+
+  // 3. Fetch Role based on userType stored during OTP step
+  const role = await this.roleRepository.findOne({
+    where: { name: otpRecord.userType }, // e.g., 'artist', 'seller'
+  });
+
+  if (!role) {
+    throw new NotFoundException(`Role "${otpRecord.userType}" not found`);
+  }
+
+  // 4. Hash password
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  // 5. Create new user
+  const user = this.userRepository.create({
+     name   ,
+    password: hashedPassword,
+    email: type === 'email' ? identifier : null,
+    mobile: type === 'mobile' ? identifier : null,
+    roles: [role], // Assign role
+  });
+
+  await this.userRepository.save(user);
+
+  // 6. Link user to OTP record
+  otpRecord.user = user;
+  await this.otpveriRepo.save(otpRecord);
+
+  return { message: 'Registration completed successfully.', userId: user.id };
+}
+
+*/
   async validateUser(username: string, password: string): Promise<any> {
     const user = await this.usersService.findByUsername(username);
     console.log('---------username-----------', username,'-----user------',user);
