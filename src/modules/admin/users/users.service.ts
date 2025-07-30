@@ -48,14 +48,7 @@ export class UsersService {
     return await this.userRepository.save(user);
   }
 
-  async findByUsername(username: string): Promise<User | undefined> {
-    const user = await this.userRepository.findOne({
-      where: { username },
-       relations: ['roles'], // Include roles if you need them in JWT
-    });
-
-    return user ?? undefined;
-  }
+  
 
   async findUsersByRole(roleName: string):  Promise<UserListByRoleNameDto[]> {
    const users = await this.userRepository
@@ -88,6 +81,16 @@ async findByUsername_bk(username: string): Promise<User | null> {
    // return null; // Explicit null (TypeORM's standard)
   }
 }
+
+async findByUsername(username: string): Promise<User | undefined> {
+    const user = await this.userRepository.findOne({
+      where: { username },
+       relations: ['roles'], // Include roles if you need them in JWT
+    });
+
+    return user ?? undefined;
+  }
+  
   async findByEmail(email: string): Promise<User | null> {
     return this.userRepository.findOne({
       where: { email },

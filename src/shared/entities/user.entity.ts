@@ -8,29 +8,28 @@ import {
   JoinTable,
 } from 'typeorm';
 
-import { Role } from 'src/shared/entities/role.entity';
-import { Wishlist } from 'src/shared/entities/wishlist.entity';
+import { Role } from './role.entity';
+import { Wishlist } from './wishlist.entity';
 import { Blog } from './blog.entity';
 import { ExhibitionProduct } from './exhibition-product.entity';
 import { Video } from './video.entity';
 
-//console.log('----User Entiry---------- DEBUG:In User Role is', Role);
-
-@Entity()
+ 
+@Entity('user')
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 50, default: null })
+  @Column({ type: 'varchar', length: 150, nullable: true  })
   username: string;
 
-  @Column({ type: 'varchar', length: 50, unique: true })
+  @Column({ type: 'varchar', length: 150, unique: true, nullable: true})
   email: string;
 
-  @Column({ type: 'varchar', length: 50, unique: true })
+  @Column({ type: 'varchar', length: 150, unique: true, nullable: true })
   mobile: string;
 
-  @Column()
+  @Column({ nullable: false })
   password: string;
 
   @ManyToMany(() => Role, (role) => role.users)
@@ -54,13 +53,13 @@ blogs: Blog[];
   displayMappings: ExhibitionProduct[];
 
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ type: 'boolean', nullable: true })
   email_verified: boolean;
 
-  @Column({ type: 'boolean', default: 0 })
+  @Column({ type: 'boolean', default: false })
   status: string;
 
-  @Column({ type: 'varchar', length: 50, default: null })
+  @Column({ type: 'varchar', length: 50, nullable: true })
   createdBy: string;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })

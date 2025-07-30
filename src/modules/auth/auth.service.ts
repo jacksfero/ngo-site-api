@@ -5,8 +5,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+ 
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from 'src/modules/admin/users/dto/create-user.dto';
 import { UsersService } from 'src/modules/admin/users/users.service';
@@ -20,6 +19,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OtpVerification } from 'src/shared/entities/OtpVerification.entity';
 import { CompleteRegistrationDto } from './dto/ complete-registration.dto';
+import { Role } from 'src/shared/entities/role.entity';
 
 @Injectable()
 export class AuthService {
@@ -32,6 +32,9 @@ export class AuthService {
   
   @InjectRepository(OtpVerification)
   private readonly otpveriRepo: Repository<OtpVerification>,
+
+   @InjectRepository(Role)
+      private roleRepository: Repository<Role>,
 
   ) {}
 
@@ -108,7 +111,7 @@ async verifyOtp(dto: VerifyOtpDto): Promise<{ message: string }> {
   if (!record) {
     throw new NotFoundException('Invalid or expired OTP.');
   }
-
+ 
   const now = new Date();
   if (record.expiresAt < now) {
     throw new BadRequestException('OTP has expired.');
@@ -121,10 +124,10 @@ async verifyOtp(dto: VerifyOtpDto): Promise<{ message: string }> {
   return { message: 'OTP verified successfully.' };
 }
 
-/*
+
 
  async completeRegistration(dto: CompleteRegistrationDto) {
-  const { identifier, type, name, password } = dto;
+  const { identifier, type, username, password } = dto;
 
   // 1. Check verified OTP
   const otpRecord = await this.otpveriRepo.findOne({
@@ -148,26 +151,26 @@ async verifyOtp(dto: VerifyOtpDto): Promise<{ message: string }> {
     throw new BadRequestException('User already registered.');
   }
 
-  // 3. Fetch Role based on userType stored during OTP step
+    // 3. Fetch Role based on userType stored during OTP step
   const role = await this.roleRepository.findOne({
     where: { name: otpRecord.userType }, // e.g., 'artist', 'seller'
   });
 
   if (!role) {
-    throw new NotFoundException(`Role "${otpRecord.userType}" not found`);
+    throw new NotFoundException("Role ${otpRecord.userType} not found");
   }
 
   // 4. Hash password
-  const hashedPassword = await bcrypt.hash(password, 10);
+   const hashedPassword = await bcrypt.hash(password, 10);
 
   // 5. Create new user
-  const user = this.userRepository.create({
-     name   ,
-    password: hashedPassword,
-    email: type === 'email' ? identifier : null,
-    mobile: type === 'mobile' ? identifier : null,
-    roles: [role], // Assign role
-  });
+ const user = this.userRepository.create({
+  username,
+  password:hashedPassword,
+  email: type === 'email' ? identifier : null,
+  mobile: type === 'mobile' ? identifier : null,
+  roles: [role],
+} as Partial<User>);
 
   await this.userRepository.save(user);
 
@@ -178,12 +181,11 @@ async verifyOtp(dto: VerifyOtpDto): Promise<{ message: string }> {
   return { message: 'Registration completed successfully.', userId: user.id };
 }
 
-*/
   async validateUser(username: string, password: string): Promise<any> {
     const user = await this.usersService.findByUsername(username);
-    console.log('---------username-----------', username,'-----user------',user);
+   // console.log('---------username-----------', username,'-----user------',user);
     if (user && (await bcrypt.compare(password, user.password))) {
-       console.log('-------------Password-------', user.password);
+     //  console.log('-------------Password-------', user.password);
       const { password, ...result } = user;
       return result; // return user info without password
     }
@@ -225,7 +227,7 @@ async verifyOtp(dto: VerifyOtpDto): Promise<{ message: string }> {
     });
     // return 'This action adds a new auth';
     return this.login(user);
-  }
+  } 
 
     async findUsersByRole(roleName: string) : Promise<UserListByRoleNameDto[]> {
      const users = await this.usersService.findUsersByRole(roleName);
@@ -239,19 +241,5 @@ async verifyOtp(dto: VerifyOtpDto): Promise<{ message: string }> {
 
 
 
-  findAll() {
-    return `This action returns all auth`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
-
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
-  }
+ 
 }

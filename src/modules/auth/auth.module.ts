@@ -11,9 +11,13 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { PermissionsGuard } from './guards/permissions.guard';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { OtpVerification } from 'src/shared/entities/OtpVerification.entity';
+import { User } from 'src/shared/entities/user.entity';
+import { Role } from 'src/shared/entities/role.entity';
 
 @Module({
-  imports: [
+  imports: [TypeOrmModule.forFeature([User,Role,OtpVerification]),
     UsersModule,
     PassportModule,
     ConfigModule,

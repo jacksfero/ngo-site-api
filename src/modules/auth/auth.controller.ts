@@ -47,15 +47,15 @@ export class AuthController {
 verifyOtp(@Body() dto: VerifyOtpDto) {
   return this.authService.verifyOtp(dto);
 }
-/*
+
 @Public()
 @Post('complete-registration')
 async complete(@Body() dto: CompleteRegistrationDto) {
   return this.authService.completeRegistration(dto);
 }
-*/
 
 
+ 
  //@UseGuards(PublicGuard)
   @Public()
   @Post('register')
@@ -63,12 +63,7 @@ async complete(@Body() dto: CompleteRegistrationDto) {
     return this.authService.create(createUserDto);
   }
 
-    @Public()
-  @Get('by-role/:roleName')
-  async getUsersByRole(@Param('roleName') roleName: string) {
- return  this.authService.findUsersByRole(roleName);
-      ;
-  }
+  
     
   @Public()
   //  @UseGuards(AuthGuard('local'))
@@ -77,10 +72,15 @@ async complete(@Body() dto: CompleteRegistrationDto) {
   async login(@Request() req) {
     return this.authService.login(req.user); // user is attached by LocalStrategy
   }
-
+ 
   
 
-
+  @Public()
+  @Get('by-role/:roleName')
+  async getUsersByRole(@Param('roleName') roleName: string) {
+ return  this.authService.findUsersByRole(roleName);
+    
+  }
 
 
   @UseGuards(AuthGuard('jwt'))
@@ -91,25 +91,9 @@ async complete(@Body() dto: CompleteRegistrationDto) {
 
   
 
-  @Get()
-  findAll() {
-    return this.authService.findAll();
-  }
+   
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-    return this.authService.update(+id, updateAuthDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
-  }
+  
 }
 
 /*
