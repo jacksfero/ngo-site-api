@@ -30,9 +30,9 @@ export class ProductcategoryService {
       order: {
         createdAt: 'DESC', // sort by newest first
       },
-       where: {
+     /*  where: {
         status: true, // only active surfaces
-      }, 
+      }, */
     });
   }
 
