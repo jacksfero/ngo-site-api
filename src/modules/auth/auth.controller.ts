@@ -25,8 +25,6 @@ import { CompleteRegistrationDto } from './dto/ complete-registration.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
-
-
  
 /**
    * Step 1: Start Registration - Send OTP
@@ -53,8 +51,6 @@ verifyOtp(@Body() dto: VerifyOtpDto) {
 async complete(@Body() dto: CompleteRegistrationDto) {
   return this.authService.completeRegistration(dto);
 }
-
-
  
  //@UseGuards(PublicGuard)
   @Public()
@@ -62,9 +58,7 @@ async complete(@Body() dto: CompleteRegistrationDto) {
   create(@Body() createUserDto: CreateUserDto) {
     return this.authService.create(createUserDto);
   }
-
-  
-    
+ 
   @Public()
   //  @UseGuards(AuthGuard('local'))
   @UseGuards(LocalAuthGuard)
@@ -72,9 +66,7 @@ async complete(@Body() dto: CompleteRegistrationDto) {
   async login(@Request() req) {
     return this.authService.login(req.user); // user is attached by LocalStrategy
   }
- 
   
-
   @Public()
   @Get('by-role/:roleName')
   async getUsersByRole(@Param('roleName') roleName: string) {
@@ -89,11 +81,7 @@ async complete(@Body() dto: CompleteRegistrationDto) {
     return req.user;
   }
 
-  
-
-   
-
-  
+ 
 }
 
 /*
