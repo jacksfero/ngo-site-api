@@ -39,10 +39,10 @@ async function bootstrap() {
     credentials: true, // Optional: allow cookies/auth headers if needed
   });
 
-  // const port = process.env.PORT ?? 3000;
-  // await app.listen(port);
-  await app.listen(process.env.PORT ?? 3000);
-  // console.log(`🚀 Application is running on: http://localhost:${port}/api`);
+   const port = process.env.PORT ?? 3000;
+   await app.listen(port);
+ // await app.listen(process.env.PORT ?? 3000);
+   console.log(`🚀 Application is running on: http://localhost:${port}/api`);
   // await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

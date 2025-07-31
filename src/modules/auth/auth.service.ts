@@ -181,6 +181,60 @@ async verifyOtp(dto: VerifyOtpDto): Promise<{ message: string }> {
   return { message: 'Registration completed successfully.', userId: user.id };
 }
 
+async buyerSignup(dto: CompleteRegistrationDto) {
+  const { identifier, type, username, password } = dto;
+
+  // 1. Check verified OTP
+  const otpRecord = await this.otpveriRepo.findOne({
+    where: {
+      identifier,
+      type,
+      isVerified: true,
+    },
+  });
+
+  if (!otpRecord) {
+    throw new NotFoundException('OTP not verified or expired.');
+  }
+
+  // 2. Check existing user
+  const existing = await this.userRepository.findOne({
+    where: type === 'email' ? { email: identifier } : { mobile: identifier },
+  });
+
+  if (existing) {
+    throw new BadRequestException('User already registered.');
+  }
+
+    // 3. Fetch Role based on userType stored during OTP step
+  const role = await this.roleRepository.findOne({
+    where: { name: otpRecord.userType }, // e.g., 'artist', 'seller'
+  });
+
+  if (!role) {
+    throw new NotFoundException("Role ${otpRecord.userType} not found");
+  }
+
+  // 4. Hash password
+   const hashedPassword = await bcrypt.hash(password, 10);
+
+  // 5. Create new user
+ const user = this.userRepository.create({
+  username,
+  password:hashedPassword,
+  email: type === 'email' ? identifier : null,
+  mobile: type === 'mobile' ? identifier : null,
+  roles: [role],
+} as Partial<User>);
+
+  await this.userRepository.save(user);
+
+  // 6. Link user to OTP record
+  otpRecord.user = user;
+  await this.otpveriRepo.save(otpRecord);
+
+  return { message: 'Registration completed successfully.', userId: user.id };
+}
   async validateUser(username: string, password: string): Promise<any> {
     const user = await this.usersService.findByUsername(username);
    // console.log('---------username-----------', username,'-----user------',user);

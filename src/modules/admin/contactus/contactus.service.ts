@@ -7,7 +7,7 @@ import { ContactUs } from 'src/shared/entities/contactus.entity';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { plainToInstance } from 'class-transformer';
-import { MailService } from 'src/shared/mail/mail.service';
+//import { MailService } from 'src/shared/mail/mail.service';
  
 
 @Injectable()
@@ -18,7 +18,7 @@ export class ContactUsService {
     @InjectRepository(ContactUs)
     private contactRepo: Repository<ContactUs>,
 
-      private readonly mailService: MailService,
+     // private readonly mailService: MailService,
   ) { }
 
  async create(dto: CreateContactUsDto) {

@@ -18,7 +18,7 @@ import { PermissionsGuard } from './modules/auth/guards/permissions.guard';
  
 import { PublicGuard } from './core/guards/public.guard';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard'; 
-import { MailModule } from './shared/mail/mail.module';
+//import { MailModule } from './shared/mail/mail.module';
 
 @Module({
   imports: [
@@ -30,7 +30,7 @@ import { MailModule } from './shared/mail/mail.module';
     AuthModule,  
     AdminModule,
     ClientModule, 
-    MailModule,
+  //  MailModule,
   ],
 
   controllers: [AppController],

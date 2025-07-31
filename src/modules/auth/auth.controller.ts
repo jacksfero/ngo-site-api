@@ -52,6 +52,13 @@ async complete(@Body() dto: CompleteRegistrationDto) {
   return this.authService.completeRegistration(dto);
 }
  
+@Public()
+@Post('buyer-signup')
+async buyerSignup(@Body() dto: CompleteRegistrationDto) {
+  return this.authService.completeRegistration(dto);
+}
+ 
+
  //@UseGuards(PublicGuard)
   @Public()
   @Post('register')
