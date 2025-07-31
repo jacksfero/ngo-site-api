@@ -90,7 +90,7 @@ async findByUsername(username: string): Promise<User | undefined> {
 
     return user ?? undefined;
   }
-  
+   
   async findByEmail(email: string): Promise<User | null> {
     return this.userRepository.findOne({
       where: { email },
