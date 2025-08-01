@@ -55,7 +55,7 @@ export class UsersService {
     .createQueryBuilder('user')
     .leftJoinAndSelect('user.roles', 'role')
     .where('role.name = :roleName', { roleName })
-   .andWhere('user.status = :status', { status: true })
+ //  .andWhere('user.status = :status', { status: true })
     .select([
       'user.id',
       'user.username',
