@@ -15,10 +15,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
 
     // Optional logging for debugging (will show only in logs, not throw error)
-    const jwtSecret = configService.get<string>('JWT_SECRET');
-    if (!jwtSecret) {
-      console.warn('⚠️ JWT_SECRET is not set in the environment');
-    }
+    // const jwtSecret = configService.get<string>('JWT_SECRET');
+    // if (!jwtSecret) {
+    //   console.warn(' JWT_SECRET is not set in the environment');
+    // }
   }
 
   async validate(payload: JwtPayload): Promise<JwtPayload> {
