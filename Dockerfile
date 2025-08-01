@@ -15,10 +15,12 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Only copy built code and necessary files
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+
+# ✅ Copy env file (optional if using Docker secrets or host variables)
+COPY --from=builder /app/.env .env
 
 EXPOSE 3006
 
