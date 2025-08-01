@@ -24,7 +24,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env', '.env.development', '.env.production'],
+   //   envFilePath: ['.env', '.env.development', '.env.production'],
     }),
     DatabaseModule,
     AuthModule,  
@@ -33,6 +33,9 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
   //  MailModule,
   ],
 
+
+
+  
   controllers: [AppController],
   providers: [
  /*

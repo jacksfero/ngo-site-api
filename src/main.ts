@@ -43,6 +43,7 @@ async function bootstrap() {
    await app.listen(port);
  // await app.listen(process.env.PORT ?? 3000);
    console.log(`🚀 Application is running on: http://localhost:${port}/api`);
+   console.log('JWT_SECRET at runtime:', process.env.JWT_SECRET);
   // await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
