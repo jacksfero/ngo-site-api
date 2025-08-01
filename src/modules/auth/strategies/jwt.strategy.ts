@@ -1,32 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import { ConfigService } from '@nestjs/config';
+import { JwtPayload } from '../interfaces/jwt-payload.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  
-
-  constructor(private readonly configService: ConfigService) {
-    const jwtSecret = configService.get<string>('JWT_SECRET');
-if (!jwtSecret) {
-  throw new Error('JWT_SECRET environment variable is not set');
-}
+  constructor(configService: ConfigService) {
+    // ✅ call super() FIRST before using configService
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: jwtSecret,  
+      secretOrKey: configService.get<string>('JWT_SECRET')!, // ✅ safely pulled from env
     });
+
+    // Optional logging for debugging (will show only in logs, not throw error)
+    const jwtSecret = configService.get<string>('JWT_SECRET');
+    if (!jwtSecret) {
+      console.warn('⚠️ JWT_SECRET is not set in the environment');
+    }
   }
 
-  
-
-  /* async validate(payload: any) {
-    return { userId: payload.sub, username: payload.username, roles: payload.roles };
-  }*/
-
   async validate(payload: JwtPayload): Promise<JwtPayload> {
-    return payload; // 👈 This becomes req.user
+    return payload; // 👈 attaches to req.user
   }
 }
