@@ -24,12 +24,12 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      validate: (config) => {
-        if (!config.JWT_SECRET) {
-          throw new Error('JWT_SECRET is required');
-        }
-        return config;
-      },
+      // validate: (config) => {
+      //   if (!config.JWT_SECRET) {
+      //     throw new Error('JWT_SECRET is required');
+      //   }
+      //   return config;
+      // },
    //   envFilePath: ['.env', '.env.development', '.env.production'],
     }),
     DatabaseModule,
