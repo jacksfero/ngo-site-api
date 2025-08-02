@@ -67,16 +67,9 @@ export class BlogController {
   }
   
 
-@Post()
-createaaaa(@Body() createBlogDto: CreateBlogDto, @Req() req) {
-  return this.blogService.create(createBlogDto, req.user);
-}
+ 
 
-
-@Get()
-findAllss() {
-  return this.blogService.findAll();
-}
+ 
 @Get()
 async findAll() {
   const blogs = await this.blogService.findAll();
