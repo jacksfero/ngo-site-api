@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -18,6 +19,10 @@ import { AssignRolesDto } from './dto/assign-roles.dto';
 import { CreateUsersAboutDto } from './dto/create-users-about.dto';
 import { UpdateUsersAboutDto } from './dto/update-users-about.dto';
 import path from 'path';
+import { PaginationDto } from 'src/shared/dto/pagination.dto';
+import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
+import { ProductDto } from '../product/dto/product.dto';
+import { UsersListDto } from './dto/users-list.dto';
 
 @Controller()
 //@UseGuards(PermissionsGuard)
@@ -34,8 +39,10 @@ export class UsersController {
   
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  async findAll(
+    @Query() paginationDto: PaginationDto,
+  ): Promise<PaginationResponseDto<UsersListDto>> {
+    return this.usersService.findAll(paginationDto);
   }
 
 

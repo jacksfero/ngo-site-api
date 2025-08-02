@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, Not } from 'typeorm';
+import { Repository, In, Not, ILike, FindOptionsWhere, Like } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
@@ -16,6 +16,9 @@ import { UserListByRoleNameDto } from './dto/user-list-byrole.dto';
 import { UsersAbout } from '../../../shared/entities/users-about.entity';
 import { CreateUsersAboutDto } from './dto/create-users-about.dto';
 import { UpdateUsersAboutDto } from './dto/update-users-about.dto';
+import { PaginationDto } from 'src/shared/dto/pagination.dto';
+import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
+import { UsersListDto } from './dto/users-list.dto';
 
 @Injectable()
 export class UsersService {
@@ -79,7 +82,7 @@ export class UsersService {
     .createQueryBuilder('user')
     .leftJoinAndSelect('user.roles', 'role')
     .where('role.name = :roleName', { roleName })
- //  .andWhere('user.status = :status', { status: true })
+    .andWhere('user.status = :status', { status: true })
     .select([
       'user.id',
       'user.username',
@@ -121,15 +124,34 @@ async findByUsername(username: string): Promise<User | undefined> {
     });
   }
 
-    async findAll(): Promise<User[]> {
-      try {
-        return this.userRepository.find({
-      relations: ['roles'], // include relations if needed
+  async findAll(
+    paginationDto: PaginationDto,
+  ): Promise<PaginationResponseDto<UsersListDto>> {
+    const { page = 1, limit = 10, search } = paginationDto;
+    const skip = (page - 1) * limit;
+    const searchTerm = search?.toLowerCase() || '';
+  
+    const where = searchTerm
+      ? [
+          { username: Like(`%${searchTerm}%`) },
+          { email: Like(`%${searchTerm}%`) },
+          { mobile: Like(`%${searchTerm}%`) },
+        ]
+      : {};
+  
+    const [result, total] = await this.userRepository.findAndCount({
+      where,
+      take: limit,
+      skip,
+      order: { createdAt: 'DESC' },
+      relations: ['roles'], // ensure roles are joined
     });
-      } catch (error) {
-        throw new Error(`User search failed for  node found` );
-      }
-    
+  
+    const data = plainToInstance(UsersListDto, result, {
+      excludeExtraneousValues: true,
+    });
+  
+    return new PaginationResponseDto(data, { total, page, limit });
   }
 
  async findOne(id: number) {
