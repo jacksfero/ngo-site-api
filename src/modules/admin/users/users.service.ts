@@ -5,10 +5,10 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, Not } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-
+import * as bcrypt from 'bcrypt';
 import { User } from '../../../shared/entities/user.entity';
 import { Role } from '../../../shared/entities/role.entity';
 import { plainToInstance } from 'class-transformer';
@@ -20,8 +20,10 @@ import { UpdateUsersAboutDto } from './dto/update-users-about.dto';
 @Injectable()
 export class UsersService {
   constructor(
+
     @InjectRepository(User)
     private userRepository: Repository<User>,
+  
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
 
@@ -31,21 +33,43 @@ export class UsersService {
 
   ) {}
 
-  async create(dto: CreateUserDto): Promise<User> {
-    const { roleIds, ...rest } = dto;
-    // Step 1: Create the user entity
-    const user = this.userRepository.create(rest); // sets username, password
+  async create(dto: CreateUserDto, currentUser: any): Promise<User> {
+    const { roleIds, status, email, mobile, ...rest } = dto;
+  
+     // 🔍 Step 1: Check if user already exists by email or mobile
+  const existingUser = await this.userRepository.findOne({
+    where: [
+      { email },
+      { mobile },
+    ],
+  });
 
+  if (existingUser) {
+    throw new BadRequestException('User with this email or mobile already exists');
+  }
+  const hashedPassword = await bcrypt.hash(dto.password, 10)
+    // Step 1: Create the user entity
+    const newUser = this.userRepository.create({
+      ...rest,
+      email,
+      mobile,
+      password:hashedPassword,
+    //  status: status === true ? 'active' : status === false ? 'inactive' : undefined,
+    });
+  
     // Step 2: Load roles and assign
     if (roleIds?.length) {
       const roles = await this.roleRepository.find({
         where: { id: In(roleIds) },
       });
-      user.roles = roles;
+      newUser.roles = roles;
     }
+    newUser.createdBy = currentUser.sub.toString();
 
+    // You can optionally log or use currentUser here for audit tracking
+  
     // Step 3: Save user
-    return await this.userRepository.save(user);
+    return await this.userRepository.save(newUser);
   }
 
   
@@ -121,8 +145,60 @@ async findByUsername(username: string): Promise<User | undefined> {
   }
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, dto: UpdateUserDto): Promise<User> {
+    const { roleIds, email, mobile, ...rest } = dto;
+
+    // Step 1: Find the user
+    const user = await this.userRepository.findOne({ where: { id }, relations: ['roles'] });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    // Step 2: Check if email/mobile is already used by another user
+    if (email) {
+      const emailTaken = await this.userRepository.findOne({
+        where: { email, id: Not(id) },
+      });
+      if (emailTaken) {
+        throw new BadRequestException('Email already in use by another user');
+      }
+    }
+
+    if (mobile) {
+      const mobileTaken = await this.userRepository.findOne({
+        where: { mobile, id: Not(id) },
+      });
+      if (mobileTaken) {
+        throw new BadRequestException('Mobile already in use by another user');
+      }
+    }
+
+    // Step 3: Merge fields
+    Object.assign(user, { ...rest });
+    if (email) user.email = email;
+    if (mobile) user.mobile = mobile;
+
+    // Step 4: Update roles if provided
+    if (roleIds?.length) {
+      const roles = await this.roleRepository.find({
+        where: { id: In(roleIds) },
+      });
+      user.roles = roles;
+    }
+
+    // Step 5: Save updated user
+    return await this.userRepository.save(user);
+  }
+ 
+  async toggleStatus(id: number): Promise<User> {
+    const surface = await this.userRepository.findOne({ where: { id } });
+    if (!surface) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    surface.status = !surface.status;
+    
+
+    return this.userRepository.save(surface);
   }
 
   remove(id: number) {

@@ -17,7 +17,7 @@ export class PermissionsGuard implements CanActivate {
     const requiredPermissions =
       this.reflector.get<string[]>(PERMISSIONS_KEY, context.getHandler()) || [];
 
-    console.log(context.getHandler(),'------Permission  Guard  1 ', requiredPermissions);
+   // console.log(context.getHandler(),'------Permission  Guard  1 ', requiredPermissions);
 
     if (requiredPermissions.length === 0) {
       return true;
@@ -25,7 +25,7 @@ export class PermissionsGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const user: User = request.user;
-    console.log('-----2-Permission  Guard   ',      request.user);
+   // console.log('-----2-Permission  Guard   ',      request.user);
     if (!user) {
       throw new ForbiddenException('User not authenticated');
     }

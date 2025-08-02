@@ -60,11 +60,11 @@ async buyerSignup(@Body() dto: CompleteRegistrationDto) {
  
 
  //@UseGuards(PublicGuard)
-  @Public()
+ /* @Public()
   @Post('register')
   create(@Body() createUserDto: CreateUserDto) {
     return this.authService.create(createUserDto);
-  }
+  }*/
  
   @Public()
   //  @UseGuards(AuthGuard('local'))

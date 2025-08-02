@@ -258,7 +258,7 @@ async buyerSignup(dto: CompleteRegistrationDto) {
     };
   }
 
-  async create(createUserDto: CreateUserDto) {
+ /* async create(createUserDto: CreateUserDto) {
     const existingByUsername = await this.usersService.findByUsername(
       createUserDto.username,
     );
@@ -281,7 +281,7 @@ async buyerSignup(dto: CompleteRegistrationDto) {
     });
     // return 'This action adds a new auth';
     return this.login(user);
-  } 
+  } */
 
     async findUsersByRole(roleName: string) : Promise<UserListByRoleNameDto[]> {
      const users = await this.usersService.findUsersByRole(roleName);

@@ -5,7 +5,7 @@ import {
   IsOptional,
   IsInt,
   IsEmail,
-  IsNumber,
+  IsNumber,IsBoolean
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -22,6 +22,14 @@ export class CreateUserDto {
   @IsString()
   @MinLength(6)
   password: string;
+
+  @IsOptional()
+  @IsBoolean()
+  status?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  is_verified?: boolean;
 
   @IsOptional()
   @IsArray()

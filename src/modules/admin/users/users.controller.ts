@@ -24,11 +24,14 @@ import path from 'path';
 export class UsersController {
   constructor(private readonly usersService: UsersService) { }
 
+  //@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+ // @Permissions('create_user') // Custom decorator (optional)
+ // @RequirePermissions('create_user') // ✅ Good for RBAC, uncomment if needed
   @Post()
-  //@RequirePermissions('create_user')
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  create(@Body() createUserDto: CreateUserDto, @Req() req) {
+    return this.usersService.create(createUserDto, req.user);
   }
+  
 
   @Get()
   findAll() {
@@ -70,17 +73,23 @@ export class UsersController {
     return this.usersService.findOne(+id);
   }
 
-
+  @Patch(':id/toggle-status')
+  async toggleStatus(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.toggleStatus(id);
+  }
 
   @Post(':id/roles')
   assignRoles(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     return this.usersService.assignRolesToUser(+id, dto);
   }
 
+  
+
+
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
-  }
+update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto) {
+  return this.usersService.update(id, dto);
+}
 
   @Delete(':id')
   remove(@Param('id') id: string) {

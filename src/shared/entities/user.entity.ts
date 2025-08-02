@@ -54,10 +54,10 @@ blogs: Blog[];
 
 
   @Column({ type: 'boolean', nullable: true })
-  email_verified: boolean;
+  is_verified: boolean;
 
   @Column({ type: 'boolean', default: false })
-  status: string;
+  status: boolean;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
   createdBy: string;
