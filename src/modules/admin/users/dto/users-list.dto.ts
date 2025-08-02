@@ -29,6 +29,9 @@ export class UsersListDto {
   is_verified: boolean;
 
   @Expose()
+  createdAt: Date;
+  
+  @Expose()
   @Type(() => RoleDto)
   roles?: RoleDto[];
 

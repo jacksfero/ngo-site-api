@@ -19,6 +19,7 @@ import { UpdateUsersAboutDto } from './dto/update-users-about.dto';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { UsersListDto } from './dto/users-list.dto';
+import { DEFAULT_ADMIN_USER_LIMIT, DEFAULT_ADMIN_USER_PAGE } from 'src/shared/config/pagination.config';
 
 @Injectable()
 export class UsersService {
@@ -127,7 +128,7 @@ async findByUsername(username: string): Promise<User | undefined> {
   async findAll(
     paginationDto: PaginationDto,
   ): Promise<PaginationResponseDto<UsersListDto>> {
-    const { page = 1, limit = 10, search } = paginationDto;
+    const { page = DEFAULT_ADMIN_USER_PAGE, limit = DEFAULT_ADMIN_USER_LIMIT, search } = paginationDto;
     const skip = (page - 1) * limit;
     const searchTerm = search?.toLowerCase() || '';
   
