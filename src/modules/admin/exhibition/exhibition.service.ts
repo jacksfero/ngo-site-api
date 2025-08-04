@@ -18,9 +18,7 @@ export class ExhibitionService {
 
      @InjectRepository(ExhibitionProduct)
     private exhibitionProductRepository: Repository<ExhibitionProduct>,
-
-
-  ) { }
+  ) {}
 
 
   async create(dto: CreateExhibitionDto, user: any): Promise<Exhibition> {
@@ -97,6 +95,7 @@ async  findOne(id: number):Promise<Exhibition> {
 
  return mappings.map((m) => ({
   displayId: m.exhibition.id,
+  exhId_pid:m.id,
   product: {
     id: m.product.id,
     title: m.product.productTitle,
