@@ -24,7 +24,7 @@ import { OtpService } from 'src/shared/otp/otp.service';
 import { ResendOtpDto } from './dto/resend-verification.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { OtpType,UserType,StartEmailVerificationDto, StartMobileVerificationDto } from './dto/start-verification.dto';
-import { LoginDto } from './dto/login.dto';
+//import { LoginDto } from './dto/login.dto';
 //import { OtpLoginDto } from './dto/otp-login.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
 
@@ -76,6 +76,23 @@ async verifyOtp(dto: VerifyOtpDto) {
   async registerUser(dto: RegisterUserDto) {
     const { email, mobile, password, username, userType } = dto;
   
+   
+    const existingByEmail = await this.findByEmail(
+     email,
+    );
+    if (existingByEmail) {
+      throw new ConflictException('Email already registered');
+    }
+
+    const existingByMobile = await this.findByMobile(
+      mobile,
+     );
+     if (existingByMobile) {
+       throw new ConflictException('Mobile already registered');
+     }
+   
+   
+   
     // Check OTP verifications
     const [emailOtp, mobileOtp] = await Promise.all([
       this.otpService.getLatestVerifiedOtp(email, 'email'),
