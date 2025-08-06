@@ -25,7 +25,7 @@ import { ResendOtpDto } from './dto/resend-verification.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { OtpType,UserType,StartEmailVerificationDto, StartMobileVerificationDto } from './dto/start-verification.dto';
 import { LoginDto } from './dto/login.dto';
-import { OtpLoginDto } from './dto/otp-login.dto';
+//import { OtpLoginDto } from './dto/otp-login.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
 
 @Injectable()
@@ -189,6 +189,7 @@ async verifyOtp(dto: VerifyOtpDto) {
 
    async sendLoginOtp(dto: SendOtpDto, ipAddress?: string) {
     const { identifier, type, userType  } = dto;
+   // console.log('===========',userType);
     return this.otpService.sendOtp(identifier,type,userType as UserType, ipAddress);
   } 
   

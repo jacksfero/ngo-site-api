@@ -12,5 +12,5 @@ export class SendOtpDto {
 
     @IsOptional()
     @IsEnum(UserType)
-    userType?: string;
+    userType?: UserType;
   }

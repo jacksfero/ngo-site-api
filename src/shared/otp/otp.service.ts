@@ -144,7 +144,7 @@ export class OtpService {
     if (!user && userType === UserType.LOGIN ){
        throw new NotFoundException('User not registered');
       }
-    if (user && userType === UserType.LOGIN ) {
+    if (user && userType !== UserType.LOGIN ) {
       throw new BadRequestException('User already exists');
     }
     const otp = this.generateOtpCode();

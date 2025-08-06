@@ -24,7 +24,7 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import { OtpType, StartEmailVerificationDto,StartMobileVerificationDto } from './dto/start-verification.dto';
 import { ResendOtpDto } from './dto/resend-verification.dto';
 import { LoginDto } from './dto/login.dto';
-import { OtpLoginDto } from './dto/otp-login.dto';
+//import { OtpLoginDto } from './dto/otp-login.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
  
 
