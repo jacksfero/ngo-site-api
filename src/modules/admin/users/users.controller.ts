@@ -19,10 +19,14 @@ import { AssignRolesDto } from './dto/assign-roles.dto';
 import { CreateUsersAboutDto } from './dto/create-users-about.dto';
 import { UpdateUsersAboutDto } from './dto/update-users-about.dto';
 import path from 'path';
-import { PaginationDto } from 'src/shared/dto/pagination.dto';
+ 
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
-import { ProductDto } from '../product/dto/product.dto';
+ 
 import { UsersListDto } from './dto/users-list.dto';
+import { UserPaginationDto } from './dto/user-pagination.dto';
+import { PaginationPipe } from 'src/shared/pipes/pagination.pipe';
+ 
+import { USERS_LIMIT ,USERS_MAX_LIMIT, USERS_PAGE} from 'src/shared/config/pagination.config';
 
 @Controller()
 //@UseGuards(PermissionsGuard)
@@ -40,12 +44,19 @@ export class UsersController {
 
   @Get()
   async findAll(
-    @Query() paginationDto: PaginationDto,
+    @Query(new PaginationPipe(USERS_LIMIT, USERS_MAX_LIMIT, USERS_PAGE))
+    paginationDto: UserPaginationDto
   ): Promise<PaginationResponseDto<UsersListDto>> {
     return this.usersService.findAll(paginationDto);
   }
 
-
+ /* @Get()
+  async findAll(
+    @Query() paginationDto: UserPaginationDto,
+  ): Promise<PaginationResponseDto<UsersListDto>> {
+    return this.usersService.findAll(paginationDto);
+  }
+*/
   @Get('by-role/:roleName')
   async getUsersByRole(@Param('roleName') roleName: string) {
     const users = await this.usersService.findUsersByRole(roleName);

@@ -19,11 +19,9 @@ export class OtpVerification {
   @Column({ type: 'varchar', length: 100 })
   identifier: string; // email or mobile
 
-   
-  
 
   @Column({ nullable: true })
-  userType: string;
+  userType?: string;
 
   @Column()
   otp: string;
@@ -37,12 +35,16 @@ export class OtpVerification {
   @Column({ type: 'datetime' })
   expiresAt: Date;
 
+  @Column({ default: 0 })
+  attempts: number;
+
+
   @ManyToOne(() => User, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user?: User;
 
-@Column({ type: 'varchar', length: 45, nullable: true })
-ipAddress?: string;
+  @Column({ type: 'varchar', length: 45, nullable: true })
+  ipAddress?: string;
 
 
   @CreateDateColumn()

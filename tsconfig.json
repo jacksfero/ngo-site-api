@@ -1,4 +1,12 @@
 {
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".next",
+    "build",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ],
   "compilerOptions": {
     "module": "commonjs",
     "declaration": true,

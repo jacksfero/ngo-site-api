@@ -16,10 +16,10 @@ import { UserListByRoleNameDto } from './dto/user-list-byrole.dto';
 import { UsersAbout } from '../../../shared/entities/users-about.entity';
 import { CreateUsersAboutDto } from './dto/create-users-about.dto';
 import { UpdateUsersAboutDto } from './dto/update-users-about.dto';
-import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { UsersListDto } from './dto/users-list.dto';
-import { DEFAULT_ADMIN_USER_LIMIT, DEFAULT_ADMIN_USER_PAGE } from 'src/shared/config/pagination.config';
+ import { UserPaginationDto } from './dto/user-pagination.dto';
+ 
 
 @Injectable()
 export class UsersService {
@@ -124,36 +124,86 @@ async findByUsername(username: string): Promise<User | undefined> {
       where: { email },
     });
   }
-
   async findAll(
-    paginationDto: PaginationDto,
+    paginationDto: UserPaginationDto,
   ): Promise<PaginationResponseDto<UsersListDto>> {
-    const { page = DEFAULT_ADMIN_USER_PAGE, limit = DEFAULT_ADMIN_USER_LIMIT, search } = paginationDto;
+    const { page , limit, search,status,is_verified,role  } = paginationDto;
     const skip = (page - 1) * limit;
-    const searchTerm = search?.toLowerCase() || '';
+    //const search = search || '';
   
-    const where = searchTerm
-      ? [
-          { username: Like(`%${searchTerm}%`) },
-          { email: Like(`%${searchTerm}%`) },
-          { mobile: Like(`%${searchTerm}%`) },
-        ]
-      : {};
+    const queryBuilder = this.userRepository
+    .createQueryBuilder('user')
+    .leftJoinAndSelect('user.roles', 'role')
+    .orderBy('user.createdAt', 'DESC')
+    .take(limit)
+    .skip(skip);
   
-    const [result, total] = await this.userRepository.findAndCount({
-      where,
-      take: limit,
-      skip,
-      order: { createdAt: 'DESC' },
-      relations: ['roles'], // ensure roles are joined
+    if (search) {
+      queryBuilder.andWhere(
+        '(LOWER(user.username) LIKE :search OR LOWER(user.email) LIKE :search OR LOWER(user.mobile) LIKE :search)',
+        { search: `%${search.toLowerCase()}%` },
+      );
+    }
+    if (typeof status === 'boolean') {
+      queryBuilder.andWhere('user.status = :status', { status });
+    }
+
+    if (typeof status === 'boolean') {
+      queryBuilder.andWhere('user.is_verified = :is_verified', { is_verified });
+    }
+  
+    if (role) {
+      queryBuilder.andWhere('role.name = :role', { role });
+    } 
+  
+    const [result, total] = await queryBuilder.getManyAndCount();
+  
+    const data = plainToInstance(UsersListDto, result, {
+      excludeExtraneousValues: true,
     });
+  
+    return new PaginationResponseDto(data, { total, page, limit  });
+  }
+ /* async findAll(
+    paginationDto: UserPaginationDto,
+  ): Promise<PaginationResponseDto<UsersListDto>> {
+    const { page = USERS_PAGE, limit = USERS_LIMIT, search,is_verified, status, role } = paginationDto;
+    const skip = (page - 1) * limit;
+    
+  
+    const queryBuilder = this.userRepository
+    .createQueryBuilder('user')
+    .leftJoinAndSelect('user.roles', 'role')
+    .orderBy('user.createdAt', 'DESC')
+    .take(limit)
+    .skip(skip);
+  
+    if (search) {
+      queryBuilder.andWhere(
+        '(LOWER(user.username) LIKE :search OR LOWER(user.email) LIKE :search OR LOWER(user.mobile) LIKE :search)',
+        { search: `%${search.toLowerCase()}%` },
+      );
+    }
+    if (typeof status === 'boolean') {
+      queryBuilder.andWhere('user.status = :status', { status });
+    }
+
+    if (typeof status === 'boolean') {
+      queryBuilder.andWhere('user.is_verified = :is_verified', { is_verified });
+    }
+  
+    if (role) {
+      queryBuilder.andWhere('role.name = :role', { role });
+    }
+  
+    const [result, total] = await queryBuilder.getManyAndCount();
   
     const data = plainToInstance(UsersListDto, result, {
       excludeExtraneousValues: true,
     });
   
     return new PaginationResponseDto(data, { total, page, limit });
-  }
+  }*/
 
  async findOne(id: number) {
     try {

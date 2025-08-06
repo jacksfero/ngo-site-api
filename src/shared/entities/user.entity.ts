@@ -72,3 +72,5 @@ blogs: Blog[];
   })
   updatedAt: Date;
 }
+
+

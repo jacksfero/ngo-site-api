@@ -1,25 +1,34 @@
+import { Request as ExpressRequest } from 'express';
 import {
   Controller,
-  Get,Req,
-   Request,
+  Get, 
+  Request as Req,
   UseGuards,
   Post,
   Body,
   Patch,
   Param,
   Delete,
+  Ip,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-//import { Request } from 'express';
+
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { CreateUserDto } from 'src/modules/admin/users/dto/create-user.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { Public } from 'src/core/decorators/public.decorator';
 import { PublicGuard } from 'src/core/guards/public.guard';
-import { StartRegistrationDto } from './dto/start-registration.dto';
+ 
 import { VerifyOtpDto } from './dto/verify-otp.dto';
-import { CompleteRegistrationDto } from './dto/ complete-registration.dto';
+import { RegisterUserDto } from './dto/register-user.dto';
+import { StartEmailVerificationDto,StartMobileVerificationDto } from './dto/start-verification.dto';
+import { ResendOtpDto } from './dto/resend-verification.dto';
+import { LoginDto } from './login.dto';
+import { OtpLoginDto } from './dto/otp-login.dto';
+import { SendOtpDto } from './dto/send-otp.dto';
+ 
+
 
 
 @Controller('auth')
@@ -30,15 +39,40 @@ export class AuthController {
    * Step 1: Start Registration - Send OTP
    * POST /auth/start-registration
    */
-  @Public()
-  @Post('start-registration')
-  async startRegistration(
-    @Body() dto: StartRegistrationDto,
-    //@Req() req: Request
-  ) {
-   // const ipAddress = req.ip || req.connection?.remoteAddress;
-    return this.authService.startRegistration(dto);
-  }
+@Public()
+@Post('start-email-verification')
+startEmail(@Body() dto: StartEmailVerificationDto, @Req() req: ExpressRequest) {
+  const ipAddress = req.ip  ;
+  return this.authService.sendEmailOtp(dto,ipAddress);
+}
+
+// @Public()
+// @Post('resend-email-verification')
+// resendEmail(@Body() dto: StartEmailVerificationDto) {
+//   return this.authService.resendEmailOtp(dto.email);
+// }
+
+@Public()
+@Post('start-mobile-verification')
+startMobile(@Body() dto: StartMobileVerificationDto, @Req() req: ExpressRequest) {
+  const ipAddress = req.ip  ;
+  return this.authService.sendMobileOtp(dto,ipAddress);
+}
+
+@Public()
+@Post('resend-verification')
+resendOtp(@Body() dto: ResendOtpDto , @Req() req: ExpressRequest) {
+  // const ipAddress = req.ip;
+   const ipAddress = req.ip ;
+  return this.authService.resendOtp(dto, ipAddress);
+}
+/*
+@Post('resend-verification')
+resendOtp(@Body() dto: ResendOtpDto, @Req() req: Request) {
+  const ipAddress = req.ip;
+  return this.authService.resendOtp(dto, ipAddress);
+}*/
+
 
 @Public()
 @Post('verify-otp')
@@ -46,33 +80,38 @@ verifyOtp(@Body() dto: VerifyOtpDto) {
   return this.authService.verifyOtp(dto);
 }
 
-@Public()
-@Post('complete-registration')
-async complete(@Body() dto: CompleteRegistrationDto) {
-  return this.authService.completeRegistration(dto);
-}
- 
-@Public()
-@Post('buyer-signup')
-async buyerSignup(@Body() dto: CompleteRegistrationDto) {
-  return this.authService.completeRegistration(dto);
-}
- 
 
- //@UseGuards(PublicGuard)
- /* @Public()
-  @Post('register')
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.authService.create(createUserDto);
-  }*/
+@Public()
+@Post('register')
+register(@Body() dto: RegisterUserDto) {
+  return this.authService.registerUser(dto);
+}
+
+
  
   @Public()
   //  @UseGuards(AuthGuard('local'))
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Request() req) {
-    return this.authService.login(req.user); // user is attached by LocalStrategy
+  async login(dto: LoginDto) {
+    return this.authService.login(dto); // user is attached by LocalStrategy
   }
+
+  @Public()
+  @Post('send-login-otp')
+  async sendLoginOtp(@Body() dto: SendOtpDto, @Ip() ipAddress?: string) {
+    return this.authService.sendLoginOtp(dto, ipAddress);
+  }
+
+
+
+
+  @Public()
+  @Post('login-with-otp')
+async otpLogin(@Body() dto: VerifyOtpDto) {
+  return this.authService.loginWithOtp(dto);
+}
+
   
   @Public()
   @Get('by-role/:roleName')
@@ -84,7 +123,7 @@ async buyerSignup(@Body() dto: CompleteRegistrationDto) {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('profile')
-  getProfile(@Request() req) {
+  getProfile(@Req() req: ExpressRequest) {
     return req.user;
   }
 

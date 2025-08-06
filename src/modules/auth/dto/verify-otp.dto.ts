@@ -1,18 +1,23 @@
 // dto/verify-otp.dto.ts
-import { IsNotEmpty, IsString, IsEnum } from 'class-validator';
+import { IsNotEmpty,IsOptional, IsString, Length, IsIn } from 'class-validator';
 
 export class VerifyOtpDto {
   @IsNotEmpty()
   @IsString()
-  identifier: string; // Email or Mobile
+  identifier: string;
 
   @IsNotEmpty()
   @IsString()
+  @Length(6, 6)
   otp: string;
 
   @IsNotEmpty()
-  @IsEnum(['email', 'mobile'])
+  @IsIn(['email', 'mobile'])
   type: 'email' | 'mobile';
+
+  @IsOptional()
+  @IsString()
+  userType?: string; // e.g., 'Login', 'Registration'
 }
 /*
 {

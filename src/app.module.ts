@@ -19,6 +19,7 @@ import { PermissionsGuard } from './modules/auth/guards/permissions.guard';
 import { PublicGuard } from './core/guards/public.guard';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard'; 
 //import { MailModule } from './shared/mail/mail.module';
+import { OtpModule } from './shared/otp/otp.module';
 
 @Module({
   imports: [
@@ -35,7 +36,8 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
     DatabaseModule,
     AuthModule,  
     AdminModule,
-    ClientModule, 
+    ClientModule,
+    OtpModule, 
   //  MailModule,
   ],
 

@@ -10,7 +10,7 @@ async function bootstrap() {
  // const app = await NestFactory.create(AppModule);
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
- // app.set('trust proxy', true);
+  app.set('trust proxy', true);
   app.useStaticAssets(join(__dirname, '..', 'uploads'));
 
   // Apply PublicGuard globally
@@ -21,7 +21,7 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api'); // 👈 adds /api before all routes)
 
-  //   app.setGlobalPrefix('api'); // 👈 adds /api before all routes
+  
 
   app.useGlobalPipes(
     new ValidationPipe({

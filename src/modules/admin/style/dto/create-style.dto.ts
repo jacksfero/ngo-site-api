@@ -1,12 +1,13 @@
 import { IsString, IsOptional, IsBoolean, Length } from 'class-validator';
 
 export class CreateStyleDto {
-  @Length(5, 100)
+  @Length(3, 50)
   @IsString()
   title: string;
 
+  @IsOptional()
   @IsString()
-  description: string;
+  description?: string;
 
 
   @IsOptional()
