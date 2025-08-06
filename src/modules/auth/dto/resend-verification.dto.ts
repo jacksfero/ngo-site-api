@@ -1,6 +1,7 @@
 // src/auth/dto/resend-verification.dto.ts
 
-import { IsEmail,IsOptional,IsString, IsMobilePhone, ValidateIf } from 'class-validator';
+import { IsEmail,IsEnum,IsOptional,IsString, IsMobilePhone, ValidateIf } from 'class-validator';
+import { UserType } from './start-verification.dto';
 
 export class ResendOtpDto {
   @ValidateIf((o) => !o.mobile)
@@ -12,8 +13,8 @@ export class ResendOtpDto {
   mobile?: string;
 
   @IsOptional()
-  @IsString()       
-  userType?: string; // Optionally include userType if needed
+  @IsEnum(UserType)       
+  userType?: UserType; // Optionally include userType if needed
 }
 /*
 import { IsEmail, IsMobilePhone, ValidateIf, IsOptional, IsString } from 'class-validator';

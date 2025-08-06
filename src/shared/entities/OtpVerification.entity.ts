@@ -9,6 +9,7 @@ import {
   Index,
 } from 'typeorm';
 import { User } from './user.entity';
+import { OtpType,UserType } from 'src/modules/auth/dto/start-verification.dto';
 
 @Entity('otp_verifications')
 @Index(['identifier', 'type']) // For faster lookup
@@ -20,14 +21,14 @@ export class OtpVerification {
   identifier: string; // email or mobile
 
 
-  @Column({ nullable: true })
-  userType?: string;
+  @Column({ type: 'enum', enum: UserType })
+  userType?: UserType;
 
   @Column()
   otp: string;
 
-  @Column({ type: 'enum', enum: ['email', 'mobile'], default: 'mobile' })
-  type: 'email' | 'mobile';
+  @Column({ type: 'enum', enum: OtpType })
+  type: OtpType;
 
   @Column({ default: false })
   isVerified: boolean;

@@ -1,4 +1,5 @@
-import { IsString, IsIn, Length } from 'class-validator';
+import { IsString,IsEnum, IsIn, Length } from 'class-validator';
+import { OtpType } from './start-verification.dto';
 
   export class OtpLoginDto {
     @IsString()
@@ -8,6 +9,6 @@ import { IsString, IsIn, Length } from 'class-validator';
     @Length(6, 6)
     otp: string;
 
-    @IsIn(['email', 'mobile'])
-    type: 'email' | 'mobile';
+    @IsEnum(OtpType)
+    type: OtpType;
   }

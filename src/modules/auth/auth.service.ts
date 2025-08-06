@@ -3,7 +3,7 @@ import {
   UnauthorizedException,
   ConflictException,
   NotFoundException,
-  BadRequestException,
+  BadRequestException,Logger,
 } from '@nestjs/common';
 
 import * as bcrypt from 'bcrypt';
@@ -23,17 +23,18 @@ import { Role } from 'src/shared/entities/role.entity';
 import { OtpService } from 'src/shared/otp/otp.service';
 import { ResendOtpDto } from './dto/resend-verification.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
-import { StartEmailVerificationDto, StartMobileVerificationDto } from './dto/start-verification.dto';
-import { LoginDto } from './login.dto';
+import { OtpType,UserType,StartEmailVerificationDto, StartMobileVerificationDto } from './dto/start-verification.dto';
+import { LoginDto } from './dto/login.dto';
 import { OtpLoginDto } from './dto/otp-login.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(
+  private readonly logger = new Logger(AuthService.name);
+  constructor(    
     private usersService: UsersService,
     private jwtService: JwtService,
-
+    
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
 
@@ -51,12 +52,12 @@ export class AuthService {
   /************ Start registration Process */
 
 
-  async sendEmailOtp(dto: StartEmailVerificationDto,ipAddress?: string) {
-    return this.otpService.sendOtp(dto.email, 'email', dto.userType,ipAddress); // Only identifier and type passed
+  async sendEmailOtp(identifier: string, type: OtpType, userType: UserType, ipAddress?: string) {
+    return this.otpService.sendOtp(identifier, type, userType as UserType, ipAddress); // Only identifier and type passed
   }
 
-  async sendMobileOtp(dto: StartMobileVerificationDto,ipAddress?: string) {
-    return this.otpService.sendOtp(dto.mobile, 'mobile', dto.userType,ipAddress);
+  async sendMobileOtp(identifier: string, type: OtpType, userType: UserType, ipAddress?: string) {
+    return this.otpService.sendOtp(identifier, type, userType as UserType, ipAddress); // Only identifier and type passed
   }
  
 
@@ -101,6 +102,7 @@ async verifyOtp(dto: VerifyOtpDto) {
       username,
       email,
       mobile,
+      status:true,is_verified:true,
       password: await bcrypt.hash(password, 10),
       roles: [role], // assign role in array for ManyToMany
     });
@@ -111,29 +113,72 @@ async verifyOtp(dto: VerifyOtpDto) {
   }
 
 
-  async validateUser(dto: LoginDto): Promise<any> {
-    const {loginId, password} = dto;
-    let user;
-  
-    // Determine if it's email or mobile
-    if (loginId.includes('@')) {
-      user = await this.findByEmail(loginId);
-    } else {
-      user = await this.findByMobile(loginId);
+    async validateUser(loginId:string, password:string): Promise<any> {
+     // const { loginId, password } = dto;
+    
+      console.log('loginId-----', loginId, '----password---', password);
+    
+      if (!loginId || !password) {
+        this.logger.warn('Login attempt with missing credentials');
+        throw new BadRequestException('Either email or mobile must be provided.');
+      }
+    
+      try {
+        let user;
+    
+        if (this.isValidEmail(loginId)) {
+          console.log('Detected email login');
+          user = await this.findByEmail(loginId);
+        } else if (this.isValidMobile(loginId)) {
+          console.log('Detected mobile login');
+          user = await this.findByMobile(loginId);
+        } else {
+          this.logger.warn(`Invalid login format: ${loginId}`);
+          throw new BadRequestException(`Invalid login format: ${loginId}`);
+        }
+    
+        console.log('User found:-------------', user);
+    
+        if (!user) {
+          this.logger.warn(`User not found for loginId: ${loginId}`);
+          throw new NotFoundException(`User not found for loginId: ${loginId}`);
+        }
+    
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        console.log('Is password valid?', isPasswordValid);
+    
+        if (!isPasswordValid) {
+          this.logger.warn(`Invalid password attempt for user: ${user.id}`);
+          throw new UnauthorizedException(`Invalid password`);
+        }
+    
+        const { password: _, ...result } = user;
+        return result;
+    
+      } catch (error) {
+        this.logger.error(`Error during validation: ${error.message}`);
+        throw new BadRequestException(`Error during validation: ${error.message}`);
+      }
     }
-  
-    if (user && (await bcrypt.compare(password, user.password))) {
-      const { password, ...result } = user;
-      return result;
-    }
-  
-    return null;
+    
+  private isValidEmail(input: string): boolean {
+    return input?.includes('@') && input.length > 5;
   }
+
+  private isValidMobile(input: string): boolean {
+    // Basic mobile number validation - adjust for your needs
+    return /^\d{10,15}$/.test(input);
+  }
+
+
   async login(user: any) {
+    if (!user) {
+      this.logger?.warn?.('Login failed: user is undefined');
+      throw new UnauthorizedException('Invalid login request');
+    }
     const payload: JwtPayload = {
       sub: user.id,
-      username: user.username,
-
+      username: user.mobile,
       roles: user.roles,
       permissions: user.email, // optional
     };
@@ -142,14 +187,14 @@ async verifyOtp(dto: VerifyOtpDto) {
     };
   }
 
-  async sendLoginOtp(dto: SendOtpDto, ipAddress?: string) {
-    const { identifier, type, userType } = dto;
-    return this.otpService.sendOtp(identifier,type,userType, ipAddress);
-  }
+   async sendLoginOtp(dto: SendOtpDto, ipAddress?: string) {
+    const { identifier, type, userType  } = dto;
+    return this.otpService.sendOtp(identifier,type,userType as UserType, ipAddress);
+  } 
   
  
   async loginWithOtp(dto: VerifyOtpDto) {
-    const result = await this.otpService.verifyOtp({ ...dto, userType: 'Login' });
+    const result = await this.otpService.verifyOtp({ ...dto, userType: UserType.LOGIN });
   
     if (!result.success || !result.user) {
       throw new UnauthorizedException('Invalid OTP or user not found');

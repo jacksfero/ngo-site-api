@@ -36,9 +36,9 @@ export class SurfaceService {
       order: {
         createdAt: 'DESC', // sort by newest first
       },
-       where: {
-        status: true, // only active surfaces
-      }, 
+      //  where: {
+      //   status: true, // only active surfaces
+      // }, 
     });
   }
 

@@ -16,7 +16,7 @@ import { OtpVerification } from 'src/shared/entities/OtpVerification.entity';
 import { User } from 'src/shared/entities/user.entity';
 import { Role } from 'src/shared/entities/role.entity';
 import { OtpModule } from 'src/shared/otp/otp.module';
-
+ 
 @Module({
   imports: [TypeOrmModule.forFeature([User,Role,OtpVerification]),
     UsersModule,
@@ -35,9 +35,9 @@ import { OtpModule } from 'src/shared/otp/otp.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [
+  providers: [LocalStrategy,
     AuthService,
-    LocalStrategy,
+    
     JwtStrategy,
     JwtAuthGuard,      // 👈 Add
     RolesGuard,        // 👈 Add

@@ -13,8 +13,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 
-import { UpdateAuthDto } from './dto/update-auth.dto';
-import { CreateUserDto } from 'src/modules/admin/users/dto/create-user.dto';
+ 
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { Public } from 'src/core/decorators/public.decorator';
@@ -22,9 +21,9 @@ import { PublicGuard } from 'src/core/guards/public.guard';
  
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
-import { StartEmailVerificationDto,StartMobileVerificationDto } from './dto/start-verification.dto';
+import { OtpType, StartEmailVerificationDto,StartMobileVerificationDto } from './dto/start-verification.dto';
 import { ResendOtpDto } from './dto/resend-verification.dto';
-import { LoginDto } from './login.dto';
+import { LoginDto } from './dto/login.dto';
 import { OtpLoginDto } from './dto/otp-login.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
  
@@ -43,20 +42,16 @@ export class AuthController {
 @Post('start-email-verification')
 startEmail(@Body() dto: StartEmailVerificationDto, @Req() req: ExpressRequest) {
   const ipAddress = req.ip  ;
-  return this.authService.sendEmailOtp(dto,ipAddress);
+  return this.authService.sendEmailOtp(dto.email, OtpType.EMAIL, dto.userType,ipAddress);
 }
 
-// @Public()
-// @Post('resend-email-verification')
-// resendEmail(@Body() dto: StartEmailVerificationDto) {
-//   return this.authService.resendEmailOtp(dto.email);
-// }
+ 
 
 @Public()
 @Post('start-mobile-verification')
 startMobile(@Body() dto: StartMobileVerificationDto, @Req() req: ExpressRequest) {
   const ipAddress = req.ip  ;
-  return this.authService.sendMobileOtp(dto,ipAddress);
+  return this.authService.sendMobileOtp(dto.mobile, OtpType.MOBILE, dto.userType,ipAddress);
 }
 
 @Public()
@@ -88,13 +83,12 @@ register(@Body() dto: RegisterUserDto) {
 }
 
 
- 
+   //  @UseGuards(AuthGuard('local'))  
   @Public()
-  //  @UseGuards(AuthGuard('local'))
-  @UseGuards(LocalAuthGuard)
+  @UseGuards(LocalAuthGuard) // ✅ This is KEY
   @Post('login')
-  async login(dto: LoginDto) {
-    return this.authService.login(dto); // user is attached by LocalStrategy
+  async login(@Req() req: ExpressRequest) {
+    return this.authService.login(req.user); // ✅ user comes from validate()
   }
 
   @Public()

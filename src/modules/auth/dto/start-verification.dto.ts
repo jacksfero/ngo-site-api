@@ -1,12 +1,19 @@
 // dto/start-verification.dto.ts
 import { IsEmail, IsEnum,IsMobilePhone } from 'class-validator';
 
+export enum OtpType {
+  EMAIL = 'email',
+  MOBILE = 'mobile',
+}
 
 
 export enum UserType {
   CUSTOMER = 'customer',
   SELLER = 'seller',
   ARTISTS = 'artists',
+    LOGIN = 'login',
+    BUYER = 'buyer',
+  REGISTER = 'register',
   // Add as needed
 }
 

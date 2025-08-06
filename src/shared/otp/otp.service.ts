@@ -8,6 +8,7 @@ import { addMinutes, differenceInSeconds, isAfter, subMinutes } from 'date-fns';
 import { VerifyOtpDto } from 'src/modules/auth/dto/verify-otp.dto';
 import { ResendOtpDto } from 'src/modules/auth/dto/resend-verification.dto';
 import { User } from '../entities/user.entity';
+import { OtpType,UserType } from 'src/modules/auth/dto/start-verification.dto';
 
 export type OtpVerificationResult =
   | { success: true; message: string; user?: undefined }
@@ -84,8 +85,8 @@ export class OtpService {
   }
   async resendOtp(
     identifier: string,
-    type: 'email' | 'mobile',
-    userType?: string,
+    type: OtpType,
+    userType?: UserType,
     ipAddress?: string,
   ) {
     return this.sendOtp(identifier, type, userType, ipAddress);
@@ -94,14 +95,14 @@ export class OtpService {
 
   async resendOtpByIdentifier(dto: ResendOtpDto, ipAddress?: string) {
     let identifier: string;
-    let type: 'email' | 'mobile';
+    let type: OtpType;
 
     if (dto.email) {
       identifier = dto.email;
-      type = 'email';
+      type = OtpType.EMAIL;
     } else if (dto.mobile) {
       identifier = dto.mobile;
-      type = 'mobile';
+      type = OtpType.MOBILE;
     } else {
       throw new BadRequestException('Either email or mobile must be provided.');
     }
@@ -117,10 +118,10 @@ export class OtpService {
  // async sendOtpForLogin(
     async sendOtp(
     identifier: string,
-    type: 'email' | 'mobile',
-    userType?: string, // default to 'Login' to separate from registration
+    type: OtpType,
+    userType?: UserType, // default to 'Login' to separate from registration
     ipAddress?: string,
-  ): Promise<{ otp: string }> {
+  ): Promise<{ success: true; message: string }>  {
     if (!ipAddress) {
       throw new BadRequestException('IP address is required.');
     }
@@ -140,8 +141,10 @@ export class OtpService {
   
     // Find user by identifier
     const user = await this.userReposs.findOne({ where: { [type]: identifier } });
-    if (!user && userType === 'login' ) {throw new NotFoundException('User not registered');}
-    if (user && userType !== 'login' ) {
+    if (!user && userType === UserType.LOGIN ){
+       throw new NotFoundException('User not registered');
+      }
+    if (user && userType === UserType.LOGIN ) {
       throw new BadRequestException('User already exists');
     }
     const otp = this.generateOtpCode();
@@ -192,13 +195,23 @@ export class OtpService {
     }
   
     console.log(`OTP sent to ${type}: ${identifier} => ${otp}`);
-    return { otp };
+  //  return { success: true, message: `OTP sent to your ${type}` };
+    return { success: true, message: `OTP sent to your ${otp}` };
+   // return { otp };
   }
 
  
+  async getLatestVerifiedOtp(
+    identifier: string,
+    type: 'email' | 'mobile',
+  ): Promise<OtpVerification | null> {
+    return this.otpRepository.findOne({
+      where: { identifier, type: type as OtpType, isVerified: true },
+      order: { updatedAt: 'DESC' },
+    });
+  }
 
-
-
+ /*
   async sendOtpToUser(identifier: string, type: 'email' | 'mobile', otp: string) {
     // integrate with your SMS or email service
     console.log(`Sending OTP ${otp} to ${type}: ${identifier}`);
@@ -225,15 +238,7 @@ export class OtpService {
   }
 
 
-  async getLatestVerifiedOtp(
-    identifier: string,
-    type: 'email' | 'mobile',
-  ): Promise<OtpVerification | null> {
-    return this.otpRepository.findOne({
-      where: { identifier, type, isVerified: true },
-      order: { updatedAt: 'DESC' },
-    });
-  }
+*/
  
 
 }
