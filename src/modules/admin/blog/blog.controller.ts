@@ -65,18 +65,12 @@ export class BlogController {
   ) {
     return this.blogService.create(dto, req.user, file?.filename);
   }
-  
-
- 
-
- 
+   
 @Get()
 async findAll() {
   const blogs = await this.blogService.findAll();
   //  return plainToInstance(Blog, blogs, { groups: ['admin'] }); // 👈 Apply admin group
-  return blogs;
-
-  // return this.blogService.findAll(); // Automatic serialization
+  return blogs; 
 }
 
 @Get(':id')
