@@ -83,7 +83,7 @@ async findAll() {
 findOne(@Param('id', ParseIntPipe) id: number) {
   return this.blogService.findOne(id);
 }
-
+ 
 @Patch(':id')
 @UseInterceptors(FileInterceptor('titleImage', blogImageStorage))
 update(
