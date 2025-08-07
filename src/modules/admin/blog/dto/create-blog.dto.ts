@@ -37,11 +37,11 @@ export class CreateBlogDto {
 
   @IsString()
   @IsOptional()
-  descriptionTag?: string;
+  descriptionTag?: string | null;  // Add null type
 
   @IsString()
   @IsOptional()
-  optionalTitle?: string;
+  optionalTitle?: string | null;   // Add null type
 
   @IsBoolean()
   @IsOptional()

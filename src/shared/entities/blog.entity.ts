@@ -50,7 +50,7 @@ export class Blog {
   @Column({ type: 'text', nullable: true, default: null })
   descriptionTag: string;
  
-  @Column({ type: 'varchar', length: 150, default: null })
+  @Column({ type: 'varchar', length: 150, nullable: true, default: null })
   optionalTitle: string;
  
   @Column({ type: 'boolean', default: false })

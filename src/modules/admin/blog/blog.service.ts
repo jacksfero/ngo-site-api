@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable,ConflictException, NotFoundException, BadRequestException, InternalServerErrorException, Logger } from '@nestjs/common';
 import { FindOptionsWhere, In, Not, Repository } from 'typeorm';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
@@ -14,6 +14,7 @@ import * as path from 'path';
 
 @Injectable()
 export class BlogService {
+  private readonly logger = new Logger(BlogService.name);
   constructor(
     @InjectRepository(Blog)
     private blogRepository: Repository<Blog>,
@@ -30,35 +31,57 @@ export class BlogService {
   ) { }
 
   async create(dto: CreateBlogDto, user: any, imageFilename?: string): Promise<Blog> {
+    // Validate input
+    if (!dto.title || !dto.categoryId) {
+        throw new BadRequestException('Title and category are required');
+    }
 
-    const category = await this.categoryRepository.findOneBy({ id: dto.categoryId });
-    if (!category) throw new NotFoundException('Category not found');
+    // Check for existing blog
+    const [existingByTitle, existingBySlug] = await Promise.all([
+        this.blogRepository.findOneBy({ title: dto.title }),
+        dto.slug ? this.blogRepository.findOneBy({ slug: dto.slug }) : null
+    ]);
 
-    const tags = await this.tagRepository.findBy({ id: In(dto.tagIds || []) });
-console.log(imageFilename,'creat--------------------')
-   
-    const author = await this.userRepository.findOneBy({ id: user.sub.toString() });
+    if (existingByTitle) throw new ConflictException('Blog title already exists');
+    if (existingBySlug) throw new ConflictException('Blog slug already exists');
+
+    // Fetch related entities
+    const [category, tags, author] = await Promise.all([
+        this.categoryRepository.findOneBy({ id: dto.categoryId }),
+        dto.tagIds?.length ? this.tagRepository.findBy({ id: In(dto.tagIds) }) : [],
+        this.userRepository.findOneBy({ id: user.sub.toString() })
+    ]);
+
+    if (!category) throw new NotFoundException(`Category not found`);
     if (!author) throw new NotFoundException('Author not found');
 
-    const uniqueSlug = await this.generateUniqueSlug(dto.title);
+    // Create blog entity with proper null handling
+    const blog = new Blog();
+    blog.title = dto.title;
+    blog.slug = await this.generateUniqueSlug(dto.title);
+    blog.h1Title = dto.h1Title || dto.title;
+    blog.blogContent = dto.blogContent;
+    blog.descriptionTag = dto.descriptionTag || ''; // Handle undefined
+    blog.optionalTitle = dto.optionalTitle || '';   // Handle undefined
+    blog.titleImage = imageFilename ? `/blog-images/${imageFilename}` : null;
+    blog.status = dto.status ?? false;
+    blog.isPublished = dto.isPublished ?? false;
+    blog.scheduledPublishDate = dto.scheduledPublishDate || null;
+    blog.category = category;
+    blog.tags = tags;
+    blog.author = author;
+   // blog.createdBy = user.username || user.email || user.sub.toString();
+  //  blog.updatedBy = user.username || user.email || user.sub.toString();
 
-    const blog = this.blogRepository.create({
-      title: dto.title,
-      slug: uniqueSlug,
-      h1Title: dto.h1Title,
-      blogContent: dto.blogContent,
-      // titleImage:dto.titleImage,
-      titleImage: imageFilename ? `/blog-images/${imageFilename}` : null,
-      status: true,
-      isPublished: true,
-      scheduledPublishDate: dto.scheduledPublishDate || null,
-      category,
-      tags,
-      author,
-    });
     return this.blogRepository.save(blog);
+}
 
-  }
+private async deleteImageFile(filename: string): Promise<void> {
+    const filePath = path.join(process.cwd(), 'uploads', 'blog-images', filename);
+    if (fs.existsSync(filePath)) {
+        await fs.promises.unlink(filePath);
+    }
+}
 
 
   async generateUniqueSlug(title: string): Promise<string> {
