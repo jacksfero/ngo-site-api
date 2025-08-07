@@ -16,6 +16,12 @@ import { UpdateMediumDto } from './dto/update-medium.dto';
 export class MediumController {
   constructor(private readonly mediumService: MediumService) {}
 
+  @Get('list')
+  getActiveList() {
+    return this.mediumService.getActiveList();
+  }
+
+
   @Post()
   create(@Body() createMediumDto: CreateMediumDto, @Req() req) {
     const user = req.user;
