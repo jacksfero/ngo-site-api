@@ -6,15 +6,15 @@ import { Surface } from '../../../shared/entities/surface.entity';
 import { Not, Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import { SurfaceResponseDto } from './dto/surface-response.dto';
- 
 
- 
+
+
 @Injectable()
 export class SurfaceService {
   constructor(
     @InjectRepository(Surface)
     private surfaceRepository: Repository<Surface>,
-  ) {}
+  ) { }
 
   // create(createSurfaceDto: CreateSurfaceDto) {
   //   return 'This action adds a new surface';
@@ -27,15 +27,15 @@ export class SurfaceService {
   ): Promise<Surface> {
 
 
-     // Check if surface name already exists
-     const existingSurface = await this.surfaceRepository.findOne({
+    // Check if surface name already exists
+    const existingSurface = await this.surfaceRepository.findOne({
       where: { surfaceName: createSurfaceDto.surfaceName.trim() },
     });
 
     if (existingSurface) {
       throw new ConflictException('Surface name already exists');
     }
- 
+
     const surface = this.surfaceRepository.create({
       ...createSurfaceDto,
       // createdBy: user.username, // or user.sub (ID), depending on your use case
@@ -44,9 +44,12 @@ export class SurfaceService {
     return this.surfaceRepository.save(surface);
   }
 
-  async getActiveList():  Promise<SurfaceResponseDto[]> {
+  async getActiveList(): Promise<SurfaceResponseDto[]> {
     const surfaces = await this.surfaceRepository.find({
-      order: { surfaceName: 'ASC' }
+      order: { surfaceName: 'ASC' },
+       where: {
+        status: true, // only active surfaces
+      }
     });
     return plainToInstance(SurfaceResponseDto, surfaces, {
       excludeExtraneousValues: true,
@@ -71,26 +74,26 @@ export class SurfaceService {
 
   async update(id: number, dto: UpdateSurfaceDto, user: any): Promise<Surface> {
 
-// Check if new name conflicts with other surfaces
-if (dto.surfaceName) {
-  const existingSurface = await this.surfaceRepository.findOne({
-    where: {
-      surfaceName: dto.surfaceName.trim(),
-      id: Not(id), // Exclude current surface from check
-    },
-  });
+    // Check if new name conflicts with other surfaces
+    if (dto.surfaceName) {
+      const existingSurface = await this.surfaceRepository.findOne({
+        where: {
+          surfaceName: dto.surfaceName.trim(),
+          id: Not(id), // Exclude current surface from check
+        },
+      });
 
-  if (existingSurface) {
-    throw new ConflictException('Surface name already exists');
-  }
-}
+      if (existingSurface) {
+        throw new ConflictException('Surface name already exists');
+      }
+    }
 
-// await this.surfaceRepository.update(id, {
-//   ...updateSurfaceDto,
-//   updatedBy,
-// });
+    // await this.surfaceRepository.update(id, {
+    //   ...updateSurfaceDto,
+    //   updatedBy,
+    // });
 
-// return this.surfaceRepository.findOne({ where: { id } });
+    // return this.surfaceRepository.findOne({ where: { id } });
 
 
     const surface = await this.findOne(id);
@@ -121,9 +124,9 @@ if (dto.surfaceName) {
     if (excludeId) {
       where.id = Not(excludeId);
     }
-    
+
     const existing = await this.surfaceRepository.findOne({ where });
     return !existing;
   }
 }
- 
+

@@ -7,6 +7,13 @@ import { UpdateStyleDto } from './dto/update-style.dto';
 export class StyleController {
   constructor(private readonly styleService: StyleService) { }
 
+  @Get('list')
+  getActiveList() {
+    return this.styleService.getActiveList();
+  }
+
+
+
   @Post()
   create(@Body() createStyleDto: CreateStyleDto, @Req() req) {
     return this.styleService.create(createStyleDto, req.user);

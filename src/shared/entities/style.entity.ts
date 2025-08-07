@@ -1,6 +1,7 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Unique, BeforeInsert, BeforeUpdate } from 'typeorm';
 
-@Entity('style')
+@Entity()
+@Unique(['title']) // Enforces unique title at database level
 export class Style {
   @PrimaryGeneratedColumn()
   id: number;
@@ -29,4 +30,13 @@ export class Style {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  normalizeTitle() {
+    if (this.title) {
+      // Trim and clean up title
+      this.title = this.title.trim().replace(/\s+/g, ' ');
+    }
+  }
 }

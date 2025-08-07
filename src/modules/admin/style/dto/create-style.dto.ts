@@ -1,16 +1,15 @@
-import { IsString, IsOptional, IsBoolean, Length } from 'class-validator';
+import { IsString, IsNotEmpty, IsBoolean, IsOptional } from 'class-validator';
 
 export class CreateStyleDto {
-  @Length(3, 30)
   @IsString()
+  @IsNotEmpty()
   title: string;
 
-  @IsOptional()
   @IsString()
+  @IsOptional()
   description?: string;
 
-
-  @IsOptional()
   @IsBoolean()
+  @IsOptional()
   status?: boolean;
 }
