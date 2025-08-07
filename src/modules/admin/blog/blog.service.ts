@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { In, Repository } from 'typeorm';
+import { FindOptionsWhere, In, Not, Repository } from 'typeorm';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -155,4 +155,38 @@ console.log(imageFilename,'creat--------------------')
       throw new NotFoundException('Blog post not found');
     }
   }
+
+  async validateBlogTitleAndSlug(
+    title: string, 
+    slug: string, 
+    excludeId?: number
+  ): Promise<{ isTitleUnique: boolean, isSlugUnique: boolean }> {
+    // Create properly typed where conditions
+    const whereConditions: FindOptionsWhere<Blog>[] = [];
+    
+    if (title) {
+      whereConditions.push({ 
+        title,
+        ...(excludeId && { id: Not(excludeId) })
+      });
+    }
+    
+    if (slug) {
+      whereConditions.push({ 
+        slug,
+        ...(excludeId && { id: Not(excludeId) })
+      });
+    }
+  
+    const existing = await this.blogRepository.find({ 
+      where: whereConditions 
+    });
+  
+    return {
+      isTitleUnique: !existing.some(blog => blog.title === title),
+      isSlugUnique: !existing.some(blog => blog.slug === slug),
+    };
+  }
+
+
 }

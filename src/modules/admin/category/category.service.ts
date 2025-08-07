@@ -5,6 +5,8 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from 'src/shared/entities/category.entity';
 import { slugify } from 'src/shared/utils/slugify';
+import { plainToInstance } from 'class-transformer';
+import { BlogcategoryResponseDto } from './dto/blog-cat-res-dto';
 
 @Injectable()
 export class CategoryService {
@@ -36,7 +38,17 @@ async generateUniqueSlug(title: string): Promise<string> {
 
     return slug;
   }
-
+  async getActiveList():  Promise<BlogcategoryResponseDto[]> {
+    const surfaces = await this.categoryRepository.find({
+      order: { name: 'ASC' },
+      where: {
+       status: true, // only active surfaces
+     }
+    });
+    return plainToInstance(BlogcategoryResponseDto, surfaces, {
+      excludeExtraneousValues: true,
+    });
+  }
   async findAll(): Promise<Category[]> {
     return this.categoryRepository.find({
       order: {

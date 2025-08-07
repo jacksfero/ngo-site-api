@@ -1,12 +1,12 @@
-import { Column, JoinTable, ManyToMany, ManyToOne, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, JoinTable, ManyToMany, ManyToOne, Entity, PrimaryGeneratedColumn, Unique, BeforeInsert, BeforeUpdate } from 'typeorm';
 import { Expose } from 'class-transformer';
-
 import { Category } from './category.entity';
 import { Tag } from './tag.entity';
 import { User } from './user.entity';
 
-
 @Entity('blog')
+@Unique(['slug']) // Enforce unique slug
+@Unique(['title']) // Enforce unique title
 export class Blog {
   @PrimaryGeneratedColumn()
   id: number;
@@ -28,8 +28,8 @@ export class Blog {
   @Column({ type: 'varchar', length: 200 })
   title: string;
 
-@Column({ type: 'varchar', length: 200, nullable: true, default: null })
-titleImage: string | null;
+  @Column({ type: 'varchar', length: 200, nullable: true, default: null })
+  titleImage: string | null;
 
   @Column({ type: 'varchar', length: 150 })
   slug: string;
@@ -38,28 +38,26 @@ titleImage: string | null;
   h1Title: string;
 
   @Column({
-    type: 'longtext', // Correct type for MySQL long text
-    charset: 'utf8mb4', // Supports full Unicode including emojis
+    type: 'longtext',
+    charset: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
   })
   blogContent: string;
 
-  @Column({ type: 'varchar', length: 255, default: null })
+  @Column({ type: 'text', nullable: true, default: null})
   keywordsTag: string;
-
-  @Column({ type: 'varchar', length: 255, default: null })
+ 
+  @Column({ type: 'text', nullable: true, default: null })
   descriptionTag: string;
  
   @Column({ type: 'varchar', length: 150, default: null })
   optionalTitle: string;
  
-  @Column({ type: Boolean, default: false })
+  @Column({ type: 'boolean', default: false })
   status: boolean;
-
 
   @Column({ default: false })
   isPublished: boolean;
-
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
@@ -72,11 +70,31 @@ titleImage: string | null;
   updatedAt: Date;
 
   @Column({
-    type: 'timestamp', // 👈 Specify column type
-    nullable: true, // 👈 Allow NULL in database
-    default: null, // 👈 Default value (optional)
+    type: 'timestamp',
+    nullable: true,
+    default: null,
   })
-  scheduledPublishDate: Date | null; // 👈 Union type with null
+  scheduledPublishDate: Date | null;
 
-
+  @BeforeInsert()
+  @BeforeUpdate()
+  normalizeFields() {
+    // Normalize title
+    if (this.title) {
+      this.title = this.title.trim().replace(/\s+/g, ' ');
+    }
+    
+    // Normalize slug (convert to lowercase and replace spaces with hyphens)
+    if (this.slug) {
+      this.slug = this.slug.trim()
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\-]+/g, '');
+    }
+    
+    // Normalize h1Title
+    if (this.h1Title) {
+      this.h1Title = this.h1Title.trim().replace(/\s+/g, ' ');
+    }
+  }
 }

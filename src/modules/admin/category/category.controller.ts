@@ -7,6 +7,12 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
+  @Get('list')
+  getActiveList() {
+    return this.categoryService.getActiveList();
+  }
+
+
   @Post()
   create(@Body() createCategoryDto: CreateCategoryDto,@Req() req) {
     return this.categoryService.create(createCategoryDto, req.user);

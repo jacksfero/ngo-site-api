@@ -9,41 +9,51 @@ import {
   IsInt,
   IsArray,
   IsBoolean,
+  IsDate,
 } from 'class-validator';
 
 
 export class CreateBlogDto {
 
   @IsNotEmpty()
-  @IsString()
-  @Length(5, 50)
+  @IsString()  
   title: string;
 
   @IsOptional()
-  @IsString()
-  @Length(3, 50)
+  @IsString() 
   slug?: string;
 
   @IsNotEmpty()
-  @IsString()
-  @Length(5, 80)
+  @IsString() 
   h1Title: string;
 
- 
-  @IsOptional()
   @IsString()
-  titleImage?: string;
+  @IsOptional()
+  titleImage?: string | null;
 
   @IsNotEmpty()
   @IsString()
   blogContent: string;
 
+  @IsString()
   @IsOptional()
-  @IsDateString() 
-  scheduledPublishDate?: Date;
+  descriptionTag?: string;
+
+  @IsString()
+  @IsOptional()
+  optionalTitle?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  status?: boolean;
+
+  @IsDate()
+  @IsOptional()
+  @Type(() => Date)
+  scheduledPublishDate?: Date | null;
   
+  @IsBoolean()
   @IsOptional()
-  @IsBoolean() 
   isPublished?: boolean;
   
   @IsInt()

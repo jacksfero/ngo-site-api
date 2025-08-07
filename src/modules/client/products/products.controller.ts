@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+ 
 import { ProductFilterDto } from './dto/product-filter.dto';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
 
@@ -10,8 +9,25 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
 
+  @Get('stylelist')
+  getActiveStyleList() {
+    return this.productsService.getActiveStyleList();
+  }
 
 
+  @Get('surfacelist')
+  getActiveSurfaceList() {
+    return this.productsService.getActiveSurfaceList();
+  }
+
+  @Get('mediumlist')
+  getActiveMediumList() {
+    return this.productsService.getActiveMediumList();
+  }
+  @Get('subjectlist')
+  getActiveSubjectList() {
+    return this.productsService.getActiveSubjectList();
+  }
 
 
  @Get()
