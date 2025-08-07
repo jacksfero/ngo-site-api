@@ -1,6 +1,7 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Unique, BeforeInsert, BeforeUpdate } from 'typeorm';
 
 @Entity('subject')
+@Unique(['subject']) // Enforces unique subject at database level
 export class Subject {
   @PrimaryGeneratedColumn()
   id: number;
@@ -14,10 +15,10 @@ export class Subject {
   @Column({ type: 'boolean', default: false })
   status: boolean;
 
- @Column({ type: 'varchar', length: 50, nullable: true })
+  @Column({ type: 'varchar', length: 50, nullable: true })
   createdBy: string;
 
-   @Column({ type: 'varchar', length: 50, nullable: true })
+  @Column({ type: 'varchar', length: 50, nullable: true })
   updatedBy: string;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
@@ -29,4 +30,13 @@ export class Subject {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  normalizeSubject() {
+    if (this.subject) {
+      // Trim and clean up subject
+      this.subject = this.subject.trim().replace(/\s+/g, ' ');
+    }
+  }
 }
