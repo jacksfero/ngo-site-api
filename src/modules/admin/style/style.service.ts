@@ -25,7 +25,12 @@ export class StyleService {
   }
 
   async findAll(): Promise<Style[]> {
-    const result = await this.styleRepository.find();
+    const result = await this.styleRepository.find({
+      order: {
+        createdAt: 'DESC', // sort by newest first
+      },
+
+    });    
     return result;
   }
 

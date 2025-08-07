@@ -19,6 +19,11 @@ import { UpdateSurfaceDto } from './dto/update-surface.dto';
 export class SurfaceController {
   constructor(private readonly surfaceService: SurfaceService) {}
 
+  @Get('list')
+  getActiveList() {
+    return this.surfaceService.getActiveList();
+  }
+
   @Post()
   create(@Body() createSurfaceDto: CreateSurfaceDto, @Req() req) {
     const user = req.user; // Contains `sub`, `username`, `roles`, `permissions`
@@ -30,6 +35,7 @@ export class SurfaceController {
     return this.surfaceService.findAll();
   }
 
+  
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.surfaceService.findOne(+id);

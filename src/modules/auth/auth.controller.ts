@@ -38,6 +38,13 @@ export class AuthController {
    * Step 1: Start Registration - Send OTP
    * POST /auth/start-registration
    */
+
+ 
+ 
+
+
+
+
 @Public()
 @Post('start-email-verification')
 startEmail(@Body() dto: StartEmailVerificationDto, @Req() req: ExpressRequest) {
@@ -104,6 +111,12 @@ register(@Body() dto: RegisterUserDto) {
   @Post('login-with-otp')
 async otpLogin(@Body() dto: VerifyOtpDto) {
   return this.authService.loginWithOtp(dto);
+}
+
+@Public()
+@Post('forgot-password')
+async forgotPassword(@Body() dto: SendOtpDto, @Ip() ipAddress?: string) {
+  return this.authService.sendResetPasswordOtp(dto, ipAddress);
 }
 
   

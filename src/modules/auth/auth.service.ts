@@ -203,7 +203,13 @@ async verifyOtp(dto: VerifyOtpDto) {
       access_token: this.jwtService.sign(payload),
     };
   }
+  async sendResetPasswordOtp(dto: SendOtpDto, ipAddress?: string) {
+    const { identifier, type, userType  } = dto;
+   // console.log('===========',userType);
+    return this.otpService.sendOtp(identifier,type,userType as UserType, ipAddress);
+  } 
 
+  
    async sendLoginOtp(dto: SendOtpDto, ipAddress?: string) {
     const { identifier, type, userType  } = dto;
    // console.log('===========',userType);

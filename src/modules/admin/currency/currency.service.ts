@@ -1,9 +1,9 @@
-import { Injectable,NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable,NotFoundException } from '@nestjs/common';
 import { CreateCurrencyDto } from './dto/create-currency.dto';
 import { UpdateCurrencyDto } from './dto/update-currency.dto';
 import { Currency } from '../../../shared/entities/currency.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not,FindOptionsWhere, Repository } from 'typeorm';
 
 @Injectable()
 export class CurrencyService {
@@ -13,6 +13,23 @@ export class CurrencyService {
   ) { }
 
   async create(createCurrencyDto: CreateCurrencyDto, user: any): Promise<Currency> {
+    // Check if currency/code combination already exists
+    const existingCurrency = await this.currencyRepository.findOne({
+      where: [
+        { currency: createCurrencyDto.currency.trim() },
+        { code: createCurrencyDto.code.trim().toUpperCase() }
+      ],
+    });
+
+    if (existingCurrency) {
+      if (existingCurrency.currency === createCurrencyDto.currency.trim()) {
+        throw new ConflictException('Currency name already exists');
+      }
+      if (existingCurrency.code === createCurrencyDto.code.trim().toUpperCase()) {
+        throw new ConflictException('Currency code already exists');
+      }
+    }
+
     const currency = this.currencyRepository.create({
       ...createCurrencyDto,
       createdBy: user.sub.toString(), //userid
@@ -39,7 +56,46 @@ export class CurrencyService {
   }
 
  async update(id: number, updateCurrencyDto: UpdateCurrencyDto,user:any): Promise<Currency>  {
-    const currency = await this.findOne(id);
+ 
+  // Check if new currency/code conflicts with other records
+  if (updateCurrencyDto.currency || updateCurrencyDto.code) {
+    const whereConditions: FindOptionsWhere<Currency>[] = [];
+    
+    if (updateCurrencyDto.currency) {
+      whereConditions.push({ 
+        currency: updateCurrencyDto.currency.trim(),
+        id: Not(id) 
+      } as FindOptionsWhere<Currency>);
+    }
+    
+    if (updateCurrencyDto.code) {
+      whereConditions.push({ 
+        code: updateCurrencyDto.code.trim().toUpperCase(),
+        id: Not(id) 
+      } as FindOptionsWhere<Currency>);
+    }
+
+    const existingCurrency = await this.currencyRepository.findOne({
+      where: whereConditions,
+    });
+
+    if (existingCurrency) {
+      if (existingCurrency.currency === updateCurrencyDto.currency?.trim()) {
+        throw new ConflictException('Currency name already exists');
+      }
+      if (existingCurrency.code === updateCurrencyDto.code?.trim().toUpperCase()) {
+        throw new ConflictException('Currency code already exists');
+      }
+    }
+  }
+
+ 
+ 
+ 
+ 
+ 
+ 
+  const currency = await this.findOne(id);
     Object.assign(currency,updateCurrencyDto);
     currency.updatedBy = user.sub.toString();
     return this.currencyRepository.save(currency);
@@ -61,4 +117,34 @@ export class CurrencyService {
 
     return this.currencyRepository.save(currency);
   }
+
+
+
+  async validateCurrency(currency: string, code: string, excludeId?: number): Promise<{ isCurrencyUnique: boolean, isCodeUnique: boolean }> {
+    const where: any[] = [];
+    
+    if (currency) {
+      where.push({ currency: currency.trim() });
+    }
+    
+    if (code) {
+      where.push({ code: code.trim().toUpperCase() });
+    }
+    
+    if (excludeId) {
+      where.forEach(condition => condition.id = Not(excludeId));
+    }
+
+    const existing = await this.currencyRepository.find({
+      where: where,
+    });
+
+    return {
+      isCurrencyUnique: !existing.some(c => c.currency === currency?.trim()),
+      isCodeUnique: !existing.some(c => c.code === code?.trim().toUpperCase()),
+    };
+  }
 }
+
+
+ 

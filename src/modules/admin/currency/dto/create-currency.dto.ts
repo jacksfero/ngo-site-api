@@ -1,22 +1,27 @@
-import { IsString, IsOptional, IsBoolean, Length } from 'class-validator';
+import {IsNotEmpty,IsDecimal, IsAlphanumeric,IsString, IsOptional, IsBoolean, Length } from 'class-validator';
 
 export class CreateCurrencyDto {
-  @Length(2, 5)
-  @IsString()
+  
+  @IsNotEmpty()
+  @IsString() 
+  @Length(2, 5, { message: 'Currency   must be 2 characters' })
   currency: string;
 
-  @Length(2, 5)
-  @IsString()
+  @Length(1, 5, { message: 'Currency Icon must be 1 characters' })
+  @IsString()   
   icon: string;
 
   
-  @Length(2, 10)
+  @Length(2, 5, { message: 'Currency code must be 2 characters' })
   @IsString()
+  @IsNotEmpty()
+  @IsAlphanumeric()
   code: string;
   
-  
-  @Length(2, 10)
-  @IsString()
+  @IsDecimal()
+  @IsOptional()
+  @Length(2, 10, { message: 'Currency value must be 2 characters' })
+  @IsString()  
   value: number;
 
   @IsOptional()

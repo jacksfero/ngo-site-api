@@ -1,6 +1,8 @@
-import { Column, PrimaryGeneratedColumn, Entity } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Unique, BeforeInsert, BeforeUpdate } from 'typeorm';
+
 
 @Entity('currency')
+@Unique(['currency', 'code']) // Unique combination of currency and code
 export class Currency {
   @PrimaryGeneratedColumn()
   id: number;
@@ -11,7 +13,7 @@ export class Currency {
   @Column({ type: 'varchar', length: 20 })
   code: string;
 
-  @Column({
+  @Column({ 
     type: 'decimal',
     precision: 19, // total digits (including decimals)
     scale: 4, // decimal places
@@ -40,4 +42,19 @@ export class Currency {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  normalizeFields() {
+    // Trim and standardize currency name
+    if (this.currency) {
+      this.currency = this.currency.trim().replace(/\s+/g, ' ');
+    }
+    
+    // Convert code to uppercase and trim
+    if (this.code) {
+      this.code = this.code.trim().toUpperCase();
+    }
+  }
 }

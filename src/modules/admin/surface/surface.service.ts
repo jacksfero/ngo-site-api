@@ -1,9 +1,11 @@
-import { Injectable, NotFoundException, UseGuards } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, UseGuards } from '@nestjs/common';
 import { CreateSurfaceDto } from './dto/create-surface.dto';
 import { UpdateSurfaceDto } from './dto/update-surface.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Surface } from '../../../shared/entities/surface.entity';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
+import { plainToInstance } from 'class-transformer';
+import { SurfaceResponseDto } from './dto/surface-response.dto';
  
 
  
@@ -23,6 +25,17 @@ export class SurfaceService {
     createSurfaceDto: CreateSurfaceDto,
     user: any,
   ): Promise<Surface> {
+
+
+     // Check if surface name already exists
+     const existingSurface = await this.surfaceRepository.findOne({
+      where: { surfaceName: createSurfaceDto.surfaceName.trim() },
+    });
+
+    if (existingSurface) {
+      throw new ConflictException('Surface name already exists');
+    }
+ 
     const surface = this.surfaceRepository.create({
       ...createSurfaceDto,
       // createdBy: user.username, // or user.sub (ID), depending on your use case
@@ -31,6 +44,14 @@ export class SurfaceService {
     return this.surfaceRepository.save(surface);
   }
 
+  async getActiveList():  Promise<SurfaceResponseDto[]> {
+    const surfaces = await this.surfaceRepository.find({
+      order: { surfaceName: 'ASC' }
+    });
+    return plainToInstance(SurfaceResponseDto, surfaces, {
+      excludeExtraneousValues: true,
+    });
+  }
   async findAll(): Promise<Surface[]> {
     return this.surfaceRepository.find({
       order: {
@@ -38,7 +59,7 @@ export class SurfaceService {
       },
       //  where: {
       //   status: true, // only active surfaces
-      // }, 
+      // },   
     });
   }
 
@@ -49,6 +70,29 @@ export class SurfaceService {
   }
 
   async update(id: number, dto: UpdateSurfaceDto, user: any): Promise<Surface> {
+
+// Check if new name conflicts with other surfaces
+if (dto.surfaceName) {
+  const existingSurface = await this.surfaceRepository.findOne({
+    where: {
+      surfaceName: dto.surfaceName.trim(),
+      id: Not(id), // Exclude current surface from check
+    },
+  });
+
+  if (existingSurface) {
+    throw new ConflictException('Surface name already exists');
+  }
+}
+
+// await this.surfaceRepository.update(id, {
+//   ...updateSurfaceDto,
+//   updatedBy,
+// });
+
+// return this.surfaceRepository.findOne({ where: { id } });
+
+
     const surface = await this.findOne(id);
     Object.assign(surface, dto);
     surface.updatedBy = user.sub.toString(); // or user.sub.toString()
@@ -71,4 +115,15 @@ export class SurfaceService {
 
     return this.surfaceRepository.save(surface);
   }
+
+  async validateSurfaceName(name: string, excludeId?: number): Promise<boolean> {
+    const where: any = { surfaceName: name.trim() };
+    if (excludeId) {
+      where.id = Not(excludeId);
+    }
+    
+    const existing = await this.surfaceRepository.findOne({ where });
+    return !existing;
+  }
 }
+ 

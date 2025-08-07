@@ -1,6 +1,8 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
+
 
 @Entity('surface')
+@Unique(['surfaceName'])
 export class Surface {
   @PrimaryGeneratedColumn()
   id: number;
@@ -26,4 +28,13 @@ export class Surface {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  trimSurfaceName() {
+    if (this.surfaceName) {
+      // Trim and replace multiple spaces with single space
+      this.surfaceName = this.surfaceName.trim().replace(/\s+/g, ' ');
+    }
+  }
 }
