@@ -103,9 +103,7 @@ register(@Body() dto: RegisterUserDto) {
   async sendLoginOtp(@Body() dto: SendOtpDto, @Ip() ipAddress?: string) {
     return this.authService.sendLoginOtp(dto, ipAddress);
   }
-
-
-
+ 
 
   @Public()
   @Post('login-with-otp')
