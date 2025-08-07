@@ -1,6 +1,7 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {Unique, BeforeInsert, BeforeUpdate,Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('medium')
+@Unique(['name'])
 export class Medium {
   @PrimaryGeneratedColumn()
   id: number;
@@ -26,4 +27,13 @@ export class Medium {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  trimName() {
+    if (this.name) {
+      // Trim and replace multiple spaces with single space
+      this.name = this.name.trim().replace(/\s+/g, ' ');
+    }
+  }
 }

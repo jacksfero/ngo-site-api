@@ -13,7 +13,7 @@ export enum UserType {
   ARTISTS = 'artists',
     LOGIN = 'login',
     BUYER = 'buyer',
-  REGISTER = 'register',
+  FORGOT_PASSWORD = 'forgot_password',
   // Add as needed
 }
 

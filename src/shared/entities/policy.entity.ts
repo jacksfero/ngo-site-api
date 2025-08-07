@@ -8,7 +8,7 @@ export class Policy {
   @Column({ type: 'varchar', length: 100 })
   title: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'text', nullable: true })
   policyDetails: string;
 
   @Column({ type: 'varchar', length: 255 })

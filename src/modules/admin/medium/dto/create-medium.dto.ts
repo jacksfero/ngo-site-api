@@ -1,7 +1,7 @@
 import { IsOptional, IsString, Length, IsBoolean } from 'class-validator';
 
 export class CreateMediumDto {
-  @Length(5, 20)
+  @Length(3, 30)
   @IsString()
   name: string;
 

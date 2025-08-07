@@ -8,7 +8,7 @@ export class Content {
   @Column({ type: 'varchar', length: 100 })
   title: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'text', nullable: true })
   contents: string;
 
   @Column({ type: 'varchar', length: 255 })
