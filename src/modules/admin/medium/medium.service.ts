@@ -1,7 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException,Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMediumDto } from './dto/create-medium.dto';
 import { UpdateMediumDto } from './dto/update-medium.dto';
-
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { Medium } from '../../../shared/entities/medium.entity';
@@ -13,7 +14,10 @@ export class MediumService {
   constructor(
     @InjectRepository(Medium)
     private mediumRepository: Repository<Medium>,
-  ) { }
+
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+
+  ) {}
 
   async create(createMediumDto: CreateMediumDto, user: any,): Promise<Medium> {
 
@@ -33,15 +37,34 @@ export class MediumService {
     return this.mediumRepository.save(medium);
   }
   async getActiveList(): Promise<MediumResponseDto[]> {
-    const medium = await this.mediumRepository.find({
+    // 1. Check cache
+    const cacheKey = 'active_medium_list';
+    const cachedData = await this.cacheManager.get<MediumResponseDto[]>(cacheKey);
+
+    if (cachedData) {
+      return cachedData;
+    }
+
+    // 2. Fetch from DB
+    const mediums = await this.mediumRepository.find({
       order: { name: 'ASC' },
       where: {
         status: true, // only active surfaces
       }
     });
-    return plainToInstance(MediumResponseDto, medium, {
+
+    if (!mediums.length) {
+      throw new NotFoundException('No active mediums found');
+    }
+
+    const response = plainToInstance(MediumResponseDto, mediums, {
       excludeExtraneousValues: true,
     });
+
+    // 3. Store in cache
+    await this.cacheManager.set(cacheKey, response, 300); // cache 5 min
+
+    return response;
   }
 
   async findAll(): Promise<Medium[]> {

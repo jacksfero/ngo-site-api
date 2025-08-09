@@ -39,11 +39,11 @@ export class OtpService {
  
 
   async verifyOtp(dto: VerifyOtpDto): Promise<OtpVerificationResult> {
-    const { identifier, type, otp } = dto;
+    const { identifier, type, otp,userType } = dto;
 
     
     const record = await this.otpRepository.findOne({
-      where: { identifier, type },
+      where: { identifier, type,userType },
       relations: ['user'], // Ensure user is loaded
     });
   
@@ -112,10 +112,7 @@ export class OtpService {
     return this.resendOtp(identifier, type, userType, ipAddress);
   }
 
-   
  
-
- // async sendOtpForLogin(
     async sendOtp(
     identifier: string,
     type: OtpType,
@@ -140,13 +137,18 @@ export class OtpService {
     await this.cacheManager.set(ipKey, ipCount + 1, 86400);
   
     // Find user by identifier
+    /*** For registration********** */
     const user = await this.userReposs.findOne({ where: { [type]: identifier } });
-    if (!user && userType === UserType.LOGIN ){
-       throw new NotFoundException('User not registered');
+    const isRegistrationFlow = userType !== UserType.LOGIN && userType !== UserType.FORGOT_PASSWORD;
+
+      // Simplified conditions
+      if (!user && !isRegistrationFlow) {
+        throw new NotFoundException('User not registered');
       }
-    if (user && userType !== UserType.LOGIN ) {
-      throw new BadRequestException('User already exists');
-    }
+
+      if (user && isRegistrationFlow) {
+        throw new BadRequestException('User already exists');
+      }
     const otp = this.generateOtpCode();
     const expiresAt = addMinutes(new Date(), 10);
     const tenMinutesAgo = subMinutes(new Date(), 10);
