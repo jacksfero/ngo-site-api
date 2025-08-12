@@ -87,7 +87,7 @@ async findAll() {
   return blogs; 
 }
 */
-
+@Get()
 async findAll(
   @Query(new PaginationPipe(BLOG_LIMIT, BLOG_MAX_LIMIT, BLOG_PAGE))
   paginationDto: BlogPaginationDto

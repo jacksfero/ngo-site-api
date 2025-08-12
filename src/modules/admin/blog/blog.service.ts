@@ -124,14 +124,18 @@ private async deleteImageFile(filename: string): Promise<void> {
   
     const queryBuilder = this.blogRepository
     .createQueryBuilder('blog')
-   // .leftJoinAndSelect('user.roles', 'role')
+    .leftJoinAndSelect('blog.category', 'category')
+    .leftJoinAndSelect('blog.tags', 'tags')
+    .leftJoinAndSelect('blog.author', 'author')
     .orderBy('blog.createdAt', 'DESC')
     .take(limit)
     .skip(skip);
   
     if (search) {
       queryBuilder.andWhere(
-        '(LOWER(user.username) LIKE :search OR LOWER(user.email) LIKE :search OR LOWER(user.mobile) LIKE :search)',
+        `(LOWER(blog.title) LIKE :search 
+      OR LOWER(category.name) LIKE :search
+      OR LOWER(author.fullName) LIKE :search)`,
         { search: `%${search.toLowerCase()}%` },
       );
     }

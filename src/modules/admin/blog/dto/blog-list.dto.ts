@@ -1,8 +1,15 @@
 import { Expose,Exclude, Type } from 'class-transformer';
+ 
 
 
 @Exclude()
-export class RoleDto {
+export class AuthorDto {
+  @Expose()
+  username: string;
+}
+
+@Exclude()
+export class CategoryDto {
   @Expose()
   name: string;
 }
@@ -14,25 +21,29 @@ export class BlogListDto {
   id: number;
 
   @Expose()
-  username: string;
+  title: string;
 
   @Expose()
-  email: string;
+  slug: string;
 
   @Expose()
-  mobile: string;
+  h1Title: string;
+  
+  @Expose()
+  titleImage: string;
 
   @Expose()
   status: boolean;
-
-  @Expose()
-  is_verified: boolean;
-
+ 
   @Expose()
   createdAt: Date;
   
   @Expose()
-  @Type(() => RoleDto)
-  roles?: RoleDto[];
+  @Type(() => AuthorDto)
+  author?: AuthorDto;
+
+  @Expose()
+  @Type(() => CategoryDto)
+  category?: CategoryDto;
 
 }
