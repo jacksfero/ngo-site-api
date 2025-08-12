@@ -28,6 +28,8 @@ import { TagModule } from './tag/tag.module';
 import { AdminCompositeGuard } from 'src/core/guards/admin-composite.guard';
 import { AuthModule } from '../auth/auth.module';
 import { ProductcategoryModule } from './productcategory/productcategory.module';
+import { MediaModule } from './media/media.module';
+ 
 
 @Module({
   imports: [
@@ -53,7 +55,7 @@ import { ProductcategoryModule } from './productcategory/productcategory.module'
     SubjectModule,
     SurfaceModule,
     CategoryModule,
-    TagModule,
+    TagModule,MediaModule,
     RouterModule.register([
       {
         path: 'admin', // Prefix for all child routes
@@ -81,6 +83,7 @@ import { ProductcategoryModule } from './productcategory/productcategory.module'
         ],
       },
     ]),
+ 
     
 
 

@@ -3,13 +3,10 @@ import { Module, Logger, OnModuleInit } from '@nestjs/common';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-
-//import { TypeOrmModule } from '@nestjs/typeorm';
  
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
-import { DatabaseModule } from './shared/database/database.module';
- 
+  
 import { AdminModule } from './modules/admin/admin.module';
 import { ClientModule } from './modules/client/client.module';
 import { APP_GUARD } from '@nestjs/core';
@@ -19,7 +16,8 @@ import { PermissionsGuard } from './modules/auth/guards/permissions.guard';
 import { PublicGuard } from './core/guards/public.guard';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard'; 
 //import { MailModule } from './shared/mail/mail.module';
-import { OtpModule } from './shared/otp/otp.module';
+ 
+import { SharedModule } from './shared/shared.module';
 
 @Module({
   imports: [
@@ -33,11 +31,11 @@ import { OtpModule } from './shared/otp/otp.module';
       // },
    //   envFilePath: ['.env', '.env.development', '.env.production'],
     }),
-    DatabaseModule,
+    
     AuthModule,  
     AdminModule,
     ClientModule,
-    OtpModule, 
+    SharedModule, 
   //  MailModule,
   ],
 

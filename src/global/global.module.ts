@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+ 
 
 @Module({
   providers: [
@@ -8,5 +9,6 @@ import { Module } from '@nestjs/common';
     },
   ],
   exports: ['GLOBAL_VAR'],
+ 
 })
 export class GlobalModule {}

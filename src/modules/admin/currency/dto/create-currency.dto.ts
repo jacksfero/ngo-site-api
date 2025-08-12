@@ -1,4 +1,4 @@
-import {IsNotEmpty,IsDecimal, IsAlphanumeric,IsString, IsOptional, IsBoolean, Length } from 'class-validator';
+import {IsNotEmpty,IsDecimal, IsAlphanumeric,IsString, IsOptional, IsBoolean, Length, IsAlpha } from 'class-validator';
 
 export class CreateCurrencyDto {
   
@@ -15,7 +15,7 @@ export class CreateCurrencyDto {
   @Length(2, 5, { message: 'Currency code must be 2 characters' })
   @IsString()
   @IsNotEmpty()
-  @IsAlphanumeric()
+  @IsAlpha()
   code: string;
   
   @IsDecimal()

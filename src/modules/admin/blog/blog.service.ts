@@ -10,12 +10,20 @@ import { User } from 'src/shared/entities/user.entity';
 import { slugify } from 'src/shared/utils/slugify';
 import * as fs from 'fs';
 import * as path from 'path';
+import { BlogPaginationDto } from './dto/blog-pagination.dto';
+import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
+import { BlogListDto } from './dto/blog-list.dto';
+import { plainToInstance } from 'class-transformer';
+import { S3Service } from 'src/shared/s3/s3.service';
+
 
 
 @Injectable()
 export class BlogService {
   private readonly logger = new Logger(BlogService.name);
   constructor(
+    private readonly s3service: S3Service,
+
     @InjectRepository(Blog)
     private blogRepository: Repository<Blog>,
 
@@ -30,7 +38,9 @@ export class BlogService {
 
   ) { }
 
-  async create(dto: CreateBlogDto, user: any, imageFilename?: string): Promise<Blog> {
+  async create(dto: CreateBlogDto, user: any, imageFilename?:Express.Multer.File | null): Promise<Blog> {
+   // let titleImage;
+    let titleImage: string | null = null;
     // Validate input
     if (!dto.title || !dto.categoryId) {
         throw new BadRequestException('Title and category are required');
@@ -54,7 +64,11 @@ export class BlogService {
 
     if (!category) throw new NotFoundException(`Category not found`);
     if (!author) throw new NotFoundException('Author not found');
-
+    if(imageFilename){
+      const key = `blog/${Date.now()}-${imageFilename.originalname}`;
+      titleImage = 
+    await this.s3service.uploadBuffer(key, imageFilename.buffer, imageFilename.mimetype); 
+    }
     // Create blog entity with proper null handling
     const blog = new Blog();
     blog.title = dto.title;
@@ -63,7 +77,8 @@ export class BlogService {
     blog.blogContent = dto.blogContent;
     blog.descriptionTag = dto.descriptionTag || ''; // Handle undefined
     blog.optionalTitle = dto.optionalTitle || '';   // Handle undefined
-    blog.titleImage = imageFilename ? `/blog-images/${imageFilename}` : null;
+  //  blog.titleImage = imageFilename ? `/blog-images/${imageFilename}` : null;
+    blog.titleImage = titleImage;
     blog.status = dto.status ?? false;
     blog.isPublished = dto.isPublished ?? false;
     blog.scheduledPublishDate = dto.scheduledPublishDate || null;
@@ -83,7 +98,6 @@ private async deleteImageFile(filename: string): Promise<void> {
     }
 }
 
-
   async generateUniqueSlug(title: string): Promise<string> {
     const baseSlug = slugify(title);
     let slug = baseSlug;
@@ -97,12 +111,41 @@ private async deleteImageFile(filename: string): Promise<void> {
     return slug;
   }
 
-  async findAll(): Promise<Blog[]> {
-    return this.blogRepository.find({
+  async findAll(
+    paginationDto: BlogPaginationDto,
+  ): Promise<PaginationResponseDto<BlogListDto>> {
+   /* return this.blogRepository.find({
        relations: ['category', 'tags', 'author'],
       order: { createdAt: 'DESC' },
-    });
+    });*/
+    const { page , limit, search,status   } = paginationDto;
+    const skip = (page - 1) * limit;
+    //const search = search || '';
+  
+    const queryBuilder = this.blogRepository
+    .createQueryBuilder('blog')
+   // .leftJoinAndSelect('user.roles', 'role')
+    .orderBy('blog.createdAt', 'DESC')
+    .take(limit)
+    .skip(skip);
+  
+    if (search) {
+      queryBuilder.andWhere(
+        '(LOWER(user.username) LIKE :search OR LOWER(user.email) LIKE :search OR LOWER(user.mobile) LIKE :search)',
+        { search: `%${search.toLowerCase()}%` },
+      );
+    }
+    if (typeof status === 'boolean') {
+      queryBuilder.andWhere('blog.status = :status', { status });
+    }
 
+    const [result, total] = await queryBuilder.getManyAndCount();
+  
+    const data = plainToInstance(BlogListDto, result, {
+      excludeExtraneousValues: true,
+    });
+  
+    return new PaginationResponseDto(data, { total, page, limit  });
   }
 
   async publish(id: number) {
@@ -134,7 +177,8 @@ private async deleteImageFile(filename: string): Promise<void> {
     return blog;
   }
 
-  async update(id: number, dto: UpdateBlogDto,imageFilename?: string): Promise<Blog> {
+  async update(id: number, dto: UpdateBlogDto,imageFilename?: Express.Multer.File|null): Promise<Blog> {
+    let titleImage: string | null = null;
     const blog = await this.findOne(id);
      if (!blog) throw new NotFoundException('blog not found');
      if (dto.title && dto.title !== blog.title) {
@@ -158,15 +202,25 @@ private async deleteImageFile(filename: string): Promise<void> {
      // 1. Handle Image Update if New File is Provided
   // ✅ Delete old image if new one is uploaded
   if (imageFilename) {
-    if (blog.titleImage) {
-      const oldImagePath = path.join(__dirname, '..', '..',  '..', 'uploads',  blog.titleImage);
-     console.log(oldImagePath,'--------------------');
-      if (fs.existsSync(oldImagePath)) {
-        fs.unlinkSync(oldImagePath); // deletes old image file
-      }
-    }
 
-    blog.titleImage = `/blog-images/${imageFilename}`;
+    const key = `blog/${Date.now()}-${imageFilename.originalname}`;
+  
+    // Upload new image
+    const titleImage = await this.s3service.uploadBuffer(
+      key,
+      imageFilename.buffer,
+      imageFilename.mimetype
+    );
+    // Delete old image if exists
+  if (blog.titleImage) {
+   // const oldKey = this.extractS3Key(blog.titleImage);
+    await this.s3service.deleteObject(blog.titleImage);
+  }
+      
+    // Save new image path/URL
+  blog.titleImage = titleImage;
+       
+     
   }
  
     return this.blogRepository.save(blog);

@@ -11,11 +11,13 @@ import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ProductDto } from './dto/product.dto';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { plainToInstance } from 'class-transformer';
+import { S3Service } from 'src/shared/s3/s3.service';
  
 
 @Injectable()
 export class ProductService {
   constructor(
+    private readonly s3service: S3Service,
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
 
@@ -23,10 +25,19 @@ export class ProductService {
     private imageRepo: Repository<ProductImage>,
   ) { }
  
-async create(dto: CreateProductDto, user: any, imageFilename?: string): Promise<Product> {
+async create(dto: CreateProductDto, user: any, imageFilename?:Express.Multer.File ): Promise<Product> {
+  
+  let titleImage: string | null = null;
+  if(imageFilename){
+    const key = `products/${Date.now()}-${imageFilename.originalname}`;
+    titleImage = 
+  await this.s3service.uploadBuffer(key, imageFilename.buffer, imageFilename.mimetype); 
+  }
+  
   const product = this.productRepository.create({
     ...dto,
-    defaultImage: imageFilename ? `/product-images/${imageFilename}` : null,
+   // defaultImage: imageFilename ? `/product-images/${imageFilename}` : null,
+   defaultImage: titleImage,
     createdBy: user.sub.toString(),
   });
 
@@ -90,26 +101,31 @@ async create(dto: CreateProductDto, user: any, imageFilename?: string): Promise<
 
   async update(
   id: number,
-  updateProductDto: UpdateProductDto,
-  user: any,
-  newImageFilename?: string,
+  updateProductDto: UpdateProductDto,   user: any,
+  newImageFilename?: Express.Multer.File|null,
+ 
 ): Promise<Product> {
+  let titleImage:string|null;
   const product = await this.findOne(id);
   if (!product) throw new NotFoundException('Product not found');
 
   // ✅ Delete old image if new one is uploaded
   if (newImageFilename) {
-    if (product.defaultImage) {
-      const oldImagePath = path.join(
-        process.cwd(),
-        product.defaultImage.replace(/^\/+/, '')
-      );
-      if (fs.existsSync(oldImagePath)) {
-        fs.unlinkSync(oldImagePath);
+    const key = `products/${Date.now()}-${newImageFilename.originalname}`;
+  
+    // Upload new image
+    const titleImage = await this.s3service.uploadBuffer(
+      key,
+      newImageFilename.buffer,
+      newImageFilename.mimetype
+    );
+    if(product.defaultImage)
+      {
+        await this.s3service.deleteObject(product.defaultImage);
       }
-    }
+     
 
-    product.defaultImage = `/product-images/${newImageFilename}`;
+    product.defaultImage = titleImage;
   }
 
   const updated = Object.assign(product, updateProductDto);
@@ -122,14 +138,29 @@ async create(dto: CreateProductDto, user: any, imageFilename?: string): Promise<
     const product = await this.findOne(id);
     await this.productRepository.remove(product);
   }
+ 
+  
+    
+    
 
-
-async addImage(productId: number, fileName: string) {
+async addImage(productId: number, imageFilename:Express.Multer.File) {
+  let imageurl;
   const product = await this.productRepository.findOne({ where: { id: productId } });
-  if (!product) throw new NotFoundException('Product not found');
+  
+  if (!product)
+    {
+      throw new NotFoundException('Product not found');
+    }
+  if(imageFilename){
+    const key = `products/${Date.now()}-${imageFilename.originalname}`;
+    imageurl = 
+  await this.s3service.uploadBuffer(key, imageFilename.buffer, imageFilename.mimetype); 
+  }
+
 
   const image = this.imageRepo.create({
-    imagePath: `/product-images/${fileName}`, // just the relative path
+    //imagePath: `/product-images/${fileName}`, // just the relative path 
+    imagePath: imageurl, // just the relative path
     product,
   });
 
@@ -141,10 +172,15 @@ async addImage(productId: number, fileName: string) {
     const image = await this.imageRepo.findOne({ where: { id: imageId }, relations: ['product'] });
     if (!image) throw new NotFoundException('Image not found');
 
-    const fullPath = path.join(process.cwd(), 'uploads/product-images', path.basename(image.imagePath));
-    if (fs.existsSync(fullPath)) {
-      fs.unlinkSync(fullPath);
-    }
+   // const fullPath = path.join(process.cwd(), 'uploads/product-images', path.basename(image.imagePath));
+    // if (fs.existsSync(fullPath)) {
+    //   fs.unlinkSync(fullPath);
+    // }
+     // Delete old image if exists
+  if (image.imagePath) {
+    // const oldKey = this.extractS3Key(blog.titleImage);
+     await this.s3service.deleteObject(image.imagePath);
+   }
 
     return this.imageRepo.remove(image);
   }

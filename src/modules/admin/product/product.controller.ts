@@ -23,14 +23,15 @@ export class ProductController {
 
 
 @Post()
-@UseInterceptors(FileInterceptor('defaultImage', productImageUploadOptions))
+//@UseInterceptors(FileInterceptor('defaultImage', productImageUploadOptions))
+@UseInterceptors(FileInterceptor('defaultImage'))
 create(
   @Body() createProductDto: CreateProductDto,
   @UploadedFile() file: Express.Multer.File,
   @Req() req,
 ) {
-  const imagePath = file?.filename;
-  return this.productService.create(createProductDto, req.user, imagePath);
+ // const imagePath = file?.filename;
+  return this.productService.create(createProductDto, req.user, file);
 }
 
   
@@ -66,12 +67,12 @@ create(
 @UseInterceptors(FileInterceptor('defaultImage', productImageUploadOptions))
 async update(
   @Param('id', ParseIntPipe) id: number,
-  @Body() dto: UpdateProductDto,
-  @UploadedFile() file: Express.Multer.File,
-  @Request() req,
+  @Body() dto: UpdateProductDto,@Req() req,
+  @UploadedFile() file?: Express.Multer.File,
+  
 ) {
   const imagePath = file?.filename;
-  return this.productService.update(id, dto, req.user, imagePath);
+  return this.productService.update(id, dto,req.user, file ?? null );
 }
 
 
@@ -89,7 +90,8 @@ async update(
 
 
 @Post(':product_id/upload-image')
-@UseInterceptors(FileInterceptor('image', productImageUploadOptions))
+//@UseInterceptors(FileInterceptor('image', productImageUploadOptions))
+@UseInterceptors(FileInterceptor('image'))
 async uploadImage(
   @Param('product_id', ParseIntPipe) productId: number,
   @UploadedFile() file: Express.Multer.File,
@@ -97,7 +99,7 @@ async uploadImage(
   if (!file) {
     throw new BadRequestException('Image file is required');
   }
-  return this.productService.addImage(productId, file.filename);
+  return this.productService.addImage(productId, file);
 }
 
 
