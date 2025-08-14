@@ -4,6 +4,7 @@ import { AppModule } from './app.module';
 
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import { ParseBooleanPipe } from './core/pipes/parse-boolean.pipe';
 // backend/src/main.ts
 
 async function bootstrap() {
@@ -24,13 +25,16 @@ async function bootstrap() {
   
 
   app.useGlobalPipes(
+    new ParseBooleanPipe(),
     new ValidationPipe({
-      whitelist: true, // Remove non-whitelisted properties
-      forbidNonWhitelisted: true, // Throw errors for non-whitelisted properties
-      transform: true, // Automatically transform payloads to DTO instances
+      transform: true,
+      transformOptions: { enableImplicitConversion: false }, // Prevents auto-casting
+      whitelist: true,
+      forbidNonWhitelisted: true,
     }),
-    //  new ClassSerializerInterceptor(app.get(Reflector)),
   );
+
+
    app.enableCors({
     origin: [
       'http://localhost:3000',
