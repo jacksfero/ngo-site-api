@@ -27,6 +27,8 @@ import { OtpType,UserType,StartEmailVerificationDto, StartMobileVerificationDto 
 //import { LoginDto } from './dto/login.dto';
 //import { OtpLoginDto } from './dto/otp-login.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
+import { PasswordResetToken } from 'src/shared/entities/password-reset-token.entity';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -40,6 +42,9 @@ export class AuthService {
 
     @InjectRepository(OtpVerification)
     private readonly otpveriRepo: Repository<OtpVerification>,
+
+    @InjectRepository(PasswordResetToken)
+    private readonly passresettokenRepo: Repository<PasswordResetToken>,
 
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
@@ -154,7 +159,7 @@ async verifyOtp(dto: VerifyOtpDto) {
           throw new BadRequestException(`Invalid login format: ${loginId}`);
         }
     
-        console.log('User found:-------------', user);
+       // console.log('User found:-------------', user);
     
         if (!user) {
           this.logger.warn(`User not found for loginId: ${loginId}`);
@@ -162,7 +167,7 @@ async verifyOtp(dto: VerifyOtpDto) {
         }
     
         const isPasswordValid = await bcrypt.compare(password, user.password);
-        console.log('Is password valid?', isPasswordValid);
+       // console.log('Is password valid?', isPasswordValid);
     
         if (!isPasswordValid) {
           this.logger.warn(`Invalid password attempt for user: ${user.id}`);
@@ -204,11 +209,58 @@ async verifyOtp(dto: VerifyOtpDto) {
     };
   }
   async sendResetPasswordOtp(dto: SendOtpDto, ipAddress?: string) {
+   // const { identifier, type, userType  } = dto;
     const { identifier, type, userType  } = dto;
    // console.log('===========',userType);
-    return this.otpService.sendOtp(identifier,type,userType as UserType, ipAddress);
+   return this.otpService.sendOtp(identifier,type,UserType.FORGOT_PASSWORD, ipAddress);
+   // return this.otpService.sendOtp(identifier,type,userType as UserType, ipAddress);
   } 
 
+  async verifyForgotPasswordOtp(dto: VerifyOtpDto, ipAddress?: string) {
+
+    const result = await this.otpService.verifyOtp({ ...dto, userType: UserType.FORGOT_PASSWORD });
+
+   // const result = await this.verifyOtp(identifier, otp, UserType.FORGOT_PASSWORD);
+    if (!result.success || !result.user) {
+      throw new BadRequestException(result.message);
+    }
+  
+    // Generate short-lived reset token
+    const token = randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+  
+    await this.passresettokenRepo.save({
+      userId: result.user.id,
+      token,
+      expiresAt,
+    });
+  
+    return { resetToken: token };
+  }
+
+  async resetPassword(resetToken: string, newPassword: string) {
+    const record = await this.passresettokenRepo.findOne({
+      where: { token: resetToken },
+    });
+  
+    if (!record || record.expiresAt < new Date()) {
+      throw new BadRequestException('Invalid or expired token');
+    }
+  
+    const user = await this.userRepository.findOne({ where: { id: record.userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+  
+    user.password = await bcrypt.hash(newPassword, 10);
+    await this.userRepository.save(user);
+  
+    // Remove token after use
+    await this.passresettokenRepo.delete(record.id);
+  
+    return { message: 'Password reset successfully' };
+  }
+  
   
    async sendLoginOtp(dto: SendOtpDto, ipAddress?: string) {
     const { identifier, type, userType  } = dto;

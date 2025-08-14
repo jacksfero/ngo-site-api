@@ -118,6 +118,22 @@ export class AuthController {
   }
 
   @Public()
+  @Post('verify-otp-forgot-password')
+  async verifyForgotPasswordOtp(@Body() dto: VerifyOtpDto, @Ip() ipAddress?: string) {
+    return this.authService.verifyForgotPasswordOtp(dto, ipAddress);
+  }
+  @Public()
+
+  @Post('reset-password')
+async resetPassword(
+  @Body('resetToken') resetToken: string,
+  @Body('newPassword') newPassword: string,
+) {
+  return this.authService.resetPassword(resetToken, newPassword);
+}
+
+
+  @Public()
   @Get('by-role/:roleName')
   async getUsersByRole(@Param('roleName') roleName: string) {
     return this.authService.findUsersByRole(roleName);
