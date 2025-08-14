@@ -4,7 +4,7 @@ import { AppModule } from './app.module';
 
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
-import { ParseBooleanPipe } from './core/pipes/parse-boolean.pipe';
+import { ParsePrimitivesPipe  } from './core/pipes/parse-boolean.pipe';
 // backend/src/main.ts
 
 async function bootstrap() {
@@ -25,7 +25,7 @@ async function bootstrap() {
   
 
   app.useGlobalPipes(
-    new ParseBooleanPipe(),
+   new ParsePrimitivesPipe(), 
     new ValidationPipe({
       transform: true,
       transformOptions: { enableImplicitConversion: false }, // Prevents auto-casting
