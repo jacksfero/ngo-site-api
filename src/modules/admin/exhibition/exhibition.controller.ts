@@ -30,6 +30,7 @@ export class ExhibitionController {
   @UseInterceptors(FileInterceptor('imageURL'))
   update(@Param('id') id: string, @Body() updateExhibitionDto: UpdateExhibitionDto,
   @Req() req,@UploadedFile() file?: Express.Multer.File,) {
+   // console.log('Raw body:', req.body);
     return this.exhibitionService.update(+id, updateExhibitionDto,req.user,file ?? null);
   }
 
