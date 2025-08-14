@@ -124,6 +124,7 @@ private async deleteImageFile(filename: string): Promise<void> {
   
     const queryBuilder = this.blogRepository
     .createQueryBuilder('blog')
+    
     .leftJoinAndSelect('blog.category', 'category')
     .leftJoinAndSelect('blog.tags', 'tags')
     .leftJoinAndSelect('blog.author', 'author')
