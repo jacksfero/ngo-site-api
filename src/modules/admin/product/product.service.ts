@@ -12,6 +12,7 @@ import { ProductDto } from './dto/product.dto';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { plainToInstance } from 'class-transformer';
 import { S3Service } from 'src/shared/s3/s3.service';
+import { ProductPaginationDto } from './dto/product-pagination.dto';
  
 
 @Injectable()
@@ -46,9 +47,9 @@ async create(dto: CreateProductDto, user: any, imageFilename?:Express.Multer.Fil
  
  
   async paginate(
-    paginationDto: PaginationDto,
+    paginationDto: ProductPaginationDto,
   ): Promise<PaginationResponseDto<ProductDto>> {
-     const { page = 1, limit = 2, search } = paginationDto;
+    const { page , limit, search,status } = paginationDto;
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.productRepository.createQueryBuilder('product');
@@ -62,14 +63,26 @@ async create(dto: CreateProductDto, user: any, imageFilename?:Express.Multer.Fil
       .take(limit)
       .getManyAndCount();
 
-    return new PaginationResponseDto(
+
+
+     /* const [result, products] = await queryBuilder.getManyAndCount();
+  
+      const [result, total] = await queryBuilder.getManyAndCount();*/
+  
+      const data = plainToInstance(ProductDto, products, {
+        excludeExtraneousValues: true,
+      });
+    
+      return new PaginationResponseDto(data, { total, page, limit  });
+
+  /*  return new PaginationResponseDto(
       plainToInstance(ProductDto, products),
       {
         total,
         page,
         limit,
       },
-    );
+    );*/
   }
  
 

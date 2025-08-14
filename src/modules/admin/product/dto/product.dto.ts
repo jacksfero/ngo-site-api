@@ -6,13 +6,19 @@ export class ProductDto {
   id: number;
 
   @Expose()
-  name: string;
+  productTitle: string;
 
   @Expose()
-  price: number;
+  tags: string;
+
+  @Expose()
+  artist_price: number;
 
   @Expose()
   description: string;
+
+  @Expose()
+  defaultImage: string;
 
   @Expose()
   createdAt: Date;
