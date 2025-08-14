@@ -8,11 +8,14 @@ import { Equal, Repository } from 'typeorm';
 import { ExhibitionProduct } from 'src/shared/entities/exhibition-product.entity';
 import { Product } from 'src/shared/entities/product.entity';
 import { User } from 'src/shared/entities/user.entity';
+import { S3Service } from 'src/shared/s3/s3.service';
 
 @Injectable()
 export class ExhibitionService {
 
   constructor(
+    private readonly s3service: S3Service,
+
     @InjectRepository(Exhibition)
     private exhibitionRepository: Repository<Exhibition>,
 
@@ -21,16 +24,18 @@ export class ExhibitionService {
   ) {}
 
 
-  async create(dto: CreateExhibitionDto, user: any): Promise<Exhibition> {
+  async create(dto: CreateExhibitionDto, user: any, imageURL?:Express.Multer.File | null): Promise<Exhibition> {
+    let titleImage: string | null = null;
 
+    if(imageURL){
+      const key = `exhibitions/${Date.now()}-${imageURL.originalname}`;
+      titleImage = 
+    await this.s3service.uploadBuffer(key, imageURL.buffer, imageURL.mimetype); 
+    }
     const exhibition = this.exhibitionRepository.create({
-      ExibitionTitle: dto.ExibitionTitle,
-
-
+      ExibitionTitle: dto.ExibitionTitle, 
       description: dto.description,
-      imageURL: 'test',
-      // imageURL: imagePath ? `/uploads/exhibition-images/${imagePath}` : null,
-
+       imageURL: titleImage, 
      dateStart: dto.dateStart,
       dateEnd: dto.dateEnd,
       createdBy:user.sub.toString(),
@@ -62,10 +67,38 @@ async  findOne(id: number):Promise<Exhibition> {
          if (!exhibition) throw new NotFoundException(`exhibition ${id} not found`);
          return exhibition;
   }
+ 
+    async update(id: number, dto: UpdateExhibitionDto,user:any,imageURL?:Express.Multer.File | null): Promise<Exhibition> {
+      let titleImage: string | null = null;
+      const exhibition = await this.findOne(id);
+      if (!exhibition) throw new NotFoundException('exhibition not found');
+      if (imageURL) {
 
-  update(id: number, updateExhibitionDto: UpdateExhibitionDto) {
-    return `This action updates a #${id} exhibition`;
+        const key = `exhibitions/${Date.now()}-${imageURL.originalname}`;
+      
+        // Upload new image
+        const titleImage = await this.s3service.uploadBuffer(
+          key,
+          imageURL.buffer,
+          imageURL.mimetype
+        );
+        // Delete old image if exists
+      if (exhibition.imageURL) {
+       // const oldKey = this.extractS3Key(blog.titleImage);
+        await this.s3service.deleteObject(exhibition.imageURL);
+      } 
+        // Save new image path/URL
+        exhibition.imageURL = titleImage;
+            
+      }
+
+    Object.assign(exhibition,dto);
+    exhibition.updatedBy = user.sub.toString();
+    return this.exhibitionRepository.save(exhibition);
   }
+
+
+  
 
   async remove(id: number):Promise<void> {
 
@@ -79,6 +112,17 @@ async  findOne(id: number):Promise<Exhibition> {
     const mapping = await this.exhibitionRepository.findOneBy({ id: id });
     if (!mapping) throw new NotFoundException('Mapping not found');
     await this.exhibitionRepository.remove(mapping);
+  }
+
+  async toggleStatus(id: number, user: any): Promise<Exhibition> {
+    const Exhibition = await this.exhibitionRepository.findOne({ where: { id } });
+    if (!Exhibition) {
+      throw new NotFoundException(`policy   with ID ${id} not found`);
+    }
+    Exhibition.status = !Exhibition.status;
+    Exhibition.updatedBy = user.sub.toString(); // or user.sub.toString()
+
+    return this.exhibitionRepository.save(Exhibition);
   }
 
  async getMappedProducts(displayId: number): Promise<

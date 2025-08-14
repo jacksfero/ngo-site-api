@@ -19,7 +19,7 @@ export class CreateExhibitionDto {
 
     @IsOptional()
     @IsString()
-    imageURL: string;
+    imageURL?: string | null;
  
     @IsOptional()
     @IsBoolean()

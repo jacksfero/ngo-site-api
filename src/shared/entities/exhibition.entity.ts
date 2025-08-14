@@ -19,7 +19,7 @@ export class Exhibition {
     dateEnd: Date;
  
     @Column({ type: 'varchar', length: 200, nullable: true })
-    imageURL: string;
+    imageURL: string|null;
  
     @Column({ type: 'boolean', default: false })
     exhibitionStatus: boolean;

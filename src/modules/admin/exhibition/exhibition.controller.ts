@@ -1,15 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, ParseIntPipe, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { ExhibitionService } from './exhibition.service';
 import { CreateExhibitionDto } from './dto/create-exhibition.dto';
 import { UpdateExhibitionDto } from './dto/update-exhibition.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller()
 export class ExhibitionController {
   constructor(private readonly exhibitionService: ExhibitionService) {}
 
   @Post()
-  create(@Body() createExhibitionDto: CreateExhibitionDto,@Req() req) {
-    return this.exhibitionService.create(createExhibitionDto,req.user);
+  @UseInterceptors(FileInterceptor('imageURL'))
+  create(@Body() createExhibitionDto: CreateExhibitionDto,@Req() req,
+  @UploadedFile() file?: Express.Multer.File,
+) {
+    return this.exhibitionService.create(createExhibitionDto,req.user,file ?? null);
   }
 
   @Get()
@@ -23,13 +27,20 @@ export class ExhibitionController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateExhibitionDto: UpdateExhibitionDto) {
-    return this.exhibitionService.update(+id, updateExhibitionDto);
+  @UseInterceptors(FileInterceptor('imageURL'))
+  update(@Param('id') id: string, @Body() updateExhibitionDto: UpdateExhibitionDto,
+  @Req() req,@UploadedFile() file?: Express.Multer.File,) {
+    return this.exhibitionService.update(+id, updateExhibitionDto,req.user,file ?? null);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.exhibitionService.remove(+id);
+  }
+
+  @Patch(':id/toggle-status')
+  async toggleStatus(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    return this.exhibitionService.toggleStatus(id, req.user);
   }
 
   @Get(':id/products')
