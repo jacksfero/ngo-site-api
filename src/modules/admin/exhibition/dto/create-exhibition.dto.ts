@@ -16,7 +16,6 @@ export class CreateExhibitionDto {
     @IsDateString()
     dateEnd: Date;
 
-
     @IsOptional()
     @IsString()
     imageURL?: string | null;
