@@ -35,7 +35,7 @@ export class WishlistService {
       id: dto.productId,
     });
 
-      console.log(user,'---------userid-------');
+     // console.log(user,'---------userid-------');
 
     if (!user) throw new NotFoundException('User not found');
     if (!product) throw new NotFoundException('Product not found');

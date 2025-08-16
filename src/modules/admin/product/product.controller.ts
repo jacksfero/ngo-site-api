@@ -107,7 +107,10 @@ async uploadImage(
   return this.productService.addImage(productId, file);
 }
 
-
+@Delete('delete-image/:imageId')
+async deleteImage(@Param('imageId') imageId: number) {
+  return this.productService.deleteImage(imageId);
+}
 
 
 

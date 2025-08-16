@@ -14,6 +14,7 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 
@@ -44,6 +45,7 @@ import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ProductDto } from '../admin/product/dto/product.dto';
 import { PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE } from 'src/shared/config/pagination.config';
 import { UpdateProductDto } from '../admin/product/dto/update-product.dto';
+import { CreateWishlistDto } from '../admin/wishlist/dto/create-wishlist.dto';
 
 
 
@@ -253,11 +255,55 @@ create(
     const imagePath = file?.filename;
     return this.authService.updateProduct(id, dto,req.user, file ?? null );
   }
+
+  @Post('products/:product_id/upload-image')
+  @UseInterceptors(FileInterceptor('image'))
+  async uploadImage(
+    @Param('product_id', ParseIntPipe) productId: number,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Image file is required');
+    }
+    return this.authService.addImageProduct(productId, file);
+  }
+  
+  @Delete('products/delete-image/:imageId')
+  async deleteImage(@Param('imageId') imageId: number) {
+    return this.authService.deleteProductImage(imageId);
+  }
+
+
+
   
 /*************End User address Section */
+/*************Start User WishList Section */
+@UseGuards(JwtAuthGuard)
+@Post('wishlist')
+  createsWishList(
+    @Req() req,
+    @Body() createWishlistDto: CreateWishlistDto,
+  ) {
+    //const user = req; // ✅ user is available from JWT payload
+    // const userId = req.user?.sub; // ✅ Strongly typed
+    //  console.log(user,'---------PayLoad---------');
 
+    return this.authService.addToWishlist(req.user, createWishlistDto);
+  }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('wishlist')
+  findAllWishList( @Req() req) {
+    //  return this.globalVar;
+    //console.log('---glooooo------' + this.globalVar);
+    return this.authService.getUserWishlist(req.user.sub.toString());
+  }
 
+  @Delete('wishlist/:id')
+  removeWishList(@Param('id') id: string) {
+    return this.authService.removeWishList(+id);
+  }
+/*************End User WishList Section */
 }
 
 /*

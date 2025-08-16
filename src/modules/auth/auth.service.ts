@@ -47,6 +47,9 @@ import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ProductDto } from '../admin/product/dto/product.dto';
 import { plainToInstance } from 'class-transformer';
 import { UpdateProductDto } from '../admin/product/dto/update-product.dto';
+import { CreateWishlistDto } from '../admin/wishlist/dto/create-wishlist.dto';
+import { Wishlist } from 'src/shared/entities/wishlist.entity';
+import { sanitizeFileName } from 'src/shared/utils/sanitizefilename';
 
 
  
@@ -83,6 +86,9 @@ export class AuthService {
     private roleRepository: Repository<Role>,
 
     private readonly otpService: OtpService,
+
+    @InjectRepository(Wishlist)
+    private wishlistRepository: Repository<Wishlist>,
 
   ) {}
 
@@ -419,7 +425,9 @@ async createProduct(dto: CreateProductDto, user: any, imageFilename?:Express.Mul
   const userId = user.sub.toString();
   let titleImage: string | null = null;
   if(imageFilename){
-    const key = `products/${Date.now()}-${imageFilename.originalname}`;
+    const cleanName = sanitizeFileName(imageFilename.originalname);
+
+    const key = `products/${Date.now()}-${cleanName}`;
     titleImage = 
   await this.s3service.uploadBuffer(key, imageFilename.buffer, imageFilename.mimetype); 
   }
@@ -485,7 +493,9 @@ async updateProduct(
   if (!product) throw new NotFoundException('Product not found');
 
   if (newImageFile) {
-    const key = `products/${Date.now()}-${newImageFile.originalname}`;
+    const cleanName = sanitizeFileName(newImageFile.originalname);
+    const key = `products/${Date.now()}-${cleanName}`;
+  //  const key = `products/${Date.now()}-${newImageFile.originalname}`;
 
     // Upload image to S3 (returns the file URL or key)
     const uploadedUrl = await this.s3service.uploadBuffer(
@@ -508,6 +518,89 @@ async updateProduct(
 
   return this.productRepository.save(product);
 }
+
+
+async addImageProduct(productId: number, imageFilename:Express.Multer.File) {
+  let imageurl;
+  const product = await this.productRepository.findOne({ where: { id: productId } });
+  
+  if (!product)
+    {
+      throw new NotFoundException('Product not found');
+    }
+  if(imageFilename){
+    const cleanName = sanitizeFileName(imageFilename.originalname);
+    const key = `products/${Date.now()}-${cleanName}`;
+    imageurl = 
+  await this.s3service.uploadBuffer(key, imageFilename.buffer, imageFilename.mimetype); 
+  }
+
+
+  const image = this.imageRepo.create({
+    //imagePath: `/product-images/${fileName}`, // just the relative path 
+    imagePath: imageurl, // just the relative path
+    product,
+  });
+
+  return this.imageRepo.save(image);
+}
+
+
+async deleteProductImage(imageId: number) {
+  const image = await this.imageRepo.findOne({ where: { id: imageId }, relations: ['product'] });
+  if (!image) throw new NotFoundException('Image not found');
+
+ // const fullPath = path.join(process.cwd(), 'uploads/product-images', path.basename(image.imagePath));
+  // if (fs.existsSync(fullPath)) {
+  //   fs.unlinkSync(fullPath);
+  // }
+   // Delete old image if exists
+if (image.imagePath) {
+  // const oldKey = this.extractS3Key(blog.titleImage);
+   await this.s3service.deleteObject(image.imagePath);
+ }
+
+  return this.imageRepo.remove(image);
+}
+/**************Start Wish List Services Method********* */
+async addToWishlist(
+  user: any,
+  dto: CreateWishlistDto,
+): Promise<Wishlist> {
+ 
+  const product = await this.productRepository.findOneBy({
+    id: dto.productId,
+  });
+ 
+  if (!product) throw new NotFoundException('Product not found');
+
+  const existing = await this.wishlistRepository.findOne({
+    where: {
+      user: { id: user.sub.toString() },
+      product: { id: product.id },
+    },
+  });
+
+  if (existing) {
+    throw new ConflictException('Product already in wishlist');
+  }
+
+  const wishlist = this.wishlistRepository.create({ user, product });
+  return this.wishlistRepository.save(wishlist);
+}
+async getUserWishlist(userId: number): Promise<Wishlist[]> {
+  return this.wishlistRepository.find({
+    where: { user: { id: userId } },
+    relations: ['product'],
+    order: { createdAt: 'DESC' },
+  });
+}
+async removeWishList(id: number) : Promise<void> {
+  const wishlist = await this.wishlistRepository.findOne({ where: { id } });
+    if (!wishlist) throw new NotFoundException(`wishlist ${id} not found`);
+  await this.wishlistRepository.remove(wishlist);
+}
+/**************End Wish List Services Method********* */
 }
 
 export function toUserAddressResponse(address: UsersAddress): UserAddressResponseDto {

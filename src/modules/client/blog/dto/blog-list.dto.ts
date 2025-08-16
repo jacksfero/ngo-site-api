@@ -47,8 +47,20 @@ export class BlogListDto {
   @Expose()
   h1Title: string;
 
+ /* @Expose()
+  blogContent: string;*/
+
+ 
   @Expose()
-  blogContent: string;
+  get contentSnippet(): string {
+    if (!this.blogContent) return '';
+    return this.blogContent.length > 15
+      ? this.blogContent.substring(0, 15) + '...'
+      : this.blogContent;
+  } 
+ 
+  @Expose()
+  blogContent?: string; // keep original for mapping
 
   @Expose()
   keywordsTag: string;

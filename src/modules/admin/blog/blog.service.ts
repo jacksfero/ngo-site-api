@@ -15,6 +15,7 @@ import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { BlogListDto } from './dto/blog-list.dto';
 import { plainToInstance } from 'class-transformer';
 import { S3Service } from 'src/shared/s3/s3.service';
+import { sanitizeFileName } from 'src/shared/utils/sanitizefilename';
 
 
 
@@ -65,7 +66,9 @@ export class BlogService {
     if (!category) throw new NotFoundException(`Category not found`);
     if (!author) throw new NotFoundException('Author not found');
     if(imageFilename){
-      const key = `blog/${Date.now()}-${imageFilename.originalname}`;
+      const cleanName = sanitizeFileName(imageFilename.originalname);
+      const key = `blog/${Date.now()}-${cleanName}`;
+     // console.log('file----',cleanName,'---path------',key);
       titleImage = 
     await this.s3service.uploadBuffer(key, imageFilename.buffer, imageFilename.mimetype); 
     }
@@ -207,7 +210,8 @@ private async deleteImageFile(filename: string): Promise<void> {
      // 1. Handle Image Update if New File is Provided
   
   if (imageFilename) {
-    const key = `blog/${Date.now()}-${imageFilename.originalname}`;  
+    const cleanName = sanitizeFileName(imageFilename.originalname);
+    const key = `blog/${Date.now()}-${cleanName}`;  
     // Upload new image
     const titleImage = await this.s3service.uploadBuffer(
       key,

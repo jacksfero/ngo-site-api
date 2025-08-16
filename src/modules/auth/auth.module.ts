@@ -21,10 +21,11 @@ import { UsersAbout } from 'src/shared/entities/users-about.entity';
 import { UsersAddress } from 'src/shared/entities/users-address.entity';
 import { Product } from 'src/shared/entities/product.entity';
 import { ProductImage } from 'src/shared/entities/product-image.entity';
+import { Wishlist } from 'src/shared/entities/wishlist.entity';
  
 @Module({
   imports: [TypeOrmModule.forFeature([User,Role,OtpVerification,PasswordResetToken,
-    UsersAbout,UsersAddress,Product,ProductImage
+    UsersAbout,UsersAddress,Product,ProductImage,Wishlist
   ]),
     UsersModule,
     OtpModule,

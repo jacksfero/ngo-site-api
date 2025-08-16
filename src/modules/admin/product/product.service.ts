@@ -13,6 +13,7 @@ import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { plainToInstance } from 'class-transformer';
 import { S3Service } from 'src/shared/s3/s3.service';
 import { ProductPaginationDto } from './dto/product-pagination.dto';
+import { sanitizeFileName } from 'src/shared/utils/sanitizefilename';
  
 
 @Injectable()
@@ -30,7 +31,8 @@ async create(dto: CreateProductDto, user: any, imageFilename?:Express.Multer.Fil
   
   let titleImage: string | null = null;
   if(imageFilename){
-    const key = `products/${Date.now()}-${imageFilename.originalname}`;
+    const cleanName = sanitizeFileName(imageFilename.originalname);
+    const key = `products/${Date.now()}-${cleanName}`;
     titleImage = 
   await this.s3service.uploadBuffer(key, imageFilename.buffer, imageFilename.mimetype); 
   }
@@ -124,7 +126,8 @@ async update(
   if (!product) throw new NotFoundException('Product not found');
 
   if (newImageFile) {
-    const key = `products/${Date.now()}-${newImageFile.originalname}`;
+    const cleanName = sanitizeFileName(newImageFile.originalname);
+    const key = `products/${Date.now()}-${cleanName}`;
 
     // Upload image to S3 (returns the file URL or key)
     const uploadedUrl = await this.s3service.uploadBuffer(
@@ -167,7 +170,8 @@ async addImage(productId: number, imageFilename:Express.Multer.File) {
       throw new NotFoundException('Product not found');
     }
   if(imageFilename){
-    const key = `products/${Date.now()}-${imageFilename.originalname}`;
+    const cleanName = sanitizeFileName(imageFilename.originalname);
+    const key = `products/${Date.now()}-${cleanName}`;
     imageurl = 
   await this.s3service.uploadBuffer(key, imageFilename.buffer, imageFilename.mimetype); 
   }
