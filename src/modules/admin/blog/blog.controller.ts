@@ -103,7 +103,6 @@ findOne(@Param('id', ParseIntPipe) id: number) {
 }
  
 @Patch(':id')
-//@UseInterceptors(FileInterceptor('titleImage', blogImageStorage))
 @UseInterceptors(FileInterceptor('titleImage'))
 update(
   @Param('id', ParseIntPipe) id: number,

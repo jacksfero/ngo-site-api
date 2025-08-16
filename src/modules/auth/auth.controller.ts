@@ -10,6 +10,10 @@ import {
   Param,
   Delete,
   Ip,
+  ParseIntPipe,
+  UseInterceptors,
+  UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 
@@ -26,6 +30,20 @@ import { ResendOtpDto } from './dto/resend-verification.dto';
 import { LoginDto } from './dto/login.dto';
 //import { OtpLoginDto } from './dto/otp-login.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
+import { CreateUsersAboutDto } from './dto/create-users-about.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { CreateUserAddressDto } from './dto/create-user-address.dto';
+import { UpdateUserAddressDto } from './dto/update-user-address.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CreateProductDto } from '../admin/product/dto/create-product.dto';
+import { PaginationPipe } from 'src/shared/pipes/pagination.pipe';
+import { ProductPaginationDto } from '../admin/product/dto/product-pagination.dto';
+import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
+import { ProductDto } from '../admin/product/dto/product.dto';
+import { PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE } from 'src/shared/config/pagination.config';
+import { UpdateProductDto } from '../admin/product/dto/update-product.dto';
 
 
 
@@ -90,7 +108,7 @@ export class AuthController {
   }
 
 
-  //  @UseGuards(AuthGuard('local'))  
+   // @UseGuards(AuthGuard('local'))  
   @Public()
   @UseGuards(LocalAuthGuard) // ✅ This is KEY
   @Post('login')
@@ -122,15 +140,20 @@ export class AuthController {
   async verifyForgotPasswordOtp(@Body() dto: VerifyOtpDto, @Ip() ipAddress?: string) {
     return this.authService.verifyForgotPasswordOtp(dto, ipAddress);
   }
+  
+  
   @Public()
-
-  @Post('reset-password')
-async resetPassword(
-  @Body('resetToken') resetToken: string,
-  @Body('newPassword') newPassword: string,
-) {
-  return this.authService.resetPassword(resetToken, newPassword);
+   @Post('reset-password')
+async resetPassword(@Body() dto: ResetPasswordDto) {
+  return this.authService.resetPassword(dto);
 }
+
+ @UseGuards(JwtAuthGuard)
+@Post('change-password')
+async changePassword(@Req() req, @Body() dto: ChangePasswordDto) {
+  return this.authService.changePassword(req.user.sub.toString(), dto);
+}
+
 
 
   @Public()
@@ -140,12 +163,99 @@ async resetPassword(
 
   }
 
+/** Start User about us section */
+@Post('about/:userId')
+createUserAbout(@Param('userId', ParseIntPipe) userId: number, @Body() dto: CreateUsersAboutDto, @Req() req) {
+  return this.authService.createUserAbout(dto, userId, req.user);
+}
+
+@Get('about/:userId')
+findOneUserAbout(@Param('userId', ParseIntPipe) userId: number) {
+  return this.authService.findOneAboutByUserId(userId);
+}
+
+
+ 
 
   @UseGuards(AuthGuard('jwt'))
   @Post('profile')
   getProfile(@Req() req: ExpressRequest) {
     return req.user;
   }
+
+/*************User address Section */
+@UseGuards(JwtAuthGuard)
+@Post('user-address')
+createAddress(@Body() dto: CreateUserAddressDto,@Req() req) {
+  console.log('JWT User:', req.user);  // <--- check if user is set
+  console.log('Body:', dto);
+  return this.authService.createAddress(dto, req.user);
+}
+
+@UseGuards(JwtAuthGuard)
+@Get('user-address')
+findAllAddress(@Req() req) {
+  return this.authService.findAllForUserAddress(req.user.sub.toString());
+}
+
+@UseGuards(JwtAuthGuard)
+@Patch('user-address')
+updateAddress(  @Body() dto: UpdateUserAddressDto, @Req() req) {
+  console.log('update JWT User:', req.user);  // <--- check if user is set
+  console.log('update Body:', dto);
+  return this.authService.updateAddress(dto,req.user);
+}
+/*@Delete('user-address/:id')
+remove(@Req() req, @Param('id') id: number) {
+  return this.authService.removeAddress(req.user.id, id);
+}*/
+/*************End    User address Section */
+
+
+/*************Start User Product Section */
+@UseGuards(JwtAuthGuard)
+@Post('products') 
+@UseInterceptors(FileInterceptor('defaultImage'))
+create(
+  @Body() createProductDto: CreateProductDto,
+  @UploadedFile() file: Express.Multer.File,
+  @Req() req,
+) {
+ // const imagePath = file?.filename;
+  return this.authService.createProduct(createProductDto, req.user, file);
+}
+
+@UseGuards(JwtAuthGuard)
+@Get('products')
+  async findAll(
+    @Query(new PaginationPipe(PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE))
+    @Query() paginationDto: ProductPaginationDto,
+  ): Promise<PaginationResponseDto<ProductDto>> {
+    return this.authService.findAllProducts(paginationDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('products/:id')
+  findOneProduct(@Param('id') id: string) {
+    return this.authService.findOneProduct(+id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('products/:id')
+  @UseInterceptors(FileInterceptor('defaultImage'))
+  async updateProduct(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateProductDto,
+    @Req() req,
+    @UploadedFile() file?: Express.Multer.File
+    
+  ) {
+    const imagePath = file?.filename;
+    return this.authService.updateProduct(id, dto,req.user, file ?? null );
+  }
+  
+/*************End User address Section */
+
 
 
 }

@@ -17,9 +17,15 @@ import { User } from 'src/shared/entities/user.entity';
 import { Role } from 'src/shared/entities/role.entity';
 import { OtpModule } from 'src/shared/otp/otp.module';
 import { PasswordResetToken } from 'src/shared/entities/password-reset-token.entity';
+import { UsersAbout } from 'src/shared/entities/users-about.entity';
+import { UsersAddress } from 'src/shared/entities/users-address.entity';
+import { Product } from 'src/shared/entities/product.entity';
+import { ProductImage } from 'src/shared/entities/product-image.entity';
  
 @Module({
-  imports: [TypeOrmModule.forFeature([User,Role,OtpVerification,PasswordResetToken]),
+  imports: [TypeOrmModule.forFeature([User,Role,OtpVerification,PasswordResetToken,
+    UsersAbout,UsersAddress,Product,ProductImage
+  ]),
     UsersModule,
     OtpModule,
     PassportModule,

@@ -68,11 +68,12 @@ create(
  
 
   @Patch(':id')
-@UseInterceptors(FileInterceptor('defaultImage', productImageUploadOptions))
+@UseInterceptors(FileInterceptor('defaultImage'))
 async update(
   @Param('id', ParseIntPipe) id: number,
-  @Body() dto: UpdateProductDto,@Req() req,
-  @UploadedFile() file?: Express.Multer.File,
+  @Body() dto: UpdateProductDto,
+  @Req() req,
+  @UploadedFile() file?: Express.Multer.File
   
 ) {
   const imagePath = file?.filename;

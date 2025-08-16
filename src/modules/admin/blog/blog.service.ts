@@ -205,11 +205,9 @@ private async deleteImageFile(filename: string): Promise<void> {
       blog.tags = await this.tagRepository.findBy({ id: In(dto.tagIds) });
     }
      // 1. Handle Image Update if New File is Provided
-  // ✅ Delete old image if new one is uploaded
-  if (imageFilename) {
-
-    const key = `blog/${Date.now()}-${imageFilename.originalname}`;
   
+  if (imageFilename) {
+    const key = `blog/${Date.now()}-${imageFilename.originalname}`;  
     // Upload new image
     const titleImage = await this.s3service.uploadBuffer(
       key,
@@ -220,11 +218,9 @@ private async deleteImageFile(filename: string): Promise<void> {
   if (blog.titleImage) {
    // const oldKey = this.extractS3Key(blog.titleImage);
     await this.s3service.deleteObject(blog.titleImage);
-  }
-      
+  }      
     // Save new image path/URL
-  blog.titleImage = titleImage;
-       
+  blog.titleImage = titleImage;       
      
   }
  

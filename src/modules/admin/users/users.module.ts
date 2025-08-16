@@ -6,9 +6,10 @@ import { User } from '../../../shared/entities/user.entity';
 import { Role } from '../../../shared/entities/role.entity';
 import { Permission } from '../../../shared/entities/permission.entity';
 import { UsersAbout } from '../../../shared/entities/users-about.entity';
+import { UsersAddress } from 'src/shared/entities/users-address.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Role, Permission,UsersAbout])],
+  imports: [TypeOrmModule.forFeature([User, Role, Permission,UsersAbout,UsersAddress])],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService],

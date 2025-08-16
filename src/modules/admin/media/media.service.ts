@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
   import { UploadedFileResponse } from './interfaces/upload-file-response.interface';
-import { S3Service } from './s3.client';
+import { S3Service } from 'src/shared/s3/s3.service';
+ 
 
  
   

@@ -12,8 +12,8 @@ async function bootstrap() {
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.set('trust proxy', true);
-  app.useStaticAssets(join(__dirname, '..', 'uploads'));
-
+  //app.useStaticAssets(join(__dirname, '..', 'uploads'));
+   
   // Apply PublicGuard globally
   // app.useGlobalGuards(new PublicGuard());
   //  app.useGlobalPipes(new ValidationPipe());

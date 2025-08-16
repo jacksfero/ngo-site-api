@@ -1,7 +1,15 @@
-import {   IsArray, IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { 
+  IsArray, 
+  IsBoolean, 
+  IsInt, 
+  IsNotEmpty, 
+  IsOptional, 
+  IsString, 
+  MaxLength 
+} from 'class-validator';
 
 export class CreateProductDto {
-    @IsString()
+  @IsString()
   @MaxLength(150)
   @IsNotEmpty()
   productTitle: string;
@@ -11,7 +19,16 @@ export class CreateProductDto {
   @IsNotEmpty()
   description: string;
 
-   @IsOptional()
+  // ✅ Optional owner & artist IDs (for Admin usage)
+  @IsOptional()
+  @IsInt()
+  owner_id?: number;
+
+  @IsOptional()
+  @IsInt()
+  artist_id?: number;
+
+  @IsOptional()
   @IsInt()
   artist_price?: number;
 
@@ -27,7 +44,7 @@ export class CreateProductDto {
   @IsInt()
   medium_id?: number;
 
-   @IsOptional()
+  @IsOptional()
   @IsInt()
   surface_id?: number;
 
@@ -47,12 +64,11 @@ export class CreateProductDto {
   @IsInt()
   depth?: number;
 
-
   @IsOptional()
   @IsInt()
   weight?: number;
 
-   @IsOptional()
+  @IsOptional()
   @IsInt()
   commission?: number;
 
@@ -68,35 +84,28 @@ export class CreateProductDto {
   @IsInt()
   created_in?: number;
 
- /* @IsOptional()
-  @IsInt()
-  exhibition_id?: number;*/
-
-   @IsOptional()
+  @IsOptional()
   @IsString()
   tags?: string;
 
-   // Boolean Flags
+  // ✅ Boolean Flags
   @IsOptional()
   @IsBoolean()
   original_painting?: boolean;
 
-
-   @IsOptional()
+  @IsOptional()
   @IsBoolean()
   new_arrival?: boolean;
 
-   @IsOptional()
+  @IsOptional()
   @IsBoolean()
   eliteChoice?: boolean;
 
-
-   @IsOptional()
+  @IsOptional()
   @IsBoolean()
   affordable_art?: boolean;
 
-
-   @IsOptional()
+  @IsOptional()
   @IsBoolean()
   price_on_demand?: boolean;
 
@@ -104,55 +113,47 @@ export class CreateProductDto {
   @IsBoolean()
   negotiable?: boolean;
 
-    @IsOptional()
+  @IsOptional()
   @IsBoolean()
   printing_rights?: boolean;
 
-    @IsOptional()
+  @IsOptional()
   @IsBoolean()
   featured?: boolean;
 
-    @IsOptional()
+  @IsOptional()
   @IsBoolean()
   refundable?: boolean;
 
-   @IsOptional()
+  @IsOptional()
   @IsBoolean()
   certificate?: boolean;
 
-   @IsOptional()
+  @IsOptional()
   @IsBoolean()
   is_lock?: boolean;
 
-   @IsOptional()
+  @IsOptional()
   @IsBoolean()
   inventory?: boolean;
 
-   @IsOptional()
+  @IsOptional()
   @IsBoolean()
   status?: boolean;
 
- @IsOptional()
+  @IsOptional()
   @IsString()
   remark_to_indigalleria?: string;
 
-    @IsOptional()
+  @IsOptional()
   @IsString()
   remark_to_artist?: string;
 
-   @IsOptional()
+  @IsOptional()
   @IsString()
   conditions?: string;
 
- @IsOptional()
+  @IsOptional()
   @IsString()
-  defaultImage?: string; // optional, populated by upload if provided
-
-
-   // For File Upload (image URL or path)
-@IsOptional()
-@IsArray()
-@IsString({ each: true }) // Accept array of image paths (after upload)
-imagePaths?: string[];
-
+  defaultImage?: string;
 }

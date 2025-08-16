@@ -27,6 +27,8 @@ import { UserPaginationDto } from './dto/user-pagination.dto';
 import { PaginationPipe } from 'src/shared/pipes/pagination.pipe';
  
 import { USERS_LIMIT ,USERS_MAX_LIMIT, USERS_PAGE} from 'src/shared/config/pagination.config';
+import { CreateUserAddressDto } from 'src/modules/auth/dto/create-user-address.dto';
+import { UpdateUserAddressDto } from 'src/modules/auth/dto/update-user-address.dto';
 
 @Controller()
 //@UseGuards(PermissionsGuard)
@@ -83,6 +85,26 @@ export class UsersController {
   removeUserAbout(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.deleteUserAbout(id);
   }
+
+  @Post('user-address/:id')
+  createAddress(@Param('id', ParseIntPipe) id: number, @Body() dto: CreateUserAddressDto, @Req() req) {
+    return this.usersService.createAddress(dto, id, req.user);
+  }
+
+  @Get('user-address/:id')
+  findAllAddress(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.findAllForUserAddress(id);
+  }
+
+  @Patch('user-address/:id')
+  updateAddress(@Param('id') id: number, @Body() dto: UpdateUserAddressDto,@Req() req) {
+    return this.usersService.updateAddress(  id, dto, req.user);
+  }
+
+ /* @Delete('user-address/:id')
+  removeAddress( @Param('id') id: number) {
+    return this.usersService.removeAddress( id);
+  }*/
 
   /** End User about us section */
   @Get(':id')

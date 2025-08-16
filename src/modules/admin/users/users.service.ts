@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,  
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, Not, ILike, FindOptionsWhere, Like } from 'typeorm';
@@ -19,6 +20,9 @@ import { UpdateUsersAboutDto } from './dto/update-users-about.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { UsersListDto } from './dto/users-list.dto';
  import { UserPaginationDto } from './dto/user-pagination.dto';
+import { UsersAddress } from 'src/shared/entities/users-address.entity';
+import { CreateUserAddressDto } from 'src/modules/auth/dto/create-user-address.dto';
+import { UpdateUserAddressDto } from 'src/modules/auth/dto/update-user-address.dto';
  
 
 @Injectable()
@@ -34,6 +38,9 @@ export class UsersService {
 
      @InjectRepository(UsersAbout)
     private aboutRepo: Repository<UsersAbout>,
+
+    @InjectRepository(UsersAddress)
+    private addressRepo: Repository<UsersAddress>,
 
   ) {}
 
@@ -75,8 +82,7 @@ export class UsersService {
     // Step 3: Save user
     return await this.userRepository.save(newUser);
   }
-
-  
+ 
 
   async findUsersByRole(roleName: string):  Promise<UserListByRoleNameDto[]> {
    const users = await this.userRepository
@@ -372,7 +378,44 @@ async findByUsername(username: string): Promise<User | undefined> {
   }
 
 
+  async createAddress(dto: CreateUserAddressDto,userId: number,  user: any) {
+    const address = this.addressRepo.create({
+      ...dto,
+      user: { id: userId },
+      createdBy:user.sub.toString(),
+      updatedBy: user.sub.toString(),
+    });
+  //  console.log('Address-------',address);
+    return await this.addressRepo.save(address);
+  }
 
+  async findAllForUserAddress(userId: number) {
+    return await this.addressRepo.find({
+      where: { user: { id: userId } },
+      relations: ['user'],
+    });
+  }
+
+  async updateAddress(id: number, dto: UpdateUserAddressDto, user:any) {
+    const address = await this.addressRepo.findOne({ where: {
+      user: { id: id },
+      id:dto.id   }, relations: ['user'] });
+    if (!address) throw new NotFoundException('Address not found');
+   // if (address.user.id !== user.sub.toString()) throw new ForbiddenException('Not allowed');
+
+    Object.assign(address, dto);
+    address.updatedBy = user.sub.toString()
+    return await this.addressRepo.save(address);
+  }
+
+  async removeAddress(userId: number, id: number) {
+    const address = await this.addressRepo.findOne({ where: { id }, relations: ['user'] });
+    if (!address) throw new NotFoundException('Address not found');
+    if (address.user.id !== userId) throw new ForbiddenException('Not allowed');
+
+    await this.addressRepo.remove(address);
+    return { message: 'Address deleted successfully' };
+  }
 
 
 }

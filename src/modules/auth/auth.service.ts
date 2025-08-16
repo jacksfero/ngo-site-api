@@ -4,6 +4,7 @@ import {
   ConflictException,
   NotFoundException,
   BadRequestException,Logger,
+  ForbiddenException,
 } from '@nestjs/common';
 
 import * as bcrypt from 'bcrypt';
@@ -29,17 +30,49 @@ import { OtpType,UserType,StartEmailVerificationDto, StartMobileVerificationDto 
 import { SendOtpDto } from './dto/send-otp.dto';
 import { PasswordResetToken } from 'src/shared/entities/password-reset-token.entity';
 import { randomBytes } from 'crypto';
+import { UsersAbout } from 'src/shared/entities/users-about.entity';
+import { CreateUsersAboutDto } from './dto/create-users-about.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { CreateUserAddressDto } from './dto/create-user-address.dto';
+import { UsersAddress } from 'src/shared/entities/users-address.entity';
+import { UpdateUserAddressDto } from './dto/update-user-address.dto';
+import { UserAddressResponseDto } from './dto/user-address-response.dto';
+import { CreateProductDto } from '../admin/product/dto/create-product.dto';
+import { S3Service } from 'src/shared/s3/s3.service';
+import { Product } from 'src/shared/entities/product.entity';
+import { ProductImage } from 'src/shared/entities/product-image.entity';
+import { ProductPaginationDto } from '../admin/product/dto/product-pagination.dto';
+import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
+import { ProductDto } from '../admin/product/dto/product.dto';
+import { plainToInstance } from 'class-transformer';
+import { UpdateProductDto } from '../admin/product/dto/update-product.dto';
 
+
+ 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   constructor(    
     private usersService: UsersService,
     private jwtService: JwtService,
+    private readonly s3service: S3Service,
+  
+    @InjectRepository(Product)
+    private productRepository: Repository<Product>,
+
+     @InjectRepository(ProductImage)
+    private imageRepo: Repository<ProductImage>,
     
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
 
+    @InjectRepository(UsersAbout)
+    private readonly aboutRepo: Repository<UsersAbout>,
+
+    @InjectRepository(UsersAddress)
+    private readonly addressRepo: Repository<UsersAddress>,
+    
     @InjectRepository(OtpVerification)
     private readonly otpveriRepo: Repository<OtpVerification>,
 
@@ -51,7 +84,7 @@ export class AuthService {
 
     private readonly otpService: OtpService,
 
-  ) { }
+  ) {}
 
 
   /************ Start registration Process */
@@ -238,7 +271,8 @@ async verifyOtp(dto: VerifyOtpDto) {
     return { resetToken: token };
   }
 
-  async resetPassword(resetToken: string, newPassword: string) {
+  async resetPassword(dto: ResetPasswordDto) {
+    const { resetToken, password } = dto;
     const record = await this.passresettokenRepo.findOne({
       where: { token: resetToken },
     });
@@ -252,13 +286,40 @@ async verifyOtp(dto: VerifyOtpDto) {
       throw new NotFoundException('User not found');
     }
   
-    user.password = await bcrypt.hash(newPassword, 10);
+    user.password = await bcrypt.hash(password, 10);
     await this.userRepository.save(user);
   
     // Remove token after use
     await this.passresettokenRepo.delete(record.id);
   
     return { message: 'Password reset successfully' };
+  }
+
+  async changePassword(userId: number, dto: ChangePasswordDto) {
+    const { oldPassword, password: newPassword } = dto;
+     // 1. Find the user
+     const user = await this.userRepository.findOne({ where: { id: userId } });
+     if (!user) {
+       throw new NotFoundException('User not found');
+     }
+  
+     // 2. Verify old password
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      throw new BadRequestException('Old password is incorrect');
+    }
+
+     // 3. Prevent reusing the same password
+     const isSamePassword = await bcrypt.compare(newPassword, user.password);
+     if (isSamePassword) {
+       throw new BadRequestException('New password cannot be the same as old password');
+     }
+  
+    // 4. Hash new password
+    user.password = await bcrypt.hash(newPassword, 10);
+    await this.userRepository.save(user);
+
+    return { message: 'Password changed successfully' };
   }
   
   
@@ -294,7 +355,182 @@ async verifyOtp(dto: VerifyOtpDto) {
     }
     return users;
   }
+
+
+  async createUserAbout(dto: CreateUsersAboutDto,userId: number,users:any) {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) throw new NotFoundException('User not found');
+
+    const about = this.aboutRepo.create({ ...dto, user });
+       about.createdBy = users.sub.toString();
+    return this.aboutRepo.save(about);
+  }
+
+
+  async findOneAboutByUserId(userId: number) {
+    return this.aboutRepo.findOne({
+      where: { user: { id: userId } },
+      relations: ['user'],
+    });
+  }
+
+
+  async createAddress(dto: CreateUserAddressDto, user:any ) {
+    const userId = user.sub.toString();
+    const address = this.addressRepo.create({
+      ...dto,
+       user: { id: userId },
+       createdBy:userId,
+      updatedBy: userId,
+    });
+   const withUser = await this.addressRepo.save(address);
+    return toUserAddressResponse(withUser);
+  }
+
  
+    // ✅ FIND ALL
+    async findAllForUserAddress(userId: number): Promise<UserAddressResponseDto[]> {
+      const addresses = await this.addressRepo.find({
+        where: { user: { id: userId } },
+        relations: ['user'],
+      });
+      return addresses.map(toUserAddressResponse);
+    }
+  
+
+  async updateAddress(  dto: UpdateUserAddressDto,user:any) {
+    const userId = user.sub.toString();
+    const address = await this.addressRepo.findOne({ where: 
+      {
+        user: { id: userId },
+        id:dto.id   },
+      relations: ['user'] });
+    if (!address) throw new NotFoundException('Address not found');
+   // if (address.user.id !== userId) throw new ForbiddenException('Not allowed');
+
+    Object.assign(address, dto );
+    const withUser =  await this.addressRepo.save(address);
+
+    return toUserAddressResponse(withUser);
+  }
+
+
+async createProduct(dto: CreateProductDto, user: any, imageFilename?:Express.Multer.File ): Promise<Product> {
+  const userId = user.sub.toString();
+  let titleImage: string | null = null;
+  if(imageFilename){
+    const key = `products/${Date.now()}-${imageFilename.originalname}`;
+    titleImage = 
+  await this.s3service.uploadBuffer(key, imageFilename.buffer, imageFilename.mimetype); 
+  }
+  
+  const product = this.productRepository.create({
+    ...dto,
+   // defaultImage: imageFilename ? `/product-images/${imageFilename}` : null,
+   defaultImage: titleImage,
+   
+    createdBy: userId,
+  });
+  product.owner = userId;
+  product.artist = userId;
+  return this.productRepository.save(product);
+}
+async findAllProducts(
+  paginationDto: ProductPaginationDto,
+): Promise<PaginationResponseDto<ProductDto>> {
+  const { page , limit, search,status } = paginationDto;
+  const skip = (page - 1) * limit;
+
+  const queryBuilder = this.productRepository.createQueryBuilder('product');
+
+  if (search) {
+    queryBuilder.where('product.name LIKE :search', { search: `%${search}%` });
+  }
+
+  const [products, total] = await queryBuilder
+    .skip(skip)
+    .take(limit)
+    .getManyAndCount();
+
+
+
+   /* const [result, products] = await queryBuilder.getManyAndCount();
+
+    const [result, total] = await queryBuilder.getManyAndCount();*/
+
+    const data = plainToInstance(ProductDto, products, {
+      excludeExtraneousValues: true,
+    });
+  
+    return new PaginationResponseDto(data, { total, page, limit  });
+  }
+  async findOneProduct(id: number): Promise<Product> {
+    const product = await this.productRepository.findOne({
+      where: { id },
+      relations: ['owner', 'wishlists', 'displayMappings'],
+    });
+    if (!product) {
+      throw new NotFoundException(`Product with id ${id} not found`);
+    }
+    return product;
+  }
+
+async updateProduct(
+  id: number,
+  updateProductDto: UpdateProductDto,
+  user: any,
+  newImageFile?: Express.Multer.File | null,
+): Promise<Product> {
+  const product = await this.findOneProduct(id);
+  if (!product) throw new NotFoundException('Product not found');
+
+  if (newImageFile) {
+    const key = `products/${Date.now()}-${newImageFile.originalname}`;
+
+    // Upload image to S3 (returns the file URL or key)
+    const uploadedUrl = await this.s3service.uploadBuffer(
+      key,
+      newImageFile.buffer,
+      newImageFile.mimetype, // make sure content-type is set!
+    );
+
+    // Delete old image if exists
+    if (product.defaultImage) {
+      await this.s3service.deleteObject(product.defaultImage);
+    }
+
+    // Save new URL/key in DB
+    product.defaultImage = uploadedUrl;
+  }
+
+  Object.assign(product, updateProductDto);
+  product.updatedBy = user.sub.toString();
+
+  return this.productRepository.save(product);
+}
+}
+
+export function toUserAddressResponse(address: UsersAddress): UserAddressResponseDto {
+  return {
+    id: address.id,
+    type: address.type,
+    address: address.address,
+    city: address.city,
+    state: address.state,
+    country: address.country,
+    pin: address.pin,
+    aadhar: address.aadhar,
+    contact: address.contact,
+    GSTIN: address.GSTIN,
+    tradeName: address.tradeName,
+    createdAt: address.createdAt,
+    updatedAt: address.updatedAt,
+    user: {
+      id: address.user.id,
+      username: address.user.username,
+     
+    },
+  };
 }
   /* async create(createUserDto: CreateUserDto) {
      const existingByUsername = await this.usersService.findByUsername(

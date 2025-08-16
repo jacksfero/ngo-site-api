@@ -27,6 +27,8 @@ export class Exhibition {
     @Column({ type: 'boolean', default: false })
     status: boolean;
 
+ 
+
     @Column({ type: 'varchar', length: 50, nullable: true })
     createdBy: string;
 

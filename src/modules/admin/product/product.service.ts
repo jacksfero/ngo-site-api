@@ -112,38 +112,40 @@ async create(dto: CreateProductDto, user: any, imageFilename?:Express.Multer.Fil
     return product;
   }
 
-  async update(
-  id: number,
-  updateProductDto: UpdateProductDto,   user: any,
-  newImageFilename?: Express.Multer.File|null,
  
+
+async update(
+  id: number,
+  updateProductDto: UpdateProductDto,
+  user: any,
+  newImageFile?: Express.Multer.File | null,
 ): Promise<Product> {
-  let titleImage:string|null;
   const product = await this.findOne(id);
   if (!product) throw new NotFoundException('Product not found');
 
-  // ✅ Delete old image if new one is uploaded
-  if (newImageFilename) {
-    const key = `products/${Date.now()}-${newImageFilename.originalname}`;
-  
-    // Upload new image
-    const titleImage = await this.s3service.uploadBuffer(
-      key,
-      newImageFilename.buffer,
-      newImageFilename.mimetype
-    );
-    if(product.defaultImage)
-      {
-        await this.s3service.deleteObject(product.defaultImage);
-      }
-     
+  if (newImageFile) {
+    const key = `products/${Date.now()}-${newImageFile.originalname}`;
 
-    product.defaultImage = titleImage;
+    // Upload image to S3 (returns the file URL or key)
+    const uploadedUrl = await this.s3service.uploadBuffer(
+      key,
+      newImageFile.buffer,
+      newImageFile.mimetype, // make sure content-type is set!
+    );
+
+    // Delete old image if exists
+    if (product.defaultImage) {
+      await this.s3service.deleteObject(product.defaultImage);
+    }
+
+    // Save new URL/key in DB
+    product.defaultImage = uploadedUrl;
   }
 
-  const updated = Object.assign(product, updateProductDto);
-  updated.updatedBy = user.sub.toString();
-  return this.productRepository.save(updated);
+  Object.assign(product, updateProductDto);
+  product.updatedBy = user.sub.toString();
+
+  return this.productRepository.save(product);
 }
 
 
