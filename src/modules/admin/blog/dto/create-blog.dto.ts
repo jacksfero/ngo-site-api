@@ -23,9 +23,6 @@ export class CreateBlogDto {
   @IsString() 
   slug: string;
 
-  @IsNotEmpty()
-  @IsString() 
-  h1Title: string;
 
   @IsString()
   @IsOptional()
@@ -44,10 +41,14 @@ export class CreateBlogDto {
   @IsOptional()
   keywordsTag?: string | null;  // Add null type
  
- 
+ /* @IsNotEmpty()
+  @IsString() 
+  h1Title: string;
+
   @IsString()
   @IsOptional()
   optionalTitle?: string | null;   // Add null type
+*/
 
   @IsBoolean()
   @IsOptional()

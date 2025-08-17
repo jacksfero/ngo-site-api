@@ -161,7 +161,7 @@ async findBlogsByTagSlug(
 async getCategoriesWithBlogCount(): Promise<CategoryWithBlogCountDto[]> {
   const raw = await this.categoryRepo
     .createQueryBuilder('category')
-    .leftJoin('category.blogs', 'blog', 'blog.isPublished = true')
+    .leftJoin('category.blogs', 'blog', 'blog.status = true')
     .select(['category.id', 'category.name', 'category.slug'])
     .addSelect('COUNT(blog.id)', 'blogCount')
     .groupBy('category.id')

@@ -1,13 +1,13 @@
-import {IsNotEmpty,IsDecimal, IsAlphanumeric,IsString, IsOptional, IsBoolean, Length, IsAlpha } from 'class-validator';
+import {IsNotEmpty,IsNumber,Min,Max,IsDecimal, IsAlphanumeric,IsString, IsOptional, IsBoolean, Length, IsAlpha } from 'class-validator';
 
 export class CreateCurrencyDto {
   
   @IsNotEmpty()
   @IsString() 
-  @Length(2, 5, { message: 'Currency   must be 2 characters' })
+  @Length(3, 5, { message: 'Currency  must be 3 characters' })
   currency: string;
 
-  @Length(1, 5, { message: 'Currency Icon must be 1 characters' })
+  @Length(2, 5, { message: 'Currency Icon must be 2 characters' })
   @IsString()   
   icon: string;
 
@@ -18,10 +18,12 @@ export class CreateCurrencyDto {
   @IsAlpha()
   code: string;
   
-  @IsDecimal()
+  
   @IsOptional()
-  @Length(2, 10, { message: 'Currency value must be 2 characters' })
-  @IsString()  
+  @IsNumber()
+@Min(2, { message: 'Value must be at least 10' }) // Minimum numeric value
+@Max(999999, { message: 'Value must not exceed 6 digits' }) // Maximum 10 digits
+ 
   value: number;
 
   @IsOptional()
