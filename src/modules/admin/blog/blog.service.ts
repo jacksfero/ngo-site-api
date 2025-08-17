@@ -75,7 +75,7 @@ export class BlogService {
     // Create blog entity with proper null handling
     const blog = new Blog();
     blog.title = dto.title;
-    blog.slug = await this.generateUniqueSlug(dto.title);
+    blog.slug = await this.generateUniqueSlug(dto.slug);
     blog.h1Title = dto.h1Title || dto.title;
     blog.blogContent = dto.blogContent;
     blog.descriptionTag = dto.descriptionTag || ''; // Handle undefined
@@ -189,11 +189,11 @@ private async deleteImageFile(filename: string): Promise<void> {
     let titleImage: string | null = null;
     const blog = await this.findOne(id);
      if (!blog) throw new NotFoundException('blog not found');
-     if (dto.title && dto.title !== blog.title) {
-    blog.slug = await this.generateUniqueSlug(dto.title);
-    blog.title = dto.title;
+     if (dto.slug && dto.slug !== blog.slug) {
+    blog.slug = await this.generateUniqueSlug(dto.slug);
+   
   }
-
+    // blog.title = dto.title;
     blog.h1Title = dto.h1Title ?? blog.h1Title;
   blog.blogContent = dto.blogContent ?? blog.blogContent;
    
@@ -270,5 +270,17 @@ private async deleteImageFile(filename: string): Promise<void> {
     };
   }
 
+
+    // content.service.ts
+    async toggleStatus(id: number, user: any): Promise<Blog> {
+      const blog = await this.blogRepository.findOne({ where: { id } });
+      if (!blog) {
+        throw new NotFoundException(`blog   with ID ${id} not found`);
+      }
+      blog.status = !blog.status;
+      //content.updatedBy = user.sub.toString(); // or user.sub.toString()
+  
+      return this.blogRepository.save(blog);
+    }
 
 }

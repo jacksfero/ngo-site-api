@@ -123,4 +123,11 @@ publish(@Param('id') id: string) {
 remove(@Param('id', ParseIntPipe) id: number) {
   return this.blogService.remove(id);
 }
+
+@Patch(':id/toggle-status')
+async toggleStatus(@Param('id', ParseIntPipe) id: number, @Req() req) {
+  return this.blogService.toggleStatus(id, req.user);
+}
+
+
 }
