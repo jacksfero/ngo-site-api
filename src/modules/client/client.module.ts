@@ -4,6 +4,8 @@ import { RouterModule } from '@nestjs/core';
 import { BlogClientModule } from './blog/blog-client.module';
 import { ProductsModule } from './products/products.module';
 import { ExhibitionModule } from './exhibition/exhibition.module';
+import { CartModule } from './cart/cart.module';
+import { OrderModule } from './order/order.module';
 
 
 @Module({
@@ -23,6 +25,10 @@ import { ExhibitionModule } from './exhibition/exhibition.module';
         ],
       },
     ]),
+
+    CartModule,
+
+    OrderModule,
  
 
 

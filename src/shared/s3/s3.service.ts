@@ -88,3 +88,50 @@ export class S3Service {
     }
   // optionally, you can add presign functionality if you want client-side direct upload
 }
+/*****************
+ * 
+ * 
+ * 
+ * 
+ * 
+ npm install sharp
+ * 
+ * 
+
+
+import * as sharp from 'sharp';
+
+async uploadFileWithThumbnail(file: Express.Multer.File, key: string) {
+  // 1. Upload original
+  await this.s3.upload({
+    Bucket: process.env.AWS_S3_BUCKET,
+    Key: key,
+    Body: file.buffer,
+    ContentType: file.mimetype,
+    ACL: 'public-read',
+  }).promise();
+
+  const originalUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+
+  // 2. Generate thumbnail (e.g. 300px width)
+  const thumbnailBuffer = await sharp(file.buffer)
+    .resize({ width: 300 })
+    .toBuffer();
+
+  const thumbKey = key.replace(/(\.[\w\d_-]+)$/i, '_thumb$1');
+
+  await this.s3.upload({
+    Bucket: process.env.AWS_S3_BUCKET,
+    Key: thumbKey,
+    Body: thumbnailBuffer,
+    ContentType: file.mimetype,
+    ACL: 'public-read',
+  }).promise();
+
+  const thumbnailUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${thumbKey}`;
+
+  return { originalUrl, thumbnailUrl };
+}
+
+
+ */

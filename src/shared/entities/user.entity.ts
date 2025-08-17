@@ -13,6 +13,7 @@ import { Wishlist } from './wishlist.entity';
 import { Blog } from './blog.entity';
 import { ExhibitionProduct } from './exhibition-product.entity';
 import { Video } from './video.entity';
+import { Cart } from './cart.entity';
 
  
 @Entity('user')
@@ -51,6 +52,9 @@ blogs: Blog[];
 
  @OneToMany(() => ExhibitionProduct, (map) => map.user)
   displayMappings: ExhibitionProduct[];
+
+
+ 
 
 
   @Column({ type: 'boolean', nullable: true })
