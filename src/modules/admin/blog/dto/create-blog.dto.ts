@@ -41,14 +41,14 @@ export class CreateBlogDto {
   @IsOptional()
   keywordsTag?: string | null;  // Add null type
  
- /* @IsNotEmpty()
+  @IsOptional()
   @IsString() 
-  h1Title: string;
+  h1Title?: string | null;   // Add null type
 
   @IsString()
   @IsOptional()
   optionalTitle?: string | null;   // Add null type
-*/
+ 
 
   @IsBoolean()
   @IsOptional()
