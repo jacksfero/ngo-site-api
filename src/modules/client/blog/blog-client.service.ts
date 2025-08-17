@@ -33,7 +33,7 @@ export class BlogClientService {
   const searchTerm = search?.toLowerCase() || '';
 
  const where: any = {
-    isPublished: true,
+    status: true,
    // category: { slug },
   };
 
@@ -54,7 +54,7 @@ export class BlogClientService {
   const blog = await this.blogRepo.findOne({
     where: {
       slug,
-      isPublished: true, // ✅ likely should be true, not false
+      status: true, // ✅ likely should be true, not false
     },
     relations: ['category', 'tags'], // ✅ include if your DTO exposes these
   });
@@ -89,7 +89,7 @@ async findBlogsByCategorySlug(
   const searchTerm = search?.toLowerCase() || '';
 
  const where: any = {
-    isPublished: true,
+  status: true,
     category: { slug },
   };
    // Optional title/h1Title search (simple LIKE)
@@ -130,7 +130,7 @@ async findBlogsByTagSlug(
     .leftJoinAndSelect('blog.category', 'category')
     .leftJoinAndSelect('blog.tags', 'tag')
     .leftJoinAndSelect('blog.author', 'author')
-    .where('blog.isPublished = :published', { published: true })
+    .where('blog.status = :published', { published: true })
     .andWhere('tag.slug = :slug', { slug });
 
   if (searchTerm) {
