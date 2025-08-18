@@ -10,6 +10,7 @@ import {
   IsArray,
   IsBoolean,
   IsDate,
+  IsNumber,
 } from 'class-validator';
 
 
@@ -22,6 +23,9 @@ export class CreateBlogDto {
   
   @IsString() 
   slug: string;
+
+  @IsNumber() 
+  author: number;
 
 
   @IsString()

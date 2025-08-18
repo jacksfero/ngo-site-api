@@ -60,7 +60,7 @@ export class BlogService {
     const [category, tags, author] = await Promise.all([
         this.categoryRepository.findOneBy({ id: dto.categoryId }),
         dto.tagIds?.length ? this.tagRepository.findBy({ id: In(dto.tagIds) }) : [],
-        this.userRepository.findOneBy({ id: user.sub.toString() })
+        this.userRepository.findOneBy({ id: dto.author })
     ]);
 
     if (!category) throw new NotFoundException(`Category not found`);
@@ -196,6 +196,13 @@ private async deleteImageFile(filename: string): Promise<void> {
     // blog.title = dto.title;
     blog.h1Title = dto.h1Title ?? blog.h1Title;
   blog.blogContent = dto.blogContent ?? blog.blogContent;
+ // if(dto.author){
+// ✅ Handle author relation (only if provided)
+if (dto.author) {
+  blog.author = { id: dto.author } as User;
+}
+ // }
+   // blog.author = dto.author;
    
 
     if (dto.categoryId) {
@@ -227,7 +234,8 @@ private async deleteImageFile(filename: string): Promise<void> {
   blog.titleImage = titleImage;       
      
   }
- 
+  blog.keywordsTag = dto.keywordsTag??'';    
+  blog.descriptionTag = dto.descriptionTag??'';      
     return this.blogRepository.save(blog);
   }
 
