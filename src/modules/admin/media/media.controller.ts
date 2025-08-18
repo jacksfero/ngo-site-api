@@ -12,6 +12,7 @@ import { MediaService } from './media.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { S3Service } from 'src/shared/s3/s3.service';
 import { sanitizeFileName } from 'src/shared/utils/sanitizefilename';
+import { FileValidationPipe } from 'src/shared/pipes/file-size-type-validation.pipe';
 
 @Controller('media')
 export class MediaController {
@@ -44,7 +45,9 @@ export class MediaController {
 
    @Post('editor-image')
    @UseInterceptors(FileInterceptor('file'))
-   async uploadEditorImage(@UploadedFile() file: Express.Multer.File) {
+   async uploadEditorImage(
+    @UploadedFile(new FileValidationPipe(2 * 1024 * 1024)) file: Express.Multer.File) 
+    {
      //const key = `editor/${Date.now()}-${file.originalname}`;
 
      const cleanName = sanitizeFileName(file.originalname);

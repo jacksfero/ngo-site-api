@@ -7,7 +7,7 @@ export class CreateCurrencyDto {
   @Length(3, 5, { message: 'Currency  must be 3 characters' })
   currency: string;
 
-  @Length(2, 5, { message: 'Currency Icon must be 2 characters' })
+  @Length(1, 5, { message: 'Currency Icon must be 1 characters' })
   @IsString()   
   icon: string;
 
@@ -21,9 +21,8 @@ export class CreateCurrencyDto {
   
   @IsOptional()
   @IsNumber()
-@Min(2, { message: 'Value must be at least 10' }) // Minimum numeric value
-@Max(999999, { message: 'Value must not exceed 6 digits' }) // Maximum 10 digits
- 
+@Min(1, { message: 'Value must be at least 1' }) // Minimum numeric value
+@Max(999999, { message: 'Value must not exceed 6 digits' }) // Maximum 10 digits 
   value: number;
 
   @IsOptional()

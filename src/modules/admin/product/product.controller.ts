@@ -16,6 +16,7 @@ import { ProductDto } from './dto/product.dto';
 import { PaginationPipe } from 'src/shared/pipes/pagination.pipe';
 import { PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE } from 'src/shared/config/pagination.config';
 import { ProductPaginationDto } from './dto/product-pagination.dto';
+import { FileValidationPipe } from 'src/shared/pipes/file-size-type-validation.pipe';
 
 
 
@@ -30,7 +31,7 @@ export class ProductController {
 @UseInterceptors(FileInterceptor('defaultImage'))
 create(
   @Body() createProductDto: CreateProductDto,
-  @UploadedFile() file: Express.Multer.File,
+  @UploadedFile(new FileValidationPipe(2 * 1024 * 1024)) file: Express.Multer.File,
   @Req() req,
 ) {
  // const imagePath = file?.filename;
@@ -73,7 +74,7 @@ async update(
   @Param('id', ParseIntPipe) id: number,
   @Body() dto: UpdateProductDto,
   @Req() req,
-  @UploadedFile() file?: Express.Multer.File
+  @UploadedFile(new FileValidationPipe(2 * 1024 * 1024)) file?: Express.Multer.File
   
 ) {
   const imagePath = file?.filename;
@@ -99,7 +100,7 @@ async update(
 @UseInterceptors(FileInterceptor('image'))
 async uploadImage(
   @Param('product_id', ParseIntPipe) productId: number,
-  @UploadedFile() file: Express.Multer.File,
+  @UploadedFile(new FileValidationPipe(2 * 1024 * 1024)) file: Express.Multer.File,
 ) {
   if (!file) {
     throw new BadRequestException('Image file is required');

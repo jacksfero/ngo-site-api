@@ -93,6 +93,16 @@ export class AuthService {
   ) {}
 
 
+  // async blacklistToken(token: string) {
+  //   const decoded: any = this.jwtService.decode(token);
+  //   const expiresAt = new Date(decoded.exp * 1000);
+  
+  //   await this.blacklistRepo.save({
+  //     token,
+  //     expiresAt,
+  //   });
+  // }
+
   /************ Start registration Process */
 
 

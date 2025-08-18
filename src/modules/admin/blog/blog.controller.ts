@@ -28,6 +28,7 @@ import { BLOG_LIMIT, BLOG_MAX_LIMIT, BLOG_PAGE, USERS_PAGE } from 'src/shared/co
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { BlogPaginationDto } from './dto/blog-pagination.dto';
 import { BlogListDto } from './dto/blog-list.dto';
+import { FileValidationPipe } from 'src/shared/pipes/file-size-type-validation.pipe';
 
 
 
@@ -75,7 +76,7 @@ export class BlogController {
   create(
     @Body() dto: CreateBlogDto,
     @Req() req,
-    @UploadedFile() file?: Express.Multer.File,
+    @UploadedFile(new FileValidationPipe(2 * 1024 * 1024)) file?: Express.Multer.File,
   ) {
     return this.blogService.create(dto, req.user, file ?? null);
   }
@@ -107,7 +108,7 @@ findOne(@Param('id', ParseIntPipe) id: number) {
 update(
   @Param('id', ParseIntPipe) id: number,
   @Body() dto: UpdateBlogDto,
-  @UploadedFile() file?: Express.Multer.File
+  @UploadedFile(new FileValidationPipe(2 * 1024 * 1024)) file?: Express.Multer.File
 ) {
   return this.blogService.update(id, dto, file ?? null );
 }

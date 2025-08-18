@@ -157,6 +157,17 @@ async changePassword(@Req() req, @Body() dto: ChangePasswordDto) {
 }
 
 
+ @UseGuards(JwtAuthGuard)
+ @Post('logout')
+ async logout(@Req() req) {
+  localStorage.removeItem('token'); // clear JWT
+//  res.clearCookie('access_token');
+ // navigate('/login');
+   return { message: 'Logged out successfully.  ' };
+ }
+
+
+
 
   @Public()
   @Get('by-role/:roleName')
