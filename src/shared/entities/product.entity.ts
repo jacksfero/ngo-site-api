@@ -4,6 +4,7 @@ import { User } from './user.entity';
 import { ExhibitionProduct } from './exhibition-product.entity';
 import { ProductImage } from './product-image.entity';
 import { ContactUs } from './contactus.entity';
+import { Inventory } from './inventory.entity';
 
 @Entity()
 export class Product {
@@ -101,8 +102,8 @@ export class Product {
   @Column({ type: 'boolean', default: false })
   is_lock: boolean;
 
-  @Column({ type: 'boolean', default: false })
-  inventory: boolean;
+  /*@Column({ type: 'boolean', default: false })
+  inventory: boolean;*/
 
   @Column({ type: 'boolean', default: false })
   status: boolean;
@@ -160,6 +161,10 @@ images: ProductImage[];
 
 @OneToOne(() => ContactUs, (contactUs) => contactUs.product)
 contact: ContactUs;
+ 
+
+@OneToOne(() => Inventory, (inventory) => inventory.product, { cascade: true })
+productInventory: Inventory;
 
 /*
 🔧 What You Should Do Now:

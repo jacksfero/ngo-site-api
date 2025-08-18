@@ -133,9 +133,9 @@ export class CreateProductDto {
   @IsBoolean()
   is_lock?: boolean;
 
-  @IsOptional()
+  /*@IsOptional()
   @IsBoolean()
-  inventory?: boolean;
+  inventory?: boolean;*/
 
   @IsOptional()
   @IsBoolean()

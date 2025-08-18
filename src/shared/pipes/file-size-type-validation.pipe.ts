@@ -9,7 +9,7 @@ export class FileValidationPipe implements PipeTransform {
 
   transform(file: Express.Multer.File) {
     if (!file) {
-      throw new BadRequestException('No file uploaded');
+      return undefined;
     }
 
     if (file.size > this.maxSize) {

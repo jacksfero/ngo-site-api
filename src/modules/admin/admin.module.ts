@@ -29,6 +29,7 @@ import { AdminCompositeGuard } from 'src/core/guards/admin-composite.guard';
 import { AuthModule } from '../auth/auth.module';
 import { ProductcategoryModule } from './productcategory/productcategory.module';
 import { MediaModule } from './media/media.module';
+import { InventoryModule } from './inventory/inventory.module';
  
 
 @Module({
@@ -55,7 +56,9 @@ import { MediaModule } from './media/media.module';
     SubjectModule,
     SurfaceModule,
     CategoryModule,
-    TagModule,MediaModule,
+    TagModule,
+    MediaModule,
+    InventoryModule,
     RouterModule.register([
       {
         path: 'admin', // Prefix for all child routes
@@ -80,9 +83,11 @@ import { MediaModule } from './media/media.module';
           { path: 'categories', module: CategoryModule },
           { path: 'tags', module: TagModule },
           { path: 'contents', module: ContentModule },
+          { path: 'inventries', module: InventoryModule },
         ],
       },
     ]),
+    
  
     
 
