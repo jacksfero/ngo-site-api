@@ -2,10 +2,16 @@ import { Controller,Req,ParseIntPipe, Get, Post, Body, Patch, Param, Delete } fr
 import { CurrencyService } from './currency.service';
 import { CreateCurrencyDto } from './dto/create-currency.dto';
 import { UpdateCurrencyDto } from './dto/update-currency.dto';
+import { CurrencyListDto } from './dto/currency-list.dto';
 
 @Controller()
 export class CurrencyController {
   constructor(private readonly currencyService: CurrencyService) { }
+
+  @Get('list')
+  async getCurrencyList(): Promise<CurrencyListDto[]> {
+    return this.currencyService.getCurrencyList();
+  } 
 
   @Post()
   create(@Body() createCurrencyDto: CreateCurrencyDto, @Req() req) {

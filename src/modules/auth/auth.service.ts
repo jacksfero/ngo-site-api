@@ -251,7 +251,7 @@ async verifyOtp(dto: VerifyOtpDto) {
       sub: user.id,
       username: user.username,
       roles: user.roles?.map((r) => r.name),
-      permissions: user.roles?.flatMap((r) => r.permissions?.map((p) => p.name)) || [], // optional
+      permissions: 'No permission', // optional
     };
     return {
       access_token: this.jwtService.sign(payload),

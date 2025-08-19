@@ -1,9 +1,12 @@
 import { ConflictException, Injectable,NotFoundException } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { CreateCurrencyDto } from './dto/create-currency.dto';
 import { UpdateCurrencyDto } from './dto/update-currency.dto';
 import { Currency } from '../../../shared/entities/currency.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not,FindOptionsWhere, Repository } from 'typeorm';
+import { CurrencyListDto } from './dto/currency-list.dto';
+
 
 @Injectable()
 export class CurrencyService {
@@ -11,6 +14,25 @@ export class CurrencyService {
     @InjectRepository(Currency)
     private currencyRepository: Repository<Currency>,
   ) { }
+
+
+  async getCurrencyList(): Promise<CurrencyListDto[]> {
+    const currency = await this.currencyRepository.find({
+      select: ['id', 'code','icon','currency','value'],
+      where: { status: true } ,
+   //   order: { weightSlot: 'ASC' },
+    });
+
+    // const formatted = products.map((p) => ({
+    //   id: p.id,
+    //   weightSlot: `${p.weightSlot} (${p.costINR} - ${p.CostOthers})`,
+    // }));
+
+    return plainToInstance(CurrencyListDto, currency, {
+      excludeExtraneousValues: true,
+    });
+  }
+
 
   async create(createCurrencyDto: CreateCurrencyDto, user: any): Promise<Currency> {
     // Check if currency/code combination already exists
