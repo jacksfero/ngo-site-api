@@ -187,7 +187,7 @@ async verifyOtp(dto: VerifyOtpDto) {
     async validateUser(loginId:string, password:string): Promise<any> {
      // const { loginId, password } = dto;
     
-      console.log('loginId-----', loginId, '----password---', password);
+     // console.log('loginId-----', loginId, '----password---', password);
     
       if (!loginId || !password) {
         this.logger.warn('Login attempt with missing credentials');
@@ -198,17 +198,17 @@ async verifyOtp(dto: VerifyOtpDto) {
         let user;
     
         if (this.isValidEmail(loginId)) {
-          console.log('Detected email login');
+        //  console.log('Detected email login');
           user = await this.findByEmail(loginId);
         } else if (this.isValidMobile(loginId)) {
-          console.log('Detected mobile login');
+          //console.log('Detected mobile login');
           user = await this.findByMobile(loginId);
         } else {
           this.logger.warn(`Invalid login format: ${loginId}`);
           throw new BadRequestException(`Invalid login format: ${loginId}`);
         }
     
-       // console.log('User found:-------------', user);
+      //  console.log('User found:-------------', user);
     
         if (!user) {
           this.logger.warn(`User not found for loginId: ${loginId}`);
@@ -249,9 +249,9 @@ async verifyOtp(dto: VerifyOtpDto) {
     }
     const payload: JwtPayload = {
       sub: user.id,
-      username: user.mobile,
-      roles: user.roles,
-      permissions: user.email, // optional
+      username: user.username,
+      roles: user.roles?.map((r) => r.name),
+      permissions: user.roles?.flatMap((r) => r.permissions?.map((p) => p.name)) || [], // optional
     };
     return {
       access_token: this.jwtService.sign(payload),
@@ -357,11 +357,13 @@ async verifyOtp(dto: VerifyOtpDto) {
   }   
   
   async findByEmail(email: string) {
-    return this.userRepository.findOne({ where: { email } });
+    return this.userRepository.findOne({ where: { email },
+     
+    });
   }
   
   async findByMobile(mobile: string) {
-    return this.userRepository.findOne({ where: { mobile } });
+    return this.userRepository.findOne({ where: { mobile } ,relations: ['roles', 'roles.permissions'] });
   }
 
   async findUsersByRole(roleName: string): Promise<UserListByRoleNameDto[]> {

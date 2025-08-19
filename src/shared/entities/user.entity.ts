@@ -33,7 +33,7 @@ export class User {
   @Column({ nullable: false })
   password: string;
 
-  @ManyToMany(() => Role, (role) => role.users)
+  @ManyToMany(() => Role, (role) => role.users ,{ eager: true })
   @JoinTable({
     name: 'user_roles',
     joinColumn: { name: 'user_id', referencedColumnName: 'id' },
@@ -53,8 +53,6 @@ blogs: Blog[];
  @OneToMany(() => ExhibitionProduct, (map) => map.user)
   displayMappings: ExhibitionProduct[];
 
-
- 
 
 
   @Column({ type: 'boolean', nullable: true })
