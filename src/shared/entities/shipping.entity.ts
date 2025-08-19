@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, OneToOne,Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Inventory } from './inventory.entity';
 
 @Entity('shipping')
 export class Shipping {
@@ -42,4 +43,8 @@ export class Shipping {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+
+  @OneToOne(() => Inventory, (inventory) => inventory.shippingWeight, { cascade: true })
+  shippingInventory: Inventory;
 }

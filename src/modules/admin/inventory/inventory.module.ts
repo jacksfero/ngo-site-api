@@ -4,9 +4,10 @@ import { InventoryController } from './inventory.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Inventory } from 'src/shared/entities/inventory.entity';
 import { Product } from 'src/shared/entities/product.entity';
+import { Shipping } from 'src/shared/entities/shipping.entity';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Inventory,Product])],
+  imports:[TypeOrmModule.forFeature([Inventory,Product,Shipping])],
   controllers: [InventoryController],
   providers: [InventoryService],
 })

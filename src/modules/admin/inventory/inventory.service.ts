@@ -10,6 +10,8 @@ import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { InventoryPaginationDto } from './dto/inventory-pagination.dto';
 import { InventoryResponseDto } from './dto/inventry-response.dto';
 import { InventoryStatusDto } from './dto/inventory-status.dto';
+import { AartworkGstSlot, ShippingGstSlot } from '../shipping/enums/gst.enum';
+import { Shipping } from 'src/shared/entities/shipping.entity';
 
 @Injectable()
 export class InventoryService {
@@ -18,6 +20,9 @@ export class InventoryService {
      private inventoryRepo: Repository<Inventory>,
 
     @InjectRepository(Product) private productRepo: Repository<Product>,
+
+    @InjectRepository(Shipping)
+     private shippingRepo: Repository<Shipping>,
   ) {}
   
   
@@ -33,18 +38,37 @@ export class InventoryService {
     });
   }
 
-  
   async create(dto: CreateInventoryDto): Promise<Inventory> {
     const product = await this.productRepo.findOne({ where: { id: dto.productId } });
-    if (!product) throw new NotFoundException('Product not found');
-
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+  
+    const shipping = await this.shippingRepo.findOne({ where: { id: dto.shippingId } });
+    if (!shipping) {
+      throw new NotFoundException('Shipping not found');
+    }
+  
     // check if product already has an inventory
     const existing = await this.inventoryRepo.findOne({ where: { product: { id: dto.productId } } });
-    if (existing) throw new BadRequestException('This product already has an inventory');
+    if (existing) {
+      throw new BadRequestException('This product already has an inventory');
+    }
 
-    const inventory = this.inventoryRepo.create({ ...dto, product });
+    console.log('dto data ---------',dto.shippingSlot);
+     
+    // ✅ Assign relations properly
+    const inventory = this.inventoryRepo.create({
+      ...dto,
+      product,
+      gstSlot : AartworkGstSlot[dto.gstSlot],
+      shippingSlot: ShippingGstSlot[dto.shippingSlot],
+        shippingWeight: shipping, // instead of raw shippingId
+    });
+  
     return this.inventoryRepo.save(inventory);
   }
+  
  
   async findAll(
     paginationDto: InventoryPaginationDto,
@@ -100,7 +124,24 @@ export class InventoryService {
 
   async update(id: number, dto: UpdateInventoryDto): Promise<Inventory> {
     const inventory = await this.findOne(id);
+    if (!inventory) throw new NotFoundException('Inventory not found for this product');
     Object.assign(inventory, dto);
+    // If you need to explicitly map gstSlot
+ if (dto.gstSlot) {
+    inventory.gstSlot = AartworkGstSlot[dto.gstSlot];
+  }
+  if (dto.shippingSlot) {
+    inventory.shippingSlot = ShippingGstSlot[dto.shippingSlot];
+  } 
+  /* if (dto.status) {
+    inventory.status = dto.status;
+  } 
+  if (dto.status) {
+    inventory.status = dto.status;
+  } 
+if (dto.termsAndConditions) {
+    inventory.termsAndConditions = dto.termsAndConditions;
+  } */
     return this.inventoryRepo.save(inventory);
   }
 

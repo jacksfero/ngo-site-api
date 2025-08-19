@@ -6,7 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ShippingListDto } from './dto/shipping-list.dto';
 import { plainToInstance } from 'class-transformer';
-import { GstSlot,AartworkGstSlot } from './enums/gst.enum';  
+import { AartworkGstSlot, ShippingGstSlot } from './enums/gst.enum';  
 import { GstSlotResponseDto } from './dto/gst-slot-response.dto';
  
 
@@ -34,24 +34,24 @@ export class ShippingService {
       excludeExtraneousValues: true,
     });
   }
-  getGstSlot(): GstSlotResponseDto[] {
-    const slots = Object.keys(GstSlot)
+  getArtGstSlot(): GstSlotResponseDto[] {
+    const slots = Object.keys(AartworkGstSlot)
       .filter((key) => isNaN(Number(key))) // keep only enum keys, not reverse mappings
       .map((key) => ({
         key,
-        value: `${GstSlot[key as keyof typeof GstSlot]}%`,
+        value: `${AartworkGstSlot[key as keyof typeof AartworkGstSlot]}%`,
       }));
   
     return plainToInstance(GstSlotResponseDto, slots, {
       excludeExtraneousValues: true,
     });
   }
-  getArtGstSlot(): GstSlotResponseDto[] {
-    const slots = Object.keys(AartworkGstSlot)
+  getShippingGstSlot(): GstSlotResponseDto[] {
+    const slots = Object.keys(ShippingGstSlot)
       .filter((key) => isNaN(Number(key))) // keep only enum keys, not reverse mappings
       .map((key) => ({
         key,
-        value: `${AartworkGstSlot[key as keyof typeof GstSlot]}%`,
+        value: `${ShippingGstSlot[key as keyof typeof ShippingGstSlot]}%`,
       }));
   
     return plainToInstance(GstSlotResponseDto, slots, {

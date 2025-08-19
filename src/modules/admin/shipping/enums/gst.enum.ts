@@ -1,15 +1,12 @@
- 
-export enum GstSlot {
+
+export enum AartworkGstSlot {
   GST_5 = 5,
   GST_12 = 12,
   GST_18 = 18,
   GST_28 = 28,
 }
 
-
-
-export enum AartworkGstSlot {
-  GSTA_12 = 12,
-  GSTA_18 = 18, 
+export enum ShippingGstSlot {
+  GST_12 = 12,
+  GST_18 = 18,
 }
-

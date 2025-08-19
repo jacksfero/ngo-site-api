@@ -13,17 +13,18 @@ export class ShippingController {
   @Get('list')
   async getShippingList(): Promise<ShippingListDto[]> {
     return this.shippingService.getShippingList();
-  }
+  } 
 
   @Get('gstslotlist')
-  getGstSlot(): GstSlotResponseDto[] {
-    return this.shippingService.getGstSlot();
+  getShippingGstSlot(): GstSlotResponseDto[] {
+    return this.shippingService.getShippingGstSlot();
   }
 
   @Get('artworkgstslotlist')
   getArtGstSlot(): GstSlotResponseDto[] {
     return this.shippingService.getArtGstSlot();
   }
+  
   @Post()
   create(@Body() createShippingDto: CreateShippingDto, @Req() req) {
     return this.shippingService.create(createShippingDto, req.user);
