@@ -17,12 +17,18 @@ import { PaginationPipe } from 'src/shared/pipes/pagination.pipe';
 import { PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE } from 'src/shared/config/pagination.config';
 import { ProductPaginationDto } from './dto/product-pagination.dto';
 import { FileValidationPipe } from 'src/shared/pipes/file-size-type-validation.pipe';
+import { ProductListDto } from './dto/product-list.dto';
 
 
 
 @Controller()
 export class ProductController {
   constructor(private readonly productService: ProductService) { }
+
+  @Get('list')
+  async getProductList(): Promise<ProductListDto[]> {
+    return this.productService.getProductList();
+  }
 
 
 

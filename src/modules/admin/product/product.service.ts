@@ -14,6 +14,7 @@ import { plainToInstance } from 'class-transformer';
 import { S3Service } from 'src/shared/s3/s3.service';
 import { ProductPaginationDto } from './dto/product-pagination.dto';
 import { sanitizeFileName } from 'src/shared/utils/sanitizefilename';
+import { ProductListDto } from './dto/product-list.dto';
  
 
 @Injectable()
@@ -27,6 +28,26 @@ export class ProductService {
     private imageRepo: Repository<ProductImage>,
   ) { }
  
+
+  async getProductList(): Promise<ProductListDto[]> {
+    const products = await this.productRepository.find({
+      select: ['id', 'productTitle'],
+      where: { status: true } ,
+      order: { productTitle: 'ASC' },
+    });
+
+    const formatted = products.map((p) => ({
+      id: p.id,
+      productTitle: `${p.productTitle} (IG${p.id})`,
+    }));
+
+    return plainToInstance(ProductListDto, formatted, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+
+
 async create(dto: CreateProductDto, user: any, imageFilename?:Express.Multer.File ): Promise<Product> {
   
   let titleImage: string | null = null;

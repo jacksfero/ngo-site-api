@@ -4,12 +4,12 @@ import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { CreateInventoryDto } from './dto/create-inventory.dto';
 import { UpdateInventoryDto } from './dto/update-inventory.dto';
-import { Inventory } from 'src/shared/entities/inventory.entity';
+import { Inventory, InventoryStatus } from 'src/shared/entities/inventory.entity';
 import { Product } from 'src/shared/entities/product.entity';
-import { INVENTORY_LIMIT,INVENTORY_MAX_LIMIT,INVENTORY_PAGE } from 'src/shared/config/pagination.config';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { InventoryPaginationDto } from './dto/inventory-pagination.dto';
 import { InventoryResponseDto } from './dto/inventry-response.dto';
+import { InventoryStatusDto } from './dto/inventory-status.dto';
 
 @Injectable()
 export class InventoryService {
@@ -20,7 +20,20 @@ export class InventoryService {
     @InjectRepository(Product) private productRepo: Repository<Product>,
   ) {}
   
+  
 
+  getStatuses(): InventoryStatusDto[] {
+    const statuses = Object.entries(InventoryStatus).map(([key, value]) => ({
+      key,
+      value,
+    }));
+   // return Object.values(InventoryStatus);
+    return plainToInstance(InventoryStatusDto, statuses, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  
   async create(dto: CreateInventoryDto): Promise<Inventory> {
     const product = await this.productRepo.findOne({ where: { id: dto.productId } });
     if (!product) throw new NotFoundException('Product not found');
@@ -32,13 +45,14 @@ export class InventoryService {
     const inventory = this.inventoryRepo.create({ ...dto, product });
     return this.inventoryRepo.save(inventory);
   }
-/*
+ 
   async findAll(
     paginationDto: InventoryPaginationDto,
   ): Promise<PaginationResponseDto<InventoryResponseDto>> {
     const { page, limit, status, productId, startDate, endDate, select } = paginationDto;
-   
-    const qb = this.inventoryRepo.createQueryBuilder('inventory')
+    const skip = (page - 1) * limit;
+
+     const qb = this.inventoryRepo.createQueryBuilder('inventory')
     .leftJoinAndSelect('inventory.product', 'product');
 
     // ✅ Filtering
@@ -55,18 +69,15 @@ export class InventoryService {
     }
   
     // ✅ Select only requested fields
-    if (select) {
+  /*  if (select) {
       const fields = select.split(',').map((f) => f.trim());
       qb.select(fields.map((field) => `inventory.${field}`));
-    }
+    }*/
   
     // ✅ Pagination
     //qb.skip((page - 1) * limit).take(limit);
   
-    const [items, total] = await qb
-    .skip((page - 1) * limit)
-    .take(limit)
-    .getManyAndCount();
+    const [result, total] = await qb.take(limit).skip(skip).getManyAndCount();
   
     // const data = plainToInstance(InventoryResponseDto, items, {
     //   excludeExtraneousValues: true,
@@ -74,13 +85,13 @@ export class InventoryService {
   
  //   return new PaginationResponseDto<InventoryResponseDto>(data, total, page, limit);
 
-    const data = plainToInstance(InventoryResponseDto, items, {
+    const data = plainToInstance(InventoryResponseDto, result, {
       excludeExtraneousValues: true,
     });
   
-    return new PaginationResponseDto(data, { total, page, limit  });
+    return new PaginationResponseDto(data, { total, page, limit  }); 
   }
-*/
+ 
   async findByProduct(productId: number): Promise<Inventory> {
     const inventory = await this.inventoryRepo.findOne({ where: { product: { id: productId } }, relations: ['product'] });
     if (!inventory) throw new NotFoundException('Inventory not found for this product');

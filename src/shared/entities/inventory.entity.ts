@@ -21,9 +21,7 @@ import {
   export class Inventory {
     @PrimaryGeneratedColumn()
     id: number;
-  
-    
-  
+   
     @OneToOne(() => Product, (product) => product.productInventory, { eager: true })
     @JoinColumn({ name: 'product_id' })
     product: Product;

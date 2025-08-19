@@ -16,25 +16,18 @@ export const PRODUCTS_LIMIT = parseInt(process.env.PRODUCTS_LIMIT ?? '55');
 export const PRODUCTS_MAX_LIMIT = parseInt(process.env.PRODUCTS_MAX_LIMIT ?? '200');
 export const PRODUCTS_PAGE = parseInt(process.env.PRODUCTS_PAGE ?? '1');
 
-
  
- export const INVENTORY_LIMIT = parseInt(process.env.INVENTORY_LIMIT ?? '55');
+export const INVENTORY_LIMIT = parseInt(process.env.INVENTORY_LIMIT ?? '55');
 export const INVENTORY_MAX_LIMIT = parseInt(process.env.INVENTORY_MAX_LIMIT ?? '200');
 export const INVENTORY_PAGE = parseInt(process.env.INVENTORY_PAGE ?? '1');
 
 
- 
- 
- 
- 
- 
- 
+  
 export const USERS_LIMITss = 60;
 export const USERS_MAX_LIMITss = 200;
 export const USERS_PAGEss = 1;
 
-
-
+ 
 export const DEFAULT_PAGE = 1;
 export const DEFAULT_LIMIT = 10;
 export const MAX_LIMIT = 100;

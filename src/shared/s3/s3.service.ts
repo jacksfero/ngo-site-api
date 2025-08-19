@@ -134,4 +134,51 @@ async uploadFileWithThumbnail(file: Express.Multer.File, key: string) {
 }
 
 
+
+
+
+
+
+
+import { Controller, Get, Query } from '@nestjs/common';
+import { GalleryService } from './gallery.service';
+
+@Controller('gallery')
+export class GalleryController {
+  constructor(private readonly galleryService: GalleryService) {}
+
+  @Get()
+  async getGallery(@Query('folder') folder: string = 'editor-images/') {
+    return this.galleryService.listImages(folder);
+  }
+}
+
+// gallery.service.ts
+import { Injectable } from '@nestjs/common';
+import { S3 } from 'aws-sdk';
+
+@Injectable()
+export class GalleryService {
+  private s3 = new S3({
+    region: process.env.AWS_REGION,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  });
+
+  async listImages(folder: string) {
+    const result = await this.s3
+      .listObjectsV2({
+        Bucket: process.env.AWS_S3_BUCKET,
+        Prefix: folder, // e.g. "editor-images/"
+      })
+      .promise();
+
+    return result.Contents?.map(
+      (item) =>
+        `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${item.Key}`,
+    );
+  }
+}
+
+GET /gallery?folder=editor-images/
  */

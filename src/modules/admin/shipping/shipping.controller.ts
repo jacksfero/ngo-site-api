@@ -2,11 +2,28 @@ import { Controller,ParseIntPipe, Get, Post, Body, Patch, Param, Delete, Req } f
 import { ShippingService } from './shipping.service';
 import { CreateShippingDto } from './dto/create-shipping.dto';
 import { UpdateShippingDto } from './dto/update-shipping.dto';
+import { ShippingListDto } from './dto/shipping-list.dto';
+import { GstSlotResponseDto } from './dto/gst-slot-response.dto';
+ 
 
 @Controller()
 export class ShippingController {
   constructor(private readonly shippingService: ShippingService) { }
 
+  @Get('list')
+  async getShippingList(): Promise<ShippingListDto[]> {
+    return this.shippingService.getShippingList();
+  }
+
+  @Get('gstslotlist')
+  getGstSlot(): GstSlotResponseDto[] {
+    return this.shippingService.getGstSlot();
+  }
+
+  @Get('artworkgstslotlist')
+  getArtGstSlot(): GstSlotResponseDto[] {
+    return this.shippingService.getArtGstSlot();
+  }
   @Post()
   create(@Body() createShippingDto: CreateShippingDto, @Req() req) {
     return this.shippingService.create(createShippingDto, req.user);

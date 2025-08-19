@@ -7,9 +7,8 @@ export class CreateCurrencyDto {
   @Length(3, 5, { message: 'Currency  must be 3 characters' })
   currency: string;
 
-  @Length(1, 5, { message: 'Currency Icon must be 1 characters' })
-  @IsString()   
-  icon: string;
+  @IsOptional()  
+  icon?: string;
 
   
   @Length(2, 5, { message: 'Currency code must be 2 characters' })
