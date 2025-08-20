@@ -65,6 +65,11 @@ export class InventoryService {
       shippingSlot: ShippingGstSlot[dto.shippingSlot],
         shippingWeight: shipping, // instead of raw shippingId
     });
+
+
+    console.log('Operation completed successfully.');
+    process.exit(0);
+
   
     return this.inventoryRepo.save(inventory);
   }

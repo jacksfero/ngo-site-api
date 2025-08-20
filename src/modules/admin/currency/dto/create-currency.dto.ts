@@ -11,7 +11,7 @@ export class CreateCurrencyDto {
   icon?: string;
 
   
-  @Length(2, 5,{ message: 'code must be longer than or equal to 2 characters' })
+  @Length(2, 5,{ message: 'Currency Code must be between 2 and 5 characters long' })
   @IsString()
   @IsNotEmpty()
   code: string;
