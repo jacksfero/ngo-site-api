@@ -24,9 +24,7 @@ export class InventoryService {
     @InjectRepository(Shipping)
      private shippingRepo: Repository<Shipping>,
   ) {}
-  
-  
-
+   
   getStatuses(): InventoryStatusDto[] {
     const statuses = Object.entries(InventoryStatus).map(([key, value]) => ({
       key,
