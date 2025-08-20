@@ -1,4 +1,4 @@
-import { Column, OneToOne,Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, OneToMany,OneToOne,Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { Inventory } from './inventory.entity';
 
 @Entity('shipping')
@@ -9,7 +9,7 @@ export class Shipping {
   @Column({ type: 'varchar', length: 50 })
   weightSlot: string;
 
-  @Column({
+  @Column({ 
     type: 'decimal',
     precision: 18, // total digits (including decimals)
     scale: 2, // decimal places
@@ -45,6 +45,6 @@ export class Shipping {
   updatedAt: Date;
 
 
-  @OneToOne(() => Inventory, (inventory) => inventory.shippingWeight, { cascade: true })
+  @OneToMany(() => Inventory, (inventory) => inventory.shippingWeight, { cascade: true })
   shippingInventory: Inventory;
 }

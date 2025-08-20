@@ -1,7 +1,7 @@
 import {
   Entity,
   PrimaryGeneratedColumn,
-  Column,
+  Column,ManyToOne,
   OneToOne,
   JoinColumn,
   CreateDateColumn,
@@ -53,9 +53,9 @@ export class Inventory {
   @Column({ type: 'int', nullable: true })
   gstSlot: AartworkGstSlot; // dropdown, e.g., "5%", "12%", "18%"
 
-  @OneToOne(() => Shipping, (shipping) => shipping.shippingInventory, { eager: true })
+  @ManyToOne(() => Shipping, (shipping) => shipping.shippingInventory, { eager: true })
   @JoinColumn({ name: 'shipping_id' })
-  shippingWeight: Shipping;// dropdown, e.g., "0-1kg", "1-5kg"
+  shippingWeight: Shipping;
 
   @Column({ type: 'int', nullable: true })
   shippingSlot: ShippingGstSlot; // dropdown, e.g., "Standard", "Express"
