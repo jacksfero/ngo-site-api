@@ -1,16 +1,52 @@
-import { Expose, Type } from 'class-transformer';
+import { Expose,Exclude, Type } from 'class-transformer';
 import { InventoryStatus } from 'src/shared/entities/inventory.entity';
 
 
+@Exclude()
+export class ShippingInvtDto {
+  @Expose()
+  weightSlot: string;
+
+  @Expose()
+  costINR: number;
+
+  @Expose()
+  CostOthers: number;
+}
+@Exclude()
+export class ProductInvtDto {
+
+  @Expose()
+  id: number;
+
+  @Expose()
+  productTitle: string;
+
+  @Expose()
+  defaultImage: string;
+}
+
+
+
+
+@Exclude()
 export class InventoryResponseDto {
   @Expose()
   id: number;
 
   @Expose()
+  @Type(() => ProductInvtDto)
+  product?: ProductInvtDto;
+
+  @Expose()
+  @Type(() => ShippingInvtDto)
+  shippingWeight: ShippingInvtDto;
+
+  @Expose()
   productId: number;
 
   @Expose()
-  startDate: Date;
+  entryDate: Date;
 
   @Expose()
   endDate: Date;
@@ -26,19 +62,13 @@ export class InventoryResponseDto {
 
   @Expose()
   gstSlot: string;
-
-  @Expose()
-  shippingWeight: string;
-
+ 
   @Expose()
   shippingSlot: string;
 
   @Expose()
-  termsAndCondition: string;
-
-  @Expose()
-  createdAt: Date;
-
+  termsAndConditions: string;
+ 
   @Expose()
   updatedAt: Date;
 }

@@ -80,7 +80,8 @@ export class InventoryService {
     const skip = (page - 1) * limit;
 
      const qb = this.inventoryRepo.createQueryBuilder('inventory')
-    .leftJoinAndSelect('inventory.product', 'product');
+    .leftJoinAndSelect('inventory.product', 'product')
+    .leftJoinAndSelect('inventory.shippingWeight', 'shipping');
 
     // ✅ Filtering
     if (status) {

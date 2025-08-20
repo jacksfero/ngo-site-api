@@ -30,6 +30,8 @@ export class Inventory {
   @JoinColumn({ name: 'product_id' })
   product: Product;
 
+  @Column({ name: 'product_id', insert: false, update: false })
+productId: number;
 
   @CreateDateColumn({ name: 'entry_date' })
   entryDate: Date;
@@ -60,8 +62,11 @@ export class Inventory {
   @Column({ type: 'int', nullable: true })
   shippingSlot: ShippingGstSlot; // dropdown, e.g., "Standard", "Express"
 
+ 
+
   @Column({ type: 'text', nullable: true })
-  termsAndConditions: string;
+termsAndConditions: string;
+
 
   @CreateDateColumn()
   createdAt: Date;
