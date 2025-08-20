@@ -72,7 +72,7 @@ export class ShippingService {
       throw new  error("shipping No save ")
     }
   }
-
+ 
   async findAll(): Promise<Shipping[]> {
     const result = await this.shippingRepository.find({
       order: {

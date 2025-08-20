@@ -55,7 +55,7 @@ export class InventoryService {
       throw new BadRequestException('This product already has an inventory');
     }
 
-    console.log('dto data ---------',dto.shippingSlot);
+   // console.log('dto data ---------',dto.shippingSlot);
      
     // ✅ Assign relations properly
     const inventory = this.inventoryRepo.create({
@@ -67,8 +67,8 @@ export class InventoryService {
     });
 
 
-    console.log('Operation completed successfully.');
-    process.exit(0);
+   // console.log('Operation completed successfully.');
+    //process.exit(0);
 
   
     return this.inventoryRepo.save(inventory);
