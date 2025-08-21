@@ -1,5 +1,5 @@
 import { Expose,Exclude, Type } from 'class-transformer';
-import { InventoryStatus } from 'src/shared/entities/inventory.entity';
+//import { InventoryStatus } from 'src/shared/entities/inventory.entity';
 
 
 @Exclude()
@@ -14,6 +14,18 @@ export class ShippingInvtDto {
   CostOthers: number;
 }
 @Exclude()
+export class ArtistDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  username: string;
+
+ 
+}
+
+
+@Exclude()
 export class ProductInvtDto {
 
   @Expose()
@@ -24,6 +36,17 @@ export class ProductInvtDto {
 
   @Expose()
   defaultImage: string;
+
+  // // ✅ If you just need artistId
+  // @Expose()
+  // get artistId(): number {
+  //   return this.artist?.id ?? null;
+  // }
+
+  // Optional: full artist details
+  @Expose()
+  @Type(() => ArtistDto)
+  artist: ArtistDto;
 }
 
 
@@ -52,7 +75,7 @@ export class InventoryResponseDto {
   endDate: Date;
 
   @Expose()
-  status: InventoryStatus;
+  status: Boolean;
 
   @Expose()
   price: number;

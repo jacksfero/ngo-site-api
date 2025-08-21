@@ -1,5 +1,5 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsDateString, isNotEmpty } from 'class-validator';
-import { InventoryStatus } from 'src/shared/entities/inventory.entity';
+import { IsEnum,IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, IsDateString, isNotEmpty } from 'class-validator';
+//import { InventoryStatus } from 'src/shared/entities/inventory.entity';
 import {  AartworkGstSlot, ShippingGstSlot } from '../../shipping/enums/gst.enum';
  
 
@@ -11,9 +11,13 @@ export class CreateInventoryDto {
   @IsDateString()
   endDate?: string;
 
-  @IsOptional()
+ /* @IsOptional()
   @IsEnum(InventoryStatus)
-  status?: InventoryStatus;
+  status?: InventoryStatus;*/
+
+  @IsOptional()
+  @IsBoolean()
+  status?: boolean;
 
   @IsNumber()
   price: number;

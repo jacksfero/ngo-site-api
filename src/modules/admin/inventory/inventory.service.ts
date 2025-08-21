@@ -4,7 +4,7 @@ import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { CreateInventoryDto } from './dto/create-inventory.dto';
 import { UpdateInventoryDto } from './dto/update-inventory.dto';
-import { Inventory, InventoryStatus } from 'src/shared/entities/inventory.entity';
+import { Inventory } from 'src/shared/entities/inventory.entity';
 import { Product } from 'src/shared/entities/product.entity';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { InventoryPaginationDto } from './dto/inventory-pagination.dto';
@@ -25,7 +25,7 @@ export class InventoryService {
      private shippingRepo: Repository<Shipping>,
   ) {}
    
-  getStatuses(): InventoryStatusDto[] {
+  /*getStatuses(): InventoryStatusDto[] {
     const statuses = Object.entries(InventoryStatus).map(([key, value]) => ({
       key,
       value,
@@ -34,7 +34,7 @@ export class InventoryService {
     return plainToInstance(InventoryStatusDto, statuses, {
       excludeExtraneousValues: true,
     });
-  }
+  }*/
 
   async create(dto: CreateInventoryDto): Promise<Inventory> {
     const product = await this.productRepo.findOne({ where: { id: dto.productId } });
@@ -79,9 +79,11 @@ export class InventoryService {
     const { page, limit, status, productId, startDate, endDate, select } = paginationDto;
     const skip = (page - 1) * limit;
 
-     const qb = this.inventoryRepo.createQueryBuilder('inventory')
+    const qb = this.inventoryRepo.createQueryBuilder('inventory')
     .leftJoinAndSelect('inventory.product', 'product')
+    .leftJoinAndSelect('product.artist', 'artist') // ✅ CRITICAL: Join the artist
     .leftJoinAndSelect('inventory.shippingWeight', 'shipping');
+
 
     // ✅ Filtering
     if (status) {
@@ -96,11 +98,46 @@ export class InventoryService {
       qb.andWhere('inventory.startDate BETWEEN :startDate AND :endDate', { startDate, endDate });
     }
   
+ // ✅ Define default fields (always selected)
+ const defaultInventoryFields = ['id', 'status', 'price', 'discount','gstSlot','shippingSlot','updatedAt'];
+ const defaultProductFields = ['id', 'productTitle', 'defaultImage'];
+ const defaultArtistFields = ['id', 'username'];
+ const defaultShippingFields = ['weightSlot', 'costINR'];
+
+ // ✅ Process requested fields
+ let selectedFields: string[] = [];
     // ✅ Select only requested fields
-  /*  if (select) {
-      const fields = select.split(',').map((f) => f.trim());
-      qb.select(fields.map((field) => `inventory.${field}`));
-    }*/
+    // ✅ Select only requested fields
+    if (select) {
+      const requestedFields = select.split(',').map((f) => f.trim());
+      
+      // Filter valid inventory fields
+      const validRequestedFields = requestedFields.filter(field => 
+        this.inventoryRepo.metadata.propertiesMap.hasOwnProperty(field)
+      );
+      
+      selectedFields = [...defaultInventoryFields, ...validRequestedFields];
+    } else {
+      // If no select parameter, use all default fields
+      selectedFields = defaultInventoryFields;
+    }
+  
+    // ✅ Always select the default relation fields
+    qb.select([
+      // Inventory fields
+      ...selectedFields.map(field => `inventory.${field}`),
+      
+      // Default product fields (always included)
+      ...defaultProductFields.map(field => `product.${field}`),
+      
+      // Default artist fields (always included)
+      ...defaultArtistFields.map(field => `artist.${field}`),
+      
+      // Default shipping fields (always included)
+      ...defaultShippingFields.map(field => `shipping.${field}`),
+    ]);
+   // console.log('------aaaaaa---=======---------')
+   //// process.exit();
   
     // ✅ Pagination
     //qb.skip((page - 1) * limit).take(limit);

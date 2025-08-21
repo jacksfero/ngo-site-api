@@ -15,11 +15,11 @@ import { InventoryStatusDto } from './dto/inventory-status.dto';
 export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}
 
-  @Get('statuses')
+ /* @Get('statuses')
   getStatuses(): InventoryStatusDto[] {
     return this.inventoryService.getStatuses();
   }
-
+*/
 
 
   @Post()
