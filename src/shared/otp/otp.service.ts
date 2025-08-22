@@ -34,9 +34,7 @@ export class OtpService {
     return Math.floor(1000 + Math.random() * 9000).toString(); // 6-digit OTP
   }
 
-  
-
- 
+   
 
   async verifyOtp(dto: VerifyOtpDto): Promise<OtpVerificationResult> {
     const { identifier, type, otp,userType } = dto;
