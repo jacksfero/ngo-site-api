@@ -7,6 +7,7 @@ import { ExhibitionModule } from './exhibition/exhibition.module';
 import { CartModule } from './cart/cart.module';
 import { OrderModule } from './order/order.module';
 import { InventProductModule } from './invent-product/invent-product.module';
+import { PaymentModule } from './payment/payment.module';
 
 
 @Module({
@@ -31,6 +32,7 @@ import { InventProductModule } from './invent-product/invent-product.module';
         ],
       },
     ]),
+    PaymentModule,
 
    
    

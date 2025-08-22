@@ -26,8 +26,8 @@ export class Inventory {
   @JoinColumn({ name: 'product_id' })
   product: Product;
 
-  @Column({ name: 'product_id', insert: false, update: false })
-productId: number;
+//   @Column({ name: 'product_id', insert: false, update: false })
+// productId: number;
 
   @CreateDateColumn({ name: 'entry_date' })
   entryDate: Date;
