@@ -172,6 +172,8 @@ contact: ContactUs;
 @OneToOne(() => Inventory, (inventory) => inventory.product, { cascade: true })
 productInventory: Inventory;
 
+
+}
 /*
 🔧 What You Should Do Now:
 
@@ -190,4 +192,4 @@ productInventory: Inventory;
 
 
 
-}
+

@@ -50,6 +50,36 @@ export class InventProductDetailResponseDto {
 
   @Expose()
   price_on_demand: string;
+  
+  @Expose()
+  weight: string;
+
+  @Expose()
+  width: string;
+
+  @Expose()
+  height: string;
+
+  @Expose()
+  depth: string;
+
+@Expose()
+created_in: string;
+@Expose()
+original_painting: string;
+
+@Expose()
+negotiable: string;
+@Expose()
+refundable: string;
+@Expose()
+certificate: string;
+@Expose()
+conditions: string;
+
+
+
+
 
   @Expose()
   @Type(() => CategoryDto)

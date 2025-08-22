@@ -138,9 +138,9 @@ export class InventProductService {
     .where('product.id = :productId', { productId })
     .select([
       // ✅ Product fields
-      'product.id',
-      'product.productTitle',
-      'product.description',
+      'product.id','product.created_in','product.original_painting',
+      'product.productTitle', 'product.negotiable','product.refundable',
+      'product.description', 'product.certificate', 'product.conditions',
       'product.price_on_demand',
 
       // ✅ Category fields
