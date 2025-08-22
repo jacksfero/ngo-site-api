@@ -5,11 +5,15 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { S3Module } from './s3/s3.module';
 import { OtpModule } from './otp/otp.module';
 import { DatabaseModule } from './database/database.module';
+ 
+import { PackingModeModule } from './packing-mode/packing-mode.module';
 
 @Module({
   imports: [
     OtpModule, DatabaseModule,
     S3Module,
+    
+    PackingModeModule,
     //  RolesModule,
     // PermissionsModule,
 
@@ -17,6 +21,7 @@ import { DatabaseModule } from './database/database.module';
     // PermissionsService,
   ],
   // providers: [RolesSeed],
+  
   exports: [S3Module], // 👈 So AppModule can use it
 })
 export class SharedModule { }
