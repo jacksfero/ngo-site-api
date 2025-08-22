@@ -15,7 +15,7 @@ import { AddToCartDto, UpdateCartItemDto } from './dto/cart.dto';
 import { CheckoutDto } from './dto/checkout.dto';
 //import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // adjust path
 
-@Controller('cart')
+@Controller()
 //@UseGuards(JwtAuthGuard) // protect with auth
 export class CartController {
   constructor(private readonly cartService: CartService) {}

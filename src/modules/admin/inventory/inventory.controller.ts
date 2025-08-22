@@ -1,4 +1,4 @@
-import { Controller,Query, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller,Query, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Req } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { CreateInventoryDto } from './dto/create-inventory.dto';
 import { UpdateInventoryDto } from './dto/update-inventory.dto';
@@ -33,7 +33,7 @@ export class InventoryController {
     @Query() paginationDto: InventoryPaginationDto,
   ): Promise<PaginationResponseDto<InventoryResponseDto>> 
   {
-    console.log('INVENTORY_LIMIT----',INVENTORY_LIMIT);
+   // console.log('INVENTORY_LIMIT----',INVENTORY_LIMIT);
     return this.inventoryService.findAll(paginationDto);
   } 
   
@@ -53,6 +53,14 @@ export class InventoryController {
   update(@Param('id') id: number, @Body() dto: UpdateInventoryDto) {
     return this.inventoryService.update(+id, dto);
   }
+
+  @Patch(':id/toggle-status')
+  async toggleStatus(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    return this.inventoryService.toggleStatus(id, req.user);
+  }
+
+
+
 
   @Delete(':id')
   remove(@Param('id') id: number) {

@@ -5,6 +5,7 @@ import { ExhibitionProduct } from './exhibition-product.entity';
 import { ProductImage } from './product-image.entity';
 import { ContactUs } from './contactus.entity';
 import { Inventory } from './inventory.entity';
+import { Productcategory } from './productcategory.entity';
 
 @Entity()
 export class Product {
@@ -25,10 +26,7 @@ export class Product {
 
   @Column({ type: 'int', nullable: true })
   size_id: number;
-
-  @Column({ type: 'int', nullable: true })
-  category_id: number;
-
+ 
   @Column({ type: 'int', nullable: true })
   medium_id: number;
 
@@ -122,6 +120,14 @@ export class Product {
   @ManyToOne(() => User)
   @JoinColumn({ name: 'owner_id' }) // foreign key in DB need to change name owner_id
   owner: User;
+  
+  // @Column({ type: 'int', nullable: true })
+  // category_id: number;
+
+    // ✅ Category (Relation)
+    @ManyToOne(() => Productcategory)
+    @JoinColumn({ name: 'category_id' }) // foreign key in DB need to change name owner_id
+    category: Productcategory;
 
   // ✅ Artist (Relation)
   @ManyToOne(() => User)

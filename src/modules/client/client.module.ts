@@ -6,6 +6,7 @@ import { ProductsModule } from './products/products.module';
 import { ExhibitionModule } from './exhibition/exhibition.module';
 import { CartModule } from './cart/cart.module';
 import { OrderModule } from './order/order.module';
+import { InventProductModule } from './invent-product/invent-product.module';
 
 
 @Module({
@@ -14,7 +15,9 @@ import { OrderModule } from './order/order.module';
     BlogClientModule,
     ProductsModule,
     ExhibitionModule,
-
+    InventProductModule,
+    CartModule,
+    OrderModule,
     RouterModule.register([
       {
         path: 'client', // Prefix for all child routes
@@ -22,13 +25,15 @@ import { OrderModule } from './order/order.module';
           { path: 'blogs', module: BlogClientModule },
           { path: 'products', module: ProductsModule },
           { path: 'exhibitions', module: ExhibitionModule },
+          { path: 'invent-product', module: InventProductModule },
+          { path: 'cart', module: CartModule },
+          { path: 'order', module: OrderModule },
         ],
       },
     ]),
 
-    CartModule,
-
-    OrderModule,
+   
+   
  
 
 

@@ -30,6 +30,7 @@ import { AuthModule } from '../auth/auth.module';
 import { ProductcategoryModule } from './productcategory/productcategory.module';
 import { MediaModule } from './media/media.module';
 import { InventoryModule } from './inventory/inventory.module';
+import { OrdersModule } from './orders/orders.module';
  
 
 @Module({
@@ -58,7 +59,7 @@ import { InventoryModule } from './inventory/inventory.module';
     CategoryModule,
     TagModule,
     MediaModule,
-    InventoryModule,
+    InventoryModule, OrdersModule,
     RouterModule.register([
       {
         path: 'admin', // Prefix for all child routes
@@ -84,9 +85,11 @@ import { InventoryModule } from './inventory/inventory.module';
           { path: 'tags', module: TagModule },
           { path: 'contents', module: ContentModule },
           { path: 'inventries', module: InventoryModule },
+          { path: 'orders', module: OrdersModule},
         ],
       },
     ]),
+   
     
  
     

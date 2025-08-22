@@ -13,6 +13,7 @@ import { MediumResponseDto, StyleResponseDto,SubjectResponseDto,SurfaceResponseD
 import { Surface } from 'src/shared/entities/surface.entity';
 import { Medium } from 'src/shared/entities/medium.entity';
 import { Subject } from 'src/shared/entities/subject.entity';
+import { Inventory } from 'src/shared/entities/inventory.entity';
 
  
 @Injectable()
@@ -30,59 +31,50 @@ export class ProductsService {
     @InjectRepository(Subject)
     private readonly subjectRepo: Repository<Subject>,
 
+    @InjectRepository(Inventory)
+    private readonly inventoryRepo: Repository<Inventory>,
+
     @InjectRepository(Product)
     private readonly productRepo: Repository<Product>,
 
   ) {}
-
-  async getActiveStyleList():  Promise<StyleResponseDto[]> {
-    const style = await this.styleRepo.find({
-      order: { title: 'ASC' },
-      where: {
-       status: true, // only active surfaces
-     }
-    });
-    return plainToInstance(StyleResponseDto, style, {
-      excludeExtraneousValues: true,
-    });
-  }
-
-  async getActiveSurfaceList():  Promise<SurfaceResponseDto[]> {
-    const style = await this.surfaceRepo.find({
-      order: { surfaceName: 'ASC' },
-      where: {
-       status: true, // only active surfaces
-     }
-    });
-    return plainToInstance(SurfaceResponseDto, style, {
-      excludeExtraneousValues: true,
-    });
-  }
-
-  async getActiveMediumList():  Promise<MediumResponseDto[]> {
-    const style = await this.mediumRepo.find({
-      order: { name: 'ASC' },
-      where: {
-       status: true, // only active surfaces
-     }
-    });
-    return plainToInstance(MediumResponseDto, style, {
-      excludeExtraneousValues: true,
-    });
-  }
-  async getActiveSubjectList():  Promise<SubjectResponseDto[]> {
-    const style = await this.subjectRepo.find({
-      order: { subject: 'ASC' },
-      where: {
-       status: true, // only active surfaces
-     }
-    });
-    return plainToInstance(SubjectResponseDto, style, {
-      excludeExtraneousValues: true,
-    });
-  }
-
   async findAll(paginationDto: PaginationDto): Promise<PaginationResponseDto<ProductListItemDto>> {
+    const { page = 1, limit = 20, search } = paginationDto;
+
+    const query = this.inventoryRepo.createQueryBuilder('inventory')
+       .leftJoinAndSelect('inventory.product', 'product') // Join relation      
+        .leftJoin('product.owner', 'owner')
+    .leftJoin('product.artist', 'artist')
+      .leftJoinAndSelect('product.images', 'images')
+      .select([
+        'product.id',
+        'product.productTitle',
+        'product.artist_price',
+        'product.defaultImage',
+         'owner.id',
+      'owner.username',
+      'artist.id',
+      'artist.username',
+        'product.createdAt',
+        'images.id',           // ✅ include image ID
+       'images.imagePath',    // ✅ include image path
+      ])
+
+      .orderBy('product.createdAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    if (search) {
+      query.where('product.productTitle LIKE :search', { search: `%${search}%` });
+    }
+
+    const [items, total] = await query.getManyAndCount();
+
+    const data = plainToInstance(ProductListItemDto, items);
+
+    return new PaginationResponseDto(data, { total, page, limit });
+  }
+  async findAll_bk(paginationDto: PaginationDto): Promise<PaginationResponseDto<ProductListItemDto>> {
     const { page = 1, limit = 20, search } = paginationDto;
 
     const query = this.productRepo.createQueryBuilder('product')
@@ -150,6 +142,53 @@ export class ProductsService {
     });
     if (!product) throw new NotFoundException('Product not found');
     return product;
+  }
+
+  async getActiveStyleList():  Promise<StyleResponseDto[]> {
+    const style = await this.styleRepo.find({
+      order: { title: 'ASC' },
+      where: {
+       status: true, // only active surfaces
+     }
+    });
+    return plainToInstance(StyleResponseDto, style, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async getActiveSurfaceList():  Promise<SurfaceResponseDto[]> {
+    const style = await this.surfaceRepo.find({
+      order: { surfaceName: 'ASC' },
+      where: {
+       status: true, // only active surfaces
+     }
+    });
+    return plainToInstance(SurfaceResponseDto, style, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async getActiveMediumList():  Promise<MediumResponseDto[]> {
+    const style = await this.mediumRepo.find({
+      order: { name: 'ASC' },
+      where: {
+       status: true, // only active surfaces
+     }
+    });
+    return plainToInstance(MediumResponseDto, style, {
+      excludeExtraneousValues: true,
+    });
+  }
+  async getActiveSubjectList():  Promise<SubjectResponseDto[]> {
+    const style = await this.subjectRepo.find({
+      order: { subject: 'ASC' },
+      where: {
+       status: true, // only active surfaces
+     }
+    });
+    return plainToInstance(SubjectResponseDto, style, {
+      excludeExtraneousValues: true,
+    });
   }
 
   /*

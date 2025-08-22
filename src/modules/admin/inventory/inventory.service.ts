@@ -192,6 +192,18 @@ if (dto.termsAndConditions) {
     return inventory;
   }
 
+  async toggleStatus(id: number, user: any): Promise<Inventory> {
+    const inventory = await this.inventoryRepo.findOne({ where: { id } });
+    if (!inventory) {
+      throw new NotFoundException(`inventory   with ID ${id} not found`);
+    }
+    inventory.status = !inventory.status;
+    inventory.updatedBy = user.sub.toString(); // or user.sub.toString()
+
+    return this.inventoryRepo.save(inventory);
+  }
+
+
   async remove(id: number): Promise<void> {
     await this.inventoryRepo.delete(id);
   }

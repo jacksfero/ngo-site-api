@@ -18,7 +18,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 //import { MailModule } from './shared/mail/mail.module';
  
 import { SharedModule } from './shared/shared.module';
-
+ 
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -35,7 +35,8 @@ import { SharedModule } from './shared/shared.module';
     AuthModule,  
     AdminModule,
     ClientModule,
-    SharedModule, 
+    SharedModule,
+     
   //  MailModule,
   ],
 

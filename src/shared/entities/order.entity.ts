@@ -5,12 +5,12 @@ import { OrderItem } from "./order-item.entity";
 import { UsersAddress } from "./users-address.entity";
 
 export enum OrderStatus {
-    PENDING = 'pending',
-    PAID = 'paid',
-    SHIPPED = 'shipped',
-    DELIVERED = 'delivered',
-    CANCELLED = 'cancelled',
-  }
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  SHIPPED = 'shipped',
+  DELIVERED = 'delivered',
+  CANCELLED = 'cancelled',
+}
   
   @Entity()
   export class Order {
