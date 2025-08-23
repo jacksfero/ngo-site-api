@@ -70,22 +70,22 @@ export class CreateProductDto {
 
   @IsOptional()
   @IsInt()
-  commission?: number;
+  commissionTypeId?: number;
 
   @IsOptional()
   @IsInt()
-  packingMode_id?: number;
+  packingModeId?: number;
 
   @IsOptional()
   @IsInt()
-  shippingTime?: number;
+  shippingTimeId?: number;
 
  
   @IsOptional()
   @IsInt()
   created_in?: number;
 
-  @IsOptional()
+  @IsOptional() 
   @IsString()
   tags?: string;
 

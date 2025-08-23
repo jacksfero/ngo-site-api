@@ -54,8 +54,8 @@ export class Product {
   @Column({ type: 'int', nullable: true })
   commission: number;
 
-  @Column({ type: 'int', nullable: true })
-  packingMode_id: number;
+  // @Column({ type: 'int', nullable: true })
+  // packingMode_id: number;
 
     
 
@@ -175,24 +175,24 @@ contact: ContactUs;
 productInventory: Inventory;
 
 
- // 👇 Add relation to packing mode
- @ManyToOne(() => PackingModeEntity, { eager: true }) 
- @JoinColumn({ name: 'packing_mode_id' })
- packingMode: PackingModeEntity;
+ 
+// 👇 Packing Mode
+@ManyToOne(() => PackingModeEntity, { eager: true }) 
+@JoinColumn({ name: 'packing_mode_id' })
+packingMode: PackingModeEntity;
 
- @Column({ name: 'packing_mode_id' })
- packingModeId: number;
+@Column({ name: 'packing_mode_id', nullable: true })
+packingModeId: number;
 
+// 👇 Commission Type
+@ManyToOne(() => CommissionType, { eager: true })
+@JoinColumn({ name: 'commission_type_id' })
+commissionType: CommissionType;
 
-    // 🟢 Add relation to CommissionType
-    @ManyToOne(() => CommissionType, { eager: true })
-    @JoinColumn({ name: 'commission_type_id' })
-    commissionType: CommissionType;
-  
-    @Column({ name: 'commission_type_id', nullable: true })
-    commissionTypeId: number;
+@Column({ name: 'commission_type_id', nullable: true })
+commissionTypeId: number;
 
-    // 🟢 Add relation to ShippingTime
+// 👇 Shipping Time
 @ManyToOne(() => ShippingTime, { eager: true })
 @JoinColumn({ name: 'shipping_time_id' })
 shippingTime: ShippingTime;
