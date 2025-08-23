@@ -192,7 +192,7 @@ private async deleteImageFile(filename: string): Promise<void> {
     blog.slug = await this.generateUniqueSlug(dto.slug);
    
   }
-    // blog.title = dto.title;
+   blog.title = dto.title?? blog.title;
     blog.h1Title = dto.h1Title ?? blog.h1Title;
   blog.blogContent = dto.blogContent ?? blog.blogContent;
  // if(dto.author){
