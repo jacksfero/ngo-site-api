@@ -80,6 +80,7 @@ export class CreateProductDto {
   @IsInt()
   shippingTime?: number;
 
+ 
   @IsOptional()
   @IsInt()
   created_in?: number;

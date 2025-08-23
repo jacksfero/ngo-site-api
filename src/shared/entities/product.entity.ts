@@ -8,6 +8,7 @@ import { Inventory } from './inventory.entity';
 import { Productcategory } from './productcategory.entity';
 import { PackingModeEntity } from './packing-mode.entity';
 import { CommissionType } from './commission-type.entity';
+import { ShippingTime } from './shipping-time.entity';
 
 @Entity()
 export class Product {
@@ -56,8 +57,7 @@ export class Product {
   @Column({ type: 'int', nullable: true })
   packingMode_id: number;
 
-  @Column({ type: 'int', nullable: true })
-  shippingTime: number;
+    
 
   @Column({ type: 'int', nullable: true })
   created_in: number;
@@ -192,6 +192,13 @@ productInventory: Inventory;
     @Column({ name: 'commission_type_id', nullable: true })
     commissionTypeId: number;
 
+    // 🟢 Add relation to ShippingTime
+@ManyToOne(() => ShippingTime, { eager: true })
+@JoinColumn({ name: 'shipping_time_id' })
+shippingTime: ShippingTime;
+
+@Column({ name: 'shipping_time_id', nullable: true })
+shippingTimeId: number;
 
 }
 /*
