@@ -18,9 +18,9 @@ export class CreateCurrencyDto {
   
   
   @IsOptional()
-  @IsNumber()
-@Min(1, { message: 'Currency Value must be at least 1' }) // Minimum numeric value
-@Max(999999999999, { message: 'Currency Value must not exceed 12 digits' }) // Maximum 10 digits 
+  @IsNumber({ maxDecimalPlaces: 4 }) // Allow up to 4 decimal places
+  @Min(0.0001, { message: 'Currency Value must be at least 0.0001' }) // Minimum value
+  @Max(999999999999.9999, { message: 'Currency Value must not exceed 12 digits with 4 decimals' }) // Maximum value with decimals
   value: number;
 
   @IsOptional()
