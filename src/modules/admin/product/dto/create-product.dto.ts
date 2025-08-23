@@ -75,11 +75,10 @@ export class CreateProductDto {
   @IsOptional()
   @IsInt()
   packingModeId?: number;
-
+ 
   @IsOptional()
   @IsInt()
   shippingTimeId?: number;
-
  
   @IsOptional()
   @IsInt()
