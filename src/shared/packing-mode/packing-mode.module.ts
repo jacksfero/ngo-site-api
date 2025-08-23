@@ -9,5 +9,6 @@ import { PackingModeEntity } from '../entities/packing-mode.entity';
   imports:[TypeOrmModule.forFeature([PackingModeEntity])],
   controllers: [PackingModeController],
   providers: [PackingModeService],
+  exports:[PackingModeService]
 })
 export class PackingModeModule {}

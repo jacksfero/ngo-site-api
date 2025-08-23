@@ -3,6 +3,7 @@ import {PrimaryGeneratedColumn,Column,JoinColumn,OneToMany,CreateDateColumn,Upda
 import { User } from "./user.entity";
 import { OrderItem } from "./order-item.entity";
 import { UsersAddress } from "./users-address.entity";
+import { Payment } from "./payment.entity";
 
 export enum OrderStatus {
   PENDING = 'pending',
@@ -39,5 +40,8 @@ export enum OrderStatus {
   
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @OneToMany(() => Payment, (payment) => payment.order)
+payments: Payment[];
   }
   

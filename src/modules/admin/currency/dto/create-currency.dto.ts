@@ -27,3 +27,4 @@ export class CreateCurrencyDto {
   @IsBoolean()
   status?: boolean;
 }
+  

@@ -1,5 +1,5 @@
 // modules/packing-mode/packing-mode.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PackingModeEntity } from 'src/shared/entities/packing-mode.entity';
@@ -11,8 +11,16 @@ export class PackingModeService {
     private readonly repo: Repository<PackingModeEntity>,
   ) {}
 
-  async findAll() {
-    return this.repo.find({ where: { isActive: true } });
+  async findAll(): Promise<PackingModeEntity[]> {
+    const commissionTypes = await this.repo.find({ 
+      where: { isActive: true } 
+    });
+    
+    if (commissionTypes.length === 0) {
+      throw new NotFoundException('No active Packing Mode   found');
+    }
+    
+    return commissionTypes;
   }
 
   async create(name: string) {

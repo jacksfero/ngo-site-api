@@ -6,6 +6,8 @@ import { ProductImage } from './product-image.entity';
 import { ContactUs } from './contactus.entity';
 import { Inventory } from './inventory.entity';
 import { Productcategory } from './productcategory.entity';
+import { PackingModeEntity } from './packing-mode.entity';
+import { CommissionType } from './commission-type.entity';
 
 @Entity()
 export class Product {
@@ -171,6 +173,24 @@ contact: ContactUs;
 
 @OneToOne(() => Inventory, (inventory) => inventory.product, { cascade: true })
 productInventory: Inventory;
+
+
+ // 👇 Add relation to packing mode
+ @ManyToOne(() => PackingModeEntity, { eager: true }) 
+ @JoinColumn({ name: 'packing_mode_id' })
+ packingMode: PackingModeEntity;
+
+ @Column({ name: 'packing_mode_id' })
+ packingModeId: number;
+
+
+    // 🟢 Add relation to CommissionType
+    @ManyToOne(() => CommissionType, { eager: true })
+    @JoinColumn({ name: 'commission_type_id' })
+    commissionType: CommissionType;
+  
+    @Column({ name: 'commission_type_id', nullable: true })
+    commissionTypeId: number;
 
 
 }

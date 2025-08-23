@@ -7,6 +7,8 @@ import { OtpModule } from './otp/otp.module';
 import { DatabaseModule } from './database/database.module';
  
 import { PackingModeModule } from './packing-mode/packing-mode.module';
+import { CommisionTypeModule } from './commision-type/commision-type.module';
+import { ShippingTimeModule } from './shipping-time/shipping-time.module';
 
 @Module({
   imports: [
@@ -14,6 +16,10 @@ import { PackingModeModule } from './packing-mode/packing-mode.module';
     S3Module,
     
     PackingModeModule,
+    
+    CommisionTypeModule,
+    
+    ShippingTimeModule,
     //  RolesModule,
     // PermissionsModule,
 
