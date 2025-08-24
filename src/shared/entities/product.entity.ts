@@ -9,6 +9,8 @@ import { Productcategory } from './productcategory.entity';
 import { PackingModeEntity } from './packing-mode.entity';
 import { CommissionType } from './commission-type.entity';
 import { ShippingTime } from './shipping-time.entity';
+import { Size } from './size.entity';
+import { Orientation } from './orientation.entity';
 
 @Entity()
 export class Product {
@@ -27,17 +29,17 @@ export class Product {
   @Column({ type: 'int', nullable: true })
   artist_price: number;
 
-  @Column({ type: 'int', nullable: true })
+ /* @Column({ type: 'int', nullable: true })
   size_id: number;
- 
+ */
   @Column({ type: 'int', nullable: true })
   medium_id: number;
 
   @Column({ type: 'int', nullable: true })
   surface_id: number;
 
-  @Column({ type: 'int', nullable: true })
-  orientation_id: number;
+  // @Column({ type: 'int', nullable: true })
+  // orientation_id: number;
 
   @Column({ type: 'int', nullable: true })
   width: number;
@@ -199,6 +201,22 @@ shippingTime: ShippingTime;
 
 @Column({ name: 'shipping_time_id', nullable: true })
 shippingTimeId: number;
+ 
+ // 🟢 Add relation to Size
+ @ManyToOne(() => Size, { eager: true })
+ @JoinColumn({ name: 'size_id' })
+ size: Size;
+ 
+ @Column({ name: 'size_id', nullable: true })
+ size_id: number;
+
+ // 🟢 Orientation
+ @ManyToOne(() => Orientation, { eager: true })
+ @JoinColumn({ name: 'orientation_id' })
+ orientation: Orientation;
+
+ @Column({ name: 'orientation_id', nullable: true })
+ orientation_id: number;
 
 }
 /*

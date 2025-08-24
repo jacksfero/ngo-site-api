@@ -10,6 +10,7 @@ import { PackingModeModule } from './packing-mode/packing-mode.module';
 import { CommisionTypeModule } from './commision-type/commision-type.module';
 import { ShippingTimeModule } from './shipping-time/shipping-time.module';
 import { SizeModule } from './size/size.module';
+import { OrientationModule } from './orientation/orientation.module';
 
 @Module({
   imports: [
@@ -23,6 +24,8 @@ import { SizeModule } from './size/size.module';
     ShippingTimeModule,
     
     SizeModule,
+    
+    OrientationModule,
     //  RolesModule,
     // PermissionsModule,
 
