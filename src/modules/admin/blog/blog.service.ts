@@ -138,7 +138,7 @@ private async deleteImageFile(filename: string): Promise<void> {
       queryBuilder.andWhere(
         `(LOWER(blog.title) LIKE :search 
       OR LOWER(category.name) LIKE :search
-      OR LOWER(author.fullName) LIKE :search)`,
+      OR LOWER(author.username) LIKE :search)`,
         { search: `%${search.toLowerCase()}%` },
       );
     }
@@ -147,7 +147,16 @@ private async deleteImageFile(filename: string): Promise<void> {
     }
 
     const [result, total] = await queryBuilder.getManyAndCount();
-  
+
+     // Check if results exist
+     if (result.length === 0 && total === 0) {
+      throw new NotFoundException('No Blog found matching your criteria');
+    }
+   // Check if requested page exists
+   const totalPages = Math.ceil(total / limit);
+   if (page > totalPages && totalPages > 0) {
+     throw new BadRequestException(`Page ${page} does not exist. Total pages: ${totalPages}`);
+   }
     const data = plainToInstance(BlogListDto, result, {
       excludeExtraneousValues: true,
     });

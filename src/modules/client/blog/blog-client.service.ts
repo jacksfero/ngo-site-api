@@ -1,5 +1,5 @@
 // modules/client/blog/blog-client.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 import { Blog } from '../../../shared/entities/blog.entity';
@@ -125,6 +125,10 @@ async findBlogsByTagSlug(
   const skip = (page - 1) * limit;
   const searchTerm = search?.toLowerCase() || '';
 
+   // Validate input parameters
+   if (page < 1) throw new BadRequestException('Page must be greater than 0');
+   if (limit < 1 || limit > 100) throw new BadRequestException('Limit must be between 1 and 100');
+
   const query = this.blogRepo
     .createQueryBuilder('blog')
     .leftJoinAndSelect('blog.category', 'category')
@@ -135,7 +139,8 @@ async findBlogsByTagSlug(
 
   if (searchTerm) {
     query.andWhere(
-      '(LOWER(blog.title) LIKE :search OR LOWER(blog.h1Title) LIKE :search)',
+      '(LOWER(blog.title) LIKE :search )',
+    //  '(LOWER(blog.title) LIKE :search OR LOWER(blog.h1Title) LIKE :search)',
       { search: `%${searchTerm}%` },
     );
   }
@@ -144,6 +149,17 @@ async findBlogsByTagSlug(
 
   const [result, total] = await query.getManyAndCount();
 
+  // Check if results exist
+  if (result.length === 0 && total === 0) {
+    throw new NotFoundException('No Blog found matching your criteria');
+  }
+
+   // Check if requested page exists
+   const totalPages = Math.ceil(total / limit);
+   if (page > totalPages && totalPages > 0) {
+     throw new BadRequestException(`Page ${page} does not exist. Total pages: ${totalPages}`);
+   }
+   
   const data = plainToInstance(BlogListDto, result, {
     excludeExtraneousValues: true,
     enableImplicitConversion: true,

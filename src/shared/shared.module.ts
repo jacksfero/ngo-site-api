@@ -9,6 +9,7 @@ import { DatabaseModule } from './database/database.module';
 import { PackingModeModule } from './packing-mode/packing-mode.module';
 import { CommisionTypeModule } from './commision-type/commision-type.module';
 import { ShippingTimeModule } from './shipping-time/shipping-time.module';
+import { SizeModule } from './size/size.module';
 
 @Module({
   imports: [
@@ -20,6 +21,8 @@ import { ShippingTimeModule } from './shipping-time/shipping-time.module';
     CommisionTypeModule,
     
     ShippingTimeModule,
+    
+    SizeModule,
     //  RolesModule,
     // PermissionsModule,
 
