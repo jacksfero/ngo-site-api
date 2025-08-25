@@ -27,7 +27,7 @@ import { BankDetail } from 'src/shared/entities/user-bank-detail.entity';
 import { CreateBankDetailDto } from './dto/create-user-bank-detail.dto';
 import { UpdateBankDetailDto } from './dto/update-user-bank-detail.dto';
 import { KycDetails } from 'src/shared/entities/user-kyc.entity';
-import { CreateKycDetailDto, ntUpdateKycDetailDto } from './dto/create-user-kyc-detail.dto';
+import { CreateKycDetailDto, UpdateKycDetailDto } from './dto/create-user-kyc-detail.dto';
  
 
 @Injectable()

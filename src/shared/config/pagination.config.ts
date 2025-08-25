@@ -8,6 +8,10 @@ export const BLOG_LIMIT = parseInt(process.env.BLOG_LIMIT ?? '10');
 export const BLOG_MAX_LIMIT = parseInt(process.env.BLOG_MAX_LIMIT ?? '100');
 export const BLOG_PAGE = parseInt(process.env.BLOG_PAGE ?? '1');
 
+export const FRONT_BLOG_LIMIT = parseInt(process.env.FRONT_BLOG_LIMIT ?? '10');
+export const FRONT_BLOG_MAX_LIMIT = parseInt(process.env.FRONT_BLOG_MAX_LIMIT ?? '100');
+export const FRONT_BLOG_PAGE = parseInt(process.env.FRONT_BLOG_PAGE ?? '1');
+
 export const USERS_LIMIT = parseInt(process.env.USERS_LIMIT ?? '55');
 export const USERS_MAX_LIMIT = parseInt(process.env.USERS_MAX_LIMIT ?? '200');
 export const USERS_PAGE = parseInt(process.env.USERS_PAGE ?? '1');
