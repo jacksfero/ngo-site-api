@@ -7,9 +7,11 @@ import { Role } from '../../../shared/entities/role.entity';
 import { Permission } from '../../../shared/entities/permission.entity';
 import { UsersAbout } from '../../../shared/entities/users-about.entity';
 import { UsersAddress } from 'src/shared/entities/users-address.entity';
+import { BankDetail } from 'src/shared/entities/user-bank-detail.entity';
+import { KycDetails } from 'src/shared/entities/user-kyc.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Role, Permission,UsersAbout,UsersAddress])],
+  imports: [TypeOrmModule.forFeature([User, Role, Permission,UsersAbout,UsersAddress,BankDetail,KycDetails])],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService],

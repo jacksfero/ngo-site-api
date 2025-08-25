@@ -20,9 +20,14 @@ import { UpdateUsersAboutDto } from './dto/update-users-about.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { UsersListDto } from './dto/users-list.dto';
  import { UserPaginationDto } from './dto/user-pagination.dto';
-import { UsersAddress } from 'src/shared/entities/users-address.entity';
+import { AddressType, UsersAddress } from 'src/shared/entities/users-address.entity';
 import { CreateUserAddressDto } from 'src/modules/auth/dto/create-user-address.dto';
 import { UpdateUserAddressDto } from 'src/modules/auth/dto/update-user-address.dto';
+import { BankDetail } from 'src/shared/entities/user-bank-detail.entity';
+import { CreateBankDetailDto } from './dto/create-user-bank-detail.dto';
+import { UpdateBankDetailDto } from './dto/update-user-bank-detail.dto';
+import { KycDetails } from 'src/shared/entities/user-kyc.entity';
+import { CreateKycDetailDto, ntUpdateKycDetailDto } from './dto/create-user-kyc-detail.dto';
  
 
 @Injectable()
@@ -41,6 +46,13 @@ export class UsersService {
 
     @InjectRepository(UsersAddress)
     private addressRepo: Repository<UsersAddress>,
+
+    @InjectRepository(BankDetail)
+    private bankRepo: Repository<BankDetail>,
+
+    @InjectRepository(KycDetails)
+    private kycRepo: Repository<KycDetails>,
+
 
   ) {}
 
@@ -378,15 +390,43 @@ async findByUsername(username: string): Promise<User | undefined> {
   }
 
 
+  // async createAddress(dto: CreateUserAddressDto,userId: number,  user: any) {
+  //   const address = this.addressRepo.create({
+  //     ...dto,
+  //     user: { id: userId },
+  //     createdBy:user.sub.toString(),
+  //     updatedBy: user.sub.toString(),
+  //   });
+  // //  console.log('Address-------',address);
+  //   return await this.addressRepo.save(address);
+  // }
+
   async createAddress(dto: CreateUserAddressDto,userId: number,  user: any) {
-    const address = this.addressRepo.create({
-      ...dto,
-      user: { id: userId },
-      createdBy:user.sub.toString(),
-      updatedBy: user.sub.toString(),
-    });
-  //  console.log('Address-------',address);
-    return await this.addressRepo.save(address);
+    // limit rules
+    if (dto.type === AddressType.PERSONAL) {
+      const existing = await this.addressRepo.count({ where: { userId, type: AddressType.PERSONAL } });
+      if (existing >= 1) {
+        throw new BadRequestException('You can only have one personal address');
+      }
+    } else {
+      const count = await this.addressRepo.count({ where: { userId, type: dto.type } });
+      if (count >= 5) {
+        throw new BadRequestException(`You can only add up to 5 ${dto.type} addresses`);
+      }
+    }
+ // console.log('----------------');  
+    const address = this.addressRepo.create({ ...dto, 
+              userId,
+        createdBy:user.sub.toString(),
+       // updatedBy: user.sub.toString(),
+
+     });
+  
+    if (dto.isDefault && dto.type !== AddressType.PERSONAL) {
+      await this.addressRepo.update({ userId, type: dto.type }, { isDefault: false });
+    }
+   // console.log('-------222222222---------',address); //process.exit;
+    return this.addressRepo.save(address);
   }
 
   async findAllForUserAddress(userId: number) {
@@ -397,9 +437,7 @@ async findByUsername(username: string): Promise<User | undefined> {
   }
 
   async updateAddress(id: number, dto: UpdateUserAddressDto, user:any) {
-    const address = await this.addressRepo.findOne({ where: {
-      user: { id: id },
-      id:dto.id   }, relations: ['user'] });
+    const address = await this.addressRepo.findOne({ where: { id } });
     if (!address) throw new NotFoundException('Address not found');
    // if (address.user.id !== user.sub.toString()) throw new ForbiddenException('Not allowed');
 
@@ -417,7 +455,99 @@ async findByUsername(username: string): Promise<User | undefined> {
     return { message: 'Address deleted successfully' };
   }
 
+  async createBankDetail(userId: number, dto: CreateBankDetailDto, user: any) {
+    if (dto.isDefault) {
+      // reset existing default
+      await this.bankRepo.update({ userId }, { isDefault: false });
+    }
 
+    const bank = this.bankRepo.create({
+      ...dto,
+      userId,
+      createdBy: user.sub.toString(),
+     // updatedBy: user.sub.toString(),
+    });
+
+    return this.bankRepo.save(bank);
+  }
+
+  async findAllBankDetail(userId: number) {
+    return this.bankRepo.find({ where: { userId } });
+  }
+
+  async findOneBankDetail(  userId: number) {
+    const bank = await this.bankRepo.findOne({
+      where: { user: { id: userId } },
+      relations: ['user'], // optional, only if you need full user object
+    });
+    return bank;
+  }
+
+  async updateBankDetail( userId: number, dto: UpdateBankDetailDto, user: any) {
+    const bank = await this.bankRepo.findOne({
+      where: { userId:  userId   },
+     // relations: ['user'], // optional, only if you need full user object
+    });
+        if (!bank) throw new NotFoundException('Bank Detail not found');
+    
+        if (userId) {
+          const user = await this.userRepository.findOneBy({ id: userId });
+          if (!user) throw new NotFoundException('User not found');
+          bank.user = user;
+        }
+    
+    Object.assign(bank, dto);
+    bank.updatedBy = user.sub.toString()
+    return await this.bankRepo.save(bank);
+  }
+
+  async removeBankDetail(id: number, userId: number) {
+    return this.bankRepo.delete({ id, userId });
+  }
+
+  async createkycDetail(userId: number, dto: CreateKycDetailDto, user: any) {
+    const exitkyc = await this.kycRepo.findOne({
+      where: { userId:  userId   }   });  
+   
+    if (exitkyc) {
+      Object.assign(exitkyc, dto);
+      return await this.kycRepo.save(exitkyc);
+    }
+
+    const bank = this.kycRepo.create({
+      ...dto,
+      userId,
+      createdBy: user.sub.toString(),
+     // updatedBy: user.sub.toString(),
+    });
+
+    return this.kycRepo.save(bank);
+  }
+  async findOnekycDetail(  userId: number) {
+    const bank = await this.kycRepo.findOne({
+      where: { user: { id: userId } },
+      relations: ['user'], // optional, only if you need full user object
+    });
+    return bank;
+  }
+
+  async updatekycDetail( userId: number, dto: UpdateKycDetailDto, user: any) {
+    const bank = await this.kycRepo.findOne({
+      where: { userId:  userId   },
+     // relations: ['user'], // optional, only if you need full user object
+    });
+        if (!bank) throw new NotFoundException('Kyc Details not found');
+    
+        if (userId) {
+          const user = await this.userRepository.findOneBy({ id: userId });
+          if (!user) throw new NotFoundException('User not found');
+          bank.user = user;
+        }
+    
+    Object.assign(bank, dto);
+    bank.updatedBy = user.sub.toString()
+    return await this.kycRepo.save(bank);
+  }
 }
 
 

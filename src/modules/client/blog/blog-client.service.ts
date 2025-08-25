@@ -10,6 +10,7 @@ import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { BlogListDto } from './dto/blog-list.dto';
 import { CategoryWithBlogCountDto } from './dto/category-with-count.dto';
 import { Category } from '../../../shared/entities/category.entity';
+import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
 
 
 @Injectable()
@@ -24,31 +25,58 @@ export class BlogClientService {
 
   ) {}
 
-  async findAllPublished(
+ /* async findAllPublished(
     paginationDto: PaginationDto,
-  ): Promise<PaginationResponseDto<BlogListDto>> {
+  ): Promise<PaginationResponseDto<BlogListDto>> {*/
+    async findAllPublished(
+      paginationDto: PaginationBaseDto,
+    ): Promise<PaginationResponseDto<BlogListDto>> {
 
-    const { page = 1, limit = 10, search } = paginationDto;
-  const skip = (page - 1) * limit;
+      const { page , limit, search   } = paginationDto;
+      const skip = (page - 1) * limit;
   const searchTerm = search?.toLowerCase() || '';
+ 
 
- const where: any = {
-    status: true,
-   // category: { slug },
-  };
+       const queryBuilder = this.blogRepo
+       .createQueryBuilder('blog')    
+       .select(['blog.id', 'blog.title', 'blog.slug','blog.createdAt','blog.titleImage','blog.blogContent'])
+       .leftJoin('blog.category', 'category', 'category.status = :isActive', { isActive: true })
+       .addSelect([ 'category.name', 'category.slug'])
+       .leftJoin('blog.tags', 'tags')
+       .leftJoin('blog.author', 'author')
+        .addSelect([  'author.username'])
+       .where('blog.status = :status', { status: true })
+       .orderBy('blog.createdAt', 'DESC')
+       .take(limit)
+       .skip(skip);
 
-  const [result, total] = await this.blogRepo.findAndCount({
-    where: where,
-    take: limit,
-    skip,
-    order: { createdAt: 'DESC' },
+       if (searchTerm) {
+        queryBuilder.andWhere(
+          `(LOWER(blog.title) LIKE :search 
+        OR LOWER(category.name) LIKE :search
+        OR LOWER(tags.name) LIKE :search
+        OR LOWER(author.username) LIKE :search)`,
+          { search: `%${searchTerm.toLowerCase()}%` },
+        );
+      }
+      const [result, total] = await queryBuilder.getManyAndCount();
+        // Check if results exist
+     if (result.length === 0 && total === 0) {
+      throw new NotFoundException('No Blog found matching your criteria');
+    }
+    // Check if requested page exists
+   const totalPages = Math.ceil(total / limit);
+   if (page > totalPages && totalPages > 0) {
+     throw new BadRequestException(`Page ${page} does not exist. Total pages: ${totalPages}`);
+   }
+   const data = plainToInstance(BlogListDto, result, {
+    excludeExtraneousValues: true,
   });
 
-
-   const data = plainToInstance(BlogListDto, result,{ excludeExtraneousValues: true }); // returns CreateContactUsDto[]
-   
-       return new PaginationResponseDto(data, { total, page, limit });
+  return new PaginationResponseDto(data, { total, page, limit  });
+       
   }
+
  
   async getBlogBySlug(slug: string): Promise<BlogListDto> {
   const blog = await this.blogRepo.findOne({

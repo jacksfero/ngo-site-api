@@ -6,9 +6,9 @@ export class CreateUserAddressDto {
   @IsEnum(AddressType)
   type: AddressType;
 
-  @IsOptional()
-  @IsNumber()
-  id?: number;
+  // @IsOptional()
+  // @IsNumber()
+  // id?: number;
 
 
   @IsString()
@@ -39,4 +39,7 @@ export class CreateUserAddressDto {
 
   @IsString()
   tradeName: string;
+
+  @IsOptional()
+  isDefault?: boolean;
 }

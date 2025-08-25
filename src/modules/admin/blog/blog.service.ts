@@ -243,6 +243,7 @@ if (dto.author) {
      
   }
   blog.keywordsTag = dto.keywordsTag??'';    
+  blog.scheduledPublishDate = dto.scheduledPublishDate??null;  
   blog.descriptionTag = dto.descriptionTag??'';      
     return this.blogRepository.save(blog);
   }

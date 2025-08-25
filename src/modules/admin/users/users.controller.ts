@@ -29,6 +29,9 @@ import { PaginationPipe } from 'src/shared/pipes/pagination.pipe';
 import { USERS_LIMIT ,USERS_MAX_LIMIT, USERS_PAGE} from 'src/shared/config/pagination.config';
 import { CreateUserAddressDto } from 'src/modules/auth/dto/create-user-address.dto';
 import { UpdateUserAddressDto } from 'src/modules/auth/dto/update-user-address.dto';
+import { CreateBankDetailDto } from './dto/create-user-bank-detail.dto';
+import { UpdateBankDetailDto } from './dto/update-user-bank-detail.dto';
+import { CreateKycDetailDto, UpdateKycDetailDto } from './dto/create-user-kyc-detail.dto';
 
 @Controller()
 //@UseGuards(PermissionsGuard)
@@ -100,6 +103,56 @@ export class UsersController {
   updateAddress(@Param('id') id: number, @Body() dto: UpdateUserAddressDto,@Req() req) {
     return this.usersService.updateAddress(  id, dto, req.user);
   }
+
+
+  @Post('user-bank/:id')
+  createBankDetail(@Param('id', ParseIntPipe) id: number,
+    @Body() dto: CreateBankDetailDto,
+    @Req() req
+  ) {
+    return this.usersService.createBankDetail(id, dto, req.user);
+  }
+ 
+  @Get('user-bank/:id')
+  findOneBankDetail(@Param('id') id: number ) {
+    return this.usersService.findOneBankDetail(+id  );
+  }
+
+  @Patch('user-bank/:id')
+  updateBankDetail(
+    @Param('id') id: number,
+    @Body() dto: UpdateBankDetailDto,
+    @Req() req,
+  ) {
+    return this.usersService.updateBankDetail(+id,   dto, req.user);
+  }
+
+  @Post('user-kyc/:id')
+  createkycDetail(@Param('id', ParseIntPipe) id: number,
+    @Body() dto: CreateKycDetailDto,
+    @Req() req
+  ) {
+    return this.usersService.createkycDetail(id, dto, req.user);
+  }
+ 
+  @Get('user-kyc/:id')
+  findOnekycDetail(@Param('id') id: number ) {
+    return this.usersService.findOnekycDetail(+id  );
+  }
+
+  @Patch('user-kyc/:id')
+  updatekycDetail(
+    @Param('id') id: number,
+    @Body() dto: UpdateKycDetailDto,
+    @Req() req,
+  ) {
+    return this.usersService.updatekycDetail(+id,   dto, req.user);
+  }
+
+
+
+
+
 
  /* @Delete('user-address/:id')
   removeAddress( @Param('id') id: number) {

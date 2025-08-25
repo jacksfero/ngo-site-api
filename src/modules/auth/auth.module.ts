@@ -22,10 +22,12 @@ import { UsersAddress } from 'src/shared/entities/users-address.entity';
 import { Product } from 'src/shared/entities/product.entity';
 import { ProductImage } from 'src/shared/entities/product-image.entity';
 import { Wishlist } from 'src/shared/entities/wishlist.entity';
+import { BankDetail } from 'src/shared/entities/user-bank-detail.entity';
+import { KycDetails } from 'src/shared/entities/user-kyc.entity';
  
 @Module({
   imports: [TypeOrmModule.forFeature([User,Role,OtpVerification,PasswordResetToken,
-    UsersAbout,UsersAddress,Product,ProductImage,Wishlist
+    UsersAbout,UsersAddress,BankDetail,KycDetails,Product,ProductImage,Wishlist
   ]),
     UsersModule,
     OtpModule,

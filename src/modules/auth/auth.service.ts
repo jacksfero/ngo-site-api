@@ -31,11 +31,11 @@ import { SendOtpDto } from './dto/send-otp.dto';
 import { PasswordResetToken } from 'src/shared/entities/password-reset-token.entity';
 import { randomBytes } from 'crypto';
 import { UsersAbout } from 'src/shared/entities/users-about.entity';
-import { CreateUsersAboutDto } from './dto/create-users-about.dto';
+import { CreateUsersAboutDto, UpdateUsersAboutDto } from './dto/create-users-about.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { CreateUserAddressDto } from './dto/create-user-address.dto';
-import { UsersAddress } from 'src/shared/entities/users-address.entity';
+import { AddressType, UsersAddress } from 'src/shared/entities/users-address.entity';
 import { UpdateUserAddressDto } from './dto/update-user-address.dto';
 import { UserAddressResponseDto } from './dto/user-address-response.dto';
 import { CreateProductDto } from '../admin/product/dto/create-product.dto';
@@ -375,32 +375,68 @@ async verifyOtp(dto: VerifyOtpDto) {
   }
 
 
-  async createUserAbout(dto: CreateUsersAboutDto,userId: number,users:any) {
+  async createUserAbout(dto: CreateUsersAboutDto, users:any) {
+    const userId = users.sub.toString();
     const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) throw new NotFoundException('User not found');
 
     const about = this.aboutRepo.create({ ...dto, user });
-       about.createdBy = users.sub.toString();
+       about.createdBy = userId;
     return this.aboutRepo.save(about);
   }
 
 
-  async findOneAboutByUserId(userId: number) {
+  async findOneAboutByUserId(users:any) {
+    const userId = users.sub.toString();
     return this.aboutRepo.findOne({
       where: { user: { id: userId } },
       relations: ['user'],
     });
   }
 
+  async updateAbout(dto: UpdateUsersAboutDto,user:any) {
+    const userId = user.sub.toString();
+  const about = await this.aboutRepo.findOne({ where: 
+      {
+        user: { id: userId },
+           },
+      relations: ['user'] }); 
+   //   console.log(id,'---------',userId)
+   //   const address = await this.addressRepo.findOne({ where: { id,userId } });
+    if (!about) throw new NotFoundException('about not found');
+   // if (address.user.id !== userId) throw new ForbiddenException('Not allowed');
+   //console.log(id,'---------',address)
+    Object.assign(about, dto );
+    const withUser =  await this.aboutRepo.save(about);
+
+   return withUser;
+   
+  }
+
 
   async createAddress(dto: CreateUserAddressDto, user:any ) {
     const userId = user.sub.toString();
+    if (dto.type === AddressType.PERSONAL) {
+      const existing = await this.addressRepo.count({ where: { userId, type: AddressType.PERSONAL } });
+      if (existing >= 1) {
+        throw new BadRequestException('You can only have one personal address');
+      }
+    } else {
+      const count = await this.addressRepo.count({ where: { userId, type: dto.type } });
+      if (count >= 5) {
+        throw new BadRequestException(`You can only add up to 5 ${dto.type} addresses`);
+      }
+    }
+  
     const address = this.addressRepo.create({
       ...dto,
        user: { id: userId },
        createdBy:userId,
       updatedBy: userId,
     });
+    if (dto.isDefault && dto.type !== AddressType.PERSONAL) {
+      await this.addressRepo.update({ userId, type: dto.type }, { isDefault: false });
+    }
    const withUser = await this.addressRepo.save(address);
     return toUserAddressResponse(withUser);
   }
@@ -414,23 +450,35 @@ async verifyOtp(dto: VerifyOtpDto) {
       });
       return addresses.map(toUserAddressResponse);
     }
-  
-
-  async updateAddress(  dto: UpdateUserAddressDto,user:any) {
+   
+  async updateAddress(id:number,  dto: UpdateUserAddressDto,user:any) {
     const userId = user.sub.toString();
-    const address = await this.addressRepo.findOne({ where: 
+  const address = await this.addressRepo.findOne({ where: 
       {
         user: { id: userId },
-        id:dto.id   },
-      relations: ['user'] });
+           },
+      relations: ['user'] }); 
+   //   console.log(id,'---------',userId)
+   //   const address = await this.addressRepo.findOne({ where: { id,userId } });
     if (!address) throw new NotFoundException('Address not found');
    // if (address.user.id !== userId) throw new ForbiddenException('Not allowed');
-
+   //console.log(id,'---------',address)
     Object.assign(address, dto );
     const withUser =  await this.addressRepo.save(address);
 
+    //return withUser;
     return toUserAddressResponse(withUser);
   }
+
+
+
+
+
+
+
+
+
+
 
 
 async createProduct(dto: CreateProductDto, user: any, imageFilename?:Express.Multer.File ): Promise<Product> {
@@ -471,9 +519,7 @@ async findAllProducts(
     .skip(skip)
     .take(limit)
     .getManyAndCount();
-
-
-
+ 
    /* const [result, products] = await queryBuilder.getManyAndCount();
 
     const [result, total] = await queryBuilder.getManyAndCount();*/

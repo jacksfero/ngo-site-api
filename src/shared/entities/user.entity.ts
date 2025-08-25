@@ -14,6 +14,9 @@ import { Blog } from './blog.entity';
 import { ExhibitionProduct } from './exhibition-product.entity';
 import { Video } from './video.entity';
 import { Cart } from './cart.entity';
+import { UsersAddress } from './users-address.entity';
+import { BankDetail } from './user-bank-detail.entity';
+import { KycDetails } from './user-kyc.entity';
 
  
 @Entity('user')
@@ -73,6 +76,18 @@ blogs: Blog[];
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+
+
+  @OneToMany(() => UsersAddress, (address) => address.user, { cascade: true })
+addresses: UsersAddress[];
+
+@OneToMany(() => BankDetail, (bank) => bank.user)
+bankDetails: BankDetail[];
+
+@OneToMany(() => KycDetails, (kyc) => kyc.user)
+kycDetails: KycDetails[];
+
 }
 
 

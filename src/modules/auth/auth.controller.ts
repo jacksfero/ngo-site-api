@@ -31,7 +31,7 @@ import { ResendOtpDto } from './dto/resend-verification.dto';
 import { LoginDto } from './dto/login.dto';
 //import { OtpLoginDto } from './dto/otp-login.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
-import { CreateUsersAboutDto } from './dto/create-users-about.dto';
+import { CreateUsersAboutDto, UpdateUsersAboutDto } from './dto/create-users-about.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -177,14 +177,22 @@ async changePassword(@Req() req, @Body() dto: ChangePasswordDto) {
   }
 
 /** Start User about us section */
-@Post('about/:userId')
-createUserAbout(@Param('userId', ParseIntPipe) userId: number, @Body() dto: CreateUsersAboutDto, @Req() req) {
-  return this.authService.createUserAbout(dto, userId, req.user);
+@UseGuards(AuthGuard('jwt'))
+@Post('about')
+createUserAbout( @Body() dto: CreateUsersAboutDto, @Req() req) {
+  return this.authService.createUserAbout(dto, req.user);
 }
-
-@Get('about/:userId')
-findOneUserAbout(@Param('userId', ParseIntPipe) userId: number) {
-  return this.authService.findOneAboutByUserId(userId);
+@UseGuards(JwtAuthGuard)
+@Get('about')
+findOneUserAbout(@Req() req) {
+  return this.authService.findOneAboutByUserId(req.user);
+}
+@UseGuards(JwtAuthGuard)
+@Patch('about')
+updateAbout(@Body() dto: UpdateUsersAboutDto, @Req() req) {
+ // console.log('update JWT User:', req.user);  // <--- check if user is set
+  //console.log('update Body:', dto);
+  return this.authService.updateAbout(dto,req.user);
 }
 
 
@@ -212,11 +220,11 @@ findAllAddress(@Req() req) {
 }
 
 @UseGuards(JwtAuthGuard)
-@Patch('user-address')
-updateAddress(  @Body() dto: UpdateUserAddressDto, @Req() req) {
+@Patch('user-address/:id')
+updateAddress(@Param('id') id: number,  @Body() dto: UpdateUserAddressDto, @Req() req) {
   console.log('update JWT User:', req.user);  // <--- check if user is set
   console.log('update Body:', dto);
-  return this.authService.updateAddress(dto,req.user);
+  return this.authService.updateAddress(id,dto,req.user);
 }
 /*@Delete('user-address/:id')
 remove(@Req() req, @Param('id') id: number) {

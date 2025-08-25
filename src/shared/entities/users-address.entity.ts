@@ -7,10 +7,11 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 
-
-export enum AddressType {
+ 
+  export enum AddressType {
     BILLING = 'billing',
-    SHIPPING = 'shipping'
+    SHIPPING = 'shipping',
+    PERSONAL = 'personal',   // new
   }
 
 @Entity()
@@ -66,8 +67,18 @@ export class UsersAddress {
     type: AddressType; // 'billing' or 'shipping'
 
    // User (Relation)
-    @ManyToOne(() => User)
-    @JoinColumn({ name: 'user_id' }) // foreign key in DB need to change name owner_id
+    // @ManyToOne(() => User)
+    // @JoinColumn({ name: 'user_id' }) // foreign key in DB need to change name owner_id
+    // user: User;
+
+    @ManyToOne(() => User, (user) => user.addresses, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'user_id' })
     user: User;
+  
+    @Column({ name: 'user_id' })
+    userId: number;
+
+    @Column({ default: false })
+    isDefault: boolean;
 }
- 
+  

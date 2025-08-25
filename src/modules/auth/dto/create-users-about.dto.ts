@@ -3,8 +3,7 @@ import { IsString, IsOptional, IsNumber } from 'class-validator';
 
 export class CreateUsersAboutDto {
 
- 
-
+  
   @IsString()
   about: string;
 
@@ -21,3 +20,8 @@ export class CreateUsersAboutDto {
   @IsString()
   createdBy?: string;
 }
+
+
+import { PartialType } from '@nestjs/mapped-types';
+ 
+export class UpdateUsersAboutDto extends PartialType(CreateUsersAboutDto) {}
