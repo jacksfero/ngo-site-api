@@ -46,10 +46,11 @@ import { ProductDto } from '../admin/product/dto/product.dto';
 import { PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE } from 'src/shared/config/pagination.config';
 import { UpdateProductDto } from '../admin/product/dto/update-product.dto';
 import { CreateWishlistDto } from '../admin/wishlist/dto/create-wishlist.dto';
+import { CreateKycDetailDto,UpdateKycDetailDto } from '../admin/users/dto/create-user-kyc-detail.dto';
+import { CreateBankDetailDto } from '../admin/users/dto/create-user-bank-detail.dto';
+import { UpdateBankDetailDto } from '../admin/users/dto/update-user-bank-detail.dto';
 
-
-
-
+ 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) { }
@@ -205,6 +206,50 @@ updateAbout(@Body() dto: UpdateUsersAboutDto, @Req() req) {
   }
 
 /*************User address Section */
+@UseGuards(JwtAuthGuard)
+@Post('user-kyc')
+createkycDetail(@Body() dto: CreateKycDetailDto,@Req() req) {
+  console.log('JWT User:', req.user);  // <--- check if user is set
+  console.log('Body:', dto);
+  return this.authService.createkycDetail(dto, req.user);
+}
+
+@UseGuards(JwtAuthGuard)
+@Get('user-kyc')
+findAllKyc(@Req() req) {
+  return this.authService.findAllKyc(req.user.sub.toString());
+}
+
+@UseGuards(JwtAuthGuard)
+@Patch('user-kyc')
+updatekyc( @Body() dto: UpdateKycDetailDto, @Req() req) {
+  // console.log('update JWT User:', req.user);  // <--- check if user is set
+  // console.log('update Body:', dto);
+  return this.authService.updatekyc(dto,req.user);
+}
+
+@UseGuards(JwtAuthGuard)
+@Post('user-bank')
+createBankDetail(@Body() dto: CreateBankDetailDto,@Req() req) {
+  console.log('JWT User:', req.user);  // <--- check if user is set
+  console.log('Body:', dto);
+  return this.authService.createBankDetail(dto, req.user);
+}
+
+@UseGuards(JwtAuthGuard)
+@Get('user-bank')
+findAllBank(@Req() req) {
+  return this.authService.findAllBank(req.user.sub.toString());
+}
+
+@UseGuards(JwtAuthGuard)
+@Patch('user-bank')
+updateBank( @Body() dto: UpdateBankDetailDto, @Req() req) {
+  // console.log('update JWT User:', req.user);  // <--- check if user is set
+  // console.log('update Body:', dto);
+  return this.authService.updateBank(dto,req.user);
+}
+
 @UseGuards(JwtAuthGuard)
 @Post('user-address')
 createAddress(@Body() dto: CreateUserAddressDto,@Req() req) {

@@ -50,6 +50,11 @@ import { UpdateProductDto } from '../admin/product/dto/update-product.dto';
 import { CreateWishlistDto } from '../admin/wishlist/dto/create-wishlist.dto';
 import { Wishlist } from 'src/shared/entities/wishlist.entity';
 import { sanitizeFileName } from 'src/shared/utils/sanitizefilename';
+import { CreateKycDetailDto,UpdateKycDetailDto } from '../admin/users/dto/create-user-kyc-detail.dto';
+import { KycDetails } from 'src/shared/entities/user-kyc.entity';
+import { CreateBankDetailDto } from '../admin/users/dto/create-user-bank-detail.dto';
+import { UpdateBankDetailDto } from '../admin/users/dto/update-user-bank-detail.dto';
+import { BankDetail } from 'src/shared/entities/user-bank-detail.entity';
 
 
  
@@ -72,6 +77,12 @@ export class AuthService {
 
     @InjectRepository(UsersAbout)
     private readonly aboutRepo: Repository<UsersAbout>,
+
+    @InjectRepository(KycDetails)
+    private readonly kycRepo: Repository<KycDetails>,
+
+    @InjectRepository(BankDetail)
+    private readonly BankRepo: Repository<BankDetail>,
 
     @InjectRepository(UsersAddress)
     private readonly addressRepo: Repository<UsersAddress>,
@@ -470,6 +481,96 @@ async verifyOtp(dto: VerifyOtpDto) {
     return toUserAddressResponse(withUser);
   }
 
+
+  async createkycDetail(dto: CreateKycDetailDto, users:any ) {
+    const userId = users.sub.toString();
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) throw new NotFoundException('User not found');
+    const bankdetail = await this.kycRepo.find({
+      where: { userId:   userId   },
+    //  relations: ['user'],
+    });
+    if (bankdetail) throw new NotFoundException('Kyc Details Allready Exits');
+    const about = this.kycRepo.create({ ...dto, user });
+       about.createdBy = userId;
+    return this.kycRepo.save(about);
+  }
+
+ 
+    // ✅ FIND ALL
+    async findAllKyc(userId: number): Promise<KycDetails[]> {
+    //  userId = user.sub.toString();
+      const addresses = await this.kycRepo.find({
+        where: { userId:  userId   },
+       // relations: ['user'],
+      });
+      return addresses;
+    }
+   
+  async updatekyc(  dto: UpdateUserAddressDto,user:any) {
+    const userId = user.sub.toString();
+  const address = await this.kycRepo.findOne({ where: 
+      {
+        userId:  userId },
+           
+    //  relations: ['user']
+     }); 
+   //   console.log(id,'---------',userId)
+   //   const address = await this.addressRepo.findOne({ where: { id,userId } });
+    if (!address) throw new NotFoundException('Kyc not found');
+   // if (address.user.id !== userId) throw new ForbiddenException('Not allowed');
+   //console.log(id,'---------',address)
+    Object.assign(address, dto );
+    const withUser =  await this.kycRepo.save(address);
+
+    return withUser;
+  //  return toUserAddressResponse(withUser);
+  }
+
+
+  async createBankDetail(dto: CreateBankDetailDto, users:any ) {
+    const userId = users.sub.toString();
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) throw new NotFoundException('User not found');
+    const bankdetail = await this.BankRepo.find({
+      where: { userId:   userId   },
+    //  relations: ['user'],
+    });
+    if (bankdetail) throw new NotFoundException('Bank Details Allready Exits');
+    const about = this.BankRepo.create({ ...dto, user });
+       about.createdBy = userId;
+    return this.BankRepo.save(about);
+  }
+
+ 
+    // ✅ FIND ALL
+    async findAllBank(userId: number): Promise<BankDetail[]> {
+    //  userId = user.sub.toString();
+      const addresses = await this.BankRepo.find({
+        where: { userId:   userId   },
+      //  relations: ['user'],
+      });
+      return addresses;
+    }
+   
+  async updateBank(  dto: UpdateBankDetailDto,user:any) {
+    const userId = user.sub.toString();
+  const address = await this.BankRepo.findOne({
+    where: { userId:   userId   },
+  //  relations: ['user'],
+  });
+     // relations: ['user'] }); 
+   //   console.log(id,'---------',userId)
+   //   const address = await this.addressRepo.findOne({ where: { id,userId } });
+    if (!address) throw new NotFoundException('Kyc not found');
+   // if (address.user.id !== userId) throw new ForbiddenException('Not allowed');
+   //console.log(id,'---------',address)
+    Object.assign(address, dto );
+    const withUser =  await this.BankRepo.save(address);
+
+    return withUser;
+  //  return toUserAddressResponse(withUser);
+  }
 
 
 
