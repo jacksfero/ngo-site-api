@@ -11,8 +11,7 @@ export class CategoryController {
   getActiveList() {
     return this.categoryService.getActiveList();
   }
-
-
+ 
   @Post()
   create(@Body() createCategoryDto: CreateCategoryDto,@Req() req) {
     return this.categoryService.create(createCategoryDto, req.user);
