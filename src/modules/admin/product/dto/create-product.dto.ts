@@ -156,4 +156,13 @@ export class CreateProductDto {
   @IsOptional()
   @IsString()
   defaultImage?: string;
+
+  @IsArray()
+  @IsOptional()
+  subjectsIds?: number[];
+
+
+  @IsArray()
+  @IsOptional()
+  stylesIds?: number[];
 }

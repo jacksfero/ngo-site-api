@@ -1,5 +1,5 @@
 import { Wishlist } from 'src/shared/entities/wishlist.entity';
-import { Column, OneToMany, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
+import { Column, OneToMany, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToOne, ManyToMany, JoinTable } from 'typeorm';
 import { User } from './user.entity';
 import { ExhibitionProduct } from './exhibition-product.entity';
 import { ProductImage } from './product-image.entity';
@@ -11,6 +11,8 @@ import { CommissionType } from './commission-type.entity';
 import { ShippingTime } from './shipping-time.entity';
 import { Size } from './size.entity';
 import { Orientation } from './orientation.entity';
+import { Subject } from './subject.entity';
+import { Style } from './style.entity';
 
 @Entity()
 export class Product {
@@ -217,6 +219,28 @@ shippingTimeId: number;
 
  @Column({ name: 'orientation_id', nullable: true })
  orientation_id: number;
+
+
+ @ManyToMany(() => Subject, { eager: true, cascade: true })
+ @JoinTable({
+   name: 'products_subject',
+   joinColumn: { name: 'product_id', referencedColumnName: 'id' },
+   inverseJoinColumn: { name: 'subject_id', referencedColumnName: 'id' },
+ })
+ subjects: Subject[];
+ 
+
+ @ManyToMany(() => Style, { eager: true, cascade: true })
+ @JoinTable({
+   name: 'products_style',
+   joinColumn: { name: 'product_id', referencedColumnName: 'id' },
+   inverseJoinColumn: { name: 'style_id', referencedColumnName: 'id' },
+ })
+ styles: Style[];
+
+ 
+
+
 
 }
 /*

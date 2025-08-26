@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, Unique, BeforeInsert, BeforeUpdate } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Unique, BeforeInsert, BeforeUpdate, ManyToMany } from 'typeorm';
+import { Product } from './product.entity';
 
 @Entity()
 @Unique(['title']) // Enforces unique title at database level
@@ -30,6 +31,9 @@ export class Style {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+  @ManyToMany(() => Product, (product) => product.styles)
+products: Product[];
 
   @BeforeInsert()
   @BeforeUpdate()
