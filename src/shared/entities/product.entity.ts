@@ -221,7 +221,7 @@ shippingTimeId: number;
  orientation_id: number;
 
 
- @ManyToMany(() => Subject, { eager: true, cascade: true })
+ @ManyToMany(() => Subject,subject => subject.products, { eager: true, cascade: true })
  @JoinTable({
    name: 'products_subject',
    joinColumn: { name: 'product_id', referencedColumnName: 'id' },
@@ -230,7 +230,7 @@ shippingTimeId: number;
  subjects: Subject[];
  
 
- @ManyToMany(() => Style, { eager: true, cascade: true })
+ @ManyToMany(() => Style, style => style.products, { eager: true, cascade: true })
  @JoinTable({
    name: 'products_style',
    joinColumn: { name: 'product_id', referencedColumnName: 'id' },
@@ -239,8 +239,6 @@ shippingTimeId: number;
  styles: Style[];
 
  
-
-
 
 }
 /*
@@ -253,12 +251,5 @@ shippingTimeId: number;
     ✅ You can add DTOs and services as needed.
 
     */
-
-
-
-
-
-
-
 
 

@@ -7,8 +7,8 @@ export class StyleResponseDto {
   @Expose()
   title: string;
 
-  @Expose()
-  description: string;
+  // @Expose()
+  // description: string;
  
 }
 export class SurfaceResponseDto {
@@ -34,6 +34,6 @@ export class SubjectResponseDto {
   @Expose()
   subject: string;
 
-   @Expose()
-  description: string;
+  //  @Expose()
+  // description: string;
 }

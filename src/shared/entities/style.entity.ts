@@ -32,8 +32,12 @@ export class Style {
   })
   updatedAt: Date;
 
-  @ManyToMany(() => Product, (product) => product.styles)
+ 
+
+@ManyToMany(() => Product, product => product.styles)
 products: Product[];
+
+
 
   @BeforeInsert()
   @BeforeUpdate()

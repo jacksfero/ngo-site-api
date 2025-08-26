@@ -253,8 +253,8 @@ updateBank( @Body() dto: UpdateBankDetailDto, @Req() req) {
 @UseGuards(JwtAuthGuard)
 @Post('user-address')
 createAddress(@Body() dto: CreateUserAddressDto,@Req() req) {
-  console.log('JWT User:', req.user);  // <--- check if user is set
-  console.log('Body:', dto);
+ // console.log('JWT User:', req.user);  // <--- check if user is set
+ // console.log('Body:', dto);
   return this.authService.createAddress(dto, req.user);
 }
 

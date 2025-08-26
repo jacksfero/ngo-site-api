@@ -19,7 +19,7 @@ export class ProductsController {
   getActiveSurfaceList() {
     return this.productsService.getActiveSurfaceList();
   }
-
+ 
   @Get('mediumlist')
   getActiveMediumList() {
     return this.productsService.getActiveMediumList();
@@ -28,7 +28,25 @@ export class ProductsController {
   getActiveSubjectList() {
     return this.productsService.getActiveSubjectList();
   }
+  @Get('surfaceprodlist/:slug')
+  getActiveProdSurfaceList(@Param('slug') slug: string) {
+    return this.productsService.getActiveProdSurfaceList(slug);
+  }
+ 
+  @Get('mediumprodlist/:slug')
+  getActiveProdMediumList(@Param('slug') slug: string) {
+    return this.productsService.getActiveProdMediumList(slug);
+  }
 
+  @Get('subjectprodlist/:slug')
+  getActiveProdSubjectList(@Param('slug') slug: string) {
+    return this.productsService.getActiveProdSubjectList(slug);
+  }
+
+  @Get('styleprodlist/:slug')
+  getActiveProdStyleList(@Param('slug') slug: string) {
+    return this.productsService.getActiveProdStyleList(slug);
+  }
 
  @Get()
   getAllProducts(@Query() filterDto: ProductFilterDto) {

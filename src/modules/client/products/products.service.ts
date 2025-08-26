@@ -156,6 +156,68 @@ export class ProductsService {
     });
   }
 
+  async getActiveProdSurfaceList(slug: string):  Promise<SurfaceResponseDto[]>  {
+    const surfaces =  await this.surfaceRepo
+      .createQueryBuilder('surface')
+     // .leftJoin('surface.product', 'product')
+      .leftJoin(Product, 'product', 'surface.id = product.surface_id')
+       .leftJoin('product.productInventory', 'inventoryProduct')
+       .leftJoin('product.category', 'category')
+      .where('surface.status = :status', { status: true })
+      .andWhere('product.status = :active', { active: true })
+      .andWhere('category.slug = :slug', { slug })
+      .andWhere('inventoryProduct.status = :active', { active: true })
+      .orderBy('surface.surfaceName', 'ASC')
+      .getMany();
+  
+     return plainToInstance(SurfaceResponseDto, surfaces, {
+       excludeExtraneousValues: true,
+     });
+  }
+  async getActiveProdStyleList(slug: string): Promise<StyleResponseDto[]> {
+   const styles = await this.styleRepo
+    .createQueryBuilder('style' )
+    .leftJoin('style.products', 'product')  
+    .leftJoin('product.productInventory', 'inventory') 
+    .leftJoin('product.category', 'category')
+     .where('style.status = :styleStatus', { styleStatus: true })  
+     .andWhere('product.status = :productStatus', { productStatus: true })  
+     .andWhere('inventory.status = :inventoryStatus', { inventoryStatus: true })  
+     .andWhere('category.slug = :slug', { slug })
+    .getMany();
+  /*/
+  const styles = await this.styleRepo.find({
+    where: { 
+      status: true 
+    },
+    relations: ['products'], // Let TypeORM handle the join
+    order: { 
+      title: 'ASC' 
+    }
+  });*/
+    return plainToInstance(StyleResponseDto, styles, {
+      excludeExtraneousValues: true,
+    });
+  }
+  
+   
+  async getActiveProdSubjectList(slug: string):  Promise<SubjectResponseDto[]>  {
+    const surfaces =  await this.subjectRepo
+      .createQueryBuilder('subject')     
+      .leftJoin('subject.products', 'product')  
+       .leftJoin('product.productInventory', 'inventoryProduct')
+       .leftJoin('product.category', 'category')
+      .where('subject.status = :status', { status: true })
+      .andWhere('product.status = :active', { active: true })
+      .andWhere('category.slug = :slug', {  slug })
+      .andWhere('inventoryProduct.status = :active', { active: true })
+      .orderBy('subject.subject', 'ASC')
+      .getMany();
+  
+     return plainToInstance(SubjectResponseDto, surfaces, {
+       excludeExtraneousValues: true,
+     });
+  }
   async getActiveSurfaceList():  Promise<SurfaceResponseDto[]> {
     const style = await this.surfaceRepo.find({
       order: { surfaceName: 'ASC' },
@@ -164,6 +226,24 @@ export class ProductsService {
      }
     });
     return plainToInstance(SurfaceResponseDto, style, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async getActiveProdMediumList(slug: string):  Promise<MediumResponseDto[]> {
+    const surfaces =  await this.mediumRepo
+    .createQueryBuilder('medium')
+   // .leftJoin('surface.product', 'product')
+    .leftJoin(Product, 'product', 'medium.id = product.medium_id')
+     .leftJoin('product.productInventory', 'inventoryProduct')
+     .leftJoin('product.category', 'category')
+    .where('medium.status = :status', { status: true })
+    .andWhere('product.status = :active', { active: true })
+    .andWhere('category.slug = :slug', { slug })
+    .andWhere('inventoryProduct.status = :active', { active: true })
+    .orderBy('medium.name', 'ASC')
+    .getMany();
+    return plainToInstance(MediumResponseDto, surfaces, {
       excludeExtraneousValues: true,
     });
   }

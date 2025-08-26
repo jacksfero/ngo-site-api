@@ -30,7 +30,7 @@ import { InventProductModule } from './invent-product/invent-product.module';
           { path: 'cart', module: CartModule },
           { path: 'order', module: OrderModule },
         ],
-      },
+      }, 
     ]),
    // PaymentModule,
 
