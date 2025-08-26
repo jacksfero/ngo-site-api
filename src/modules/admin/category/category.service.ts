@@ -19,31 +19,20 @@ export class CategoryService {
   async create(createCategoryDto: CreateCategoryDto, user: any): Promise<Category> {
     const uniqueSlug = await this.generateUniqueSlug(createCategoryDto.name);
     const category = this.categoryRepository.create({
-     name:createCategoryDto.name,
+      name: createCategoryDto.name,
       // createdBy: user.username, // or user.sub (ID), depending on your use case
       createdBy: user.sub.toString(), //userid
-      slug:uniqueSlug,
+      slug: uniqueSlug,
     });
     return this.categoryRepository.save(category);
   }
-async generateUniqueSlug(title: string): Promise<string> {
-    const baseSlug = slugify(title);
-    let slug = baseSlug;
-    let count = 1;
 
-    while (await this.categoryRepository.findOne({ where: { slug } })) {
-      slug = `${baseSlug}-${count}`;
-      count++;
-    }
-
-    return slug;
-  }
-  async getActiveList():  Promise<BlogcategoryResponseDto[]> {
+  async getActiveList(): Promise<BlogcategoryResponseDto[]> {
     const surfaces = await this.categoryRepository.find({
       order: { name: 'ASC' },
       where: {
-       status: true, // only active surfaces
-     }
+        status: true, // only active surfaces
+      }
     });
     return plainToInstance(BlogcategoryResponseDto, surfaces, {
       excludeExtraneousValues: true,
@@ -68,8 +57,15 @@ async generateUniqueSlug(title: string): Promise<string> {
 
   async update(id: number, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
     const category = await this.findOne(id);
+    if (!category) throw new NotFoundException(`category ${id} not found`);
+ 
+    if (updateCategoryDto.name && category.name !== updateCategoryDto.name) {
+      const uniqueSlug = await this.generateUniqueSlug(updateCategoryDto.name);
+      category.slug = uniqueSlug;
+    }
+
     Object.assign(category, updateCategoryDto);
-    // medium.updatedBy = user.sub.toString();
+
     return this.categoryRepository.save(category);
 
   }
@@ -90,5 +86,18 @@ async generateUniqueSlug(title: string): Promise<string> {
     //medium.updatedBy = user.sub.toString(); // or user.sub.toString()
 
     return this.categoryRepository.save(category);
+  }
+
+  async generateUniqueSlug(title: string): Promise<string> {
+    const baseSlug = slugify(title);
+    let slug = baseSlug;
+    let count = 1;
+
+    while (await this.categoryRepository.findOne({ where: { slug } })) {
+      slug = `${baseSlug}-${count}`;
+      count++;
+    }
+
+    return slug;
   }
 }

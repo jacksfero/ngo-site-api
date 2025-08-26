@@ -36,7 +36,7 @@ export class ShippingTimeService {
     });
     
     if (commissionTypes.length === 0) {
-      throw new NotFoundException('No active commission types found');
+      throw new NotFoundException('No active Shipping Time found');
     }
     
     return commissionTypes;
