@@ -40,6 +40,8 @@ export enum PaymentStatus {
     // ✅ Payment Gateway Info
     @Column({ nullable: true })
     txnId: string; // PayUMoney transaction id
+
+   
   
     @Column({ nullable: true })
     paymentGateway: string; // 'PayUMoney' | 'Razorpay' | 'PayPal'
