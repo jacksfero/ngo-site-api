@@ -177,8 +177,6 @@ contact: ContactUs;
 
 @OneToOne(() => Inventory, (inventory) => inventory.product, { cascade: true })
 productInventory: Inventory;
-
-
  
 // 👇 Packing Mode
 @ManyToOne(() => PackingModeEntity, { eager: true }) 
@@ -238,9 +236,8 @@ shippingTimeId: number;
  })
  styles: Style[];
 
- 
-
 }
+  
 /*
 🔧 What You Should Do Now:
 
@@ -251,5 +248,3 @@ shippingTimeId: number;
     ✅ You can add DTOs and services as needed.
 
     */
-
-

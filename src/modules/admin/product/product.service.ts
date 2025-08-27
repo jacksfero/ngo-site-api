@@ -1,4 +1,4 @@
-import { Injectable,NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from '../../../shared/entities/product.entity';
@@ -18,7 +18,11 @@ import { ProductListDto } from './dto/product-list.dto';
 import { Subject } from 'src/shared/entities/subject.entity';
 import { Style } from 'src/shared/entities/style.entity';
 import { Productcategory } from 'src/shared/entities/productcategory.entity';
- 
+import { PackingModeEntity } from 'src/shared/entities/packing-mode.entity';
+import { CommissionType } from 'src/shared/entities/commission-type.entity';
+import { ShippingTime } from 'src/shared/entities/shipping-time.entity';
+import { Size } from 'src/shared/entities/size.entity';
+
 
 @Injectable()
 export class ProductService {
@@ -36,15 +40,15 @@ export class ProductService {
     @InjectRepository(Productcategory)
     private ProdCatRepo: Repository<Productcategory>,
 
-     @InjectRepository(ProductImage)
+    @InjectRepository(ProductImage)
     private imageRepo: Repository<ProductImage>,
   ) { }
- 
+
 
   async getProductList(): Promise<ProductListDto[]> {
     const products = await this.productRepository.find({
       select: ['id', 'productTitle'],
-      where: { status: true } ,
+      where: { status: true },
       order: { productTitle: 'ASC' },
     });
 
@@ -60,43 +64,98 @@ export class ProductService {
 
 
 
-async create(dto: CreateProductDto, user: any, imageFilename?:Express.Multer.File ): Promise<Product> {
-  let subjects: any[] = [];
-  let styles: any[] = []; 
-  let titleImage: string | null = null;
-  if(imageFilename){
-    const cleanName = sanitizeFileName(imageFilename.originalname);
-    const key = `products/${Date.now()}-${cleanName}`;
-    titleImage = 
-  await this.s3service.uploadBuffer(key, imageFilename.buffer, imageFilename.mimetype); 
-  }
-  if (dto.subjectsIds?.length) {
-  const subjects = await this.subjectRepo.findBy({ id: In(dto.subjectsIds) });
-  }
-  if (dto.stylesIds?.length) {
-    const styles = await this.styleRepo.findBy({ id: In(dto.stylesIds) });
- }
- 
- 
-  const product = this.productRepository.create({
-    ...dto,
-   // defaultImage: imageFilename ? `/product-images/${imageFilename}` : null,
-   defaultImage: titleImage,
-   subjects: subjects,
-   styles: styles,
-   //category: categoryd,
-   category: { id: dto.category_id } as Productcategory,
-    createdBy: user.sub.toString(),
-  });
+  async create(dto: CreateProductDto, user: any, imageFilename?: Express.Multer.File): Promise<Product> {
+    let subjectss: any[] = [];
+    let styless: any[] = [];
+    let titleImage: string | null = null;
+    if (imageFilename) {
+      const cleanName = sanitizeFileName(imageFilename.originalname);
+      const key = `products/${Date.now()}-${cleanName}`;
+      titleImage =
+        await this.s3service.uploadBuffer(key, imageFilename.buffer, imageFilename.mimetype);
+    }
 
-  return this.productRepository.save(product);
-}
- 
+    const product = this.productRepository.create({
+      ...dto,
+      defaultImage: titleImage,
+      // subjects: subjectss,
+      //  styles: styless,
+
+      category: { id: dto.category_id } as Productcategory,
+      createdBy: user.sub.toString(),
+    });
+    if (dto.subjectsIds?.length) {
+      product.subjects = await this.subjectRepo.findBy({ id: In(dto.subjectsIds) });
+    }
+    if (dto.stylesIds?.length) {
+      product.styles = await this.styleRepo.findBy({ id: In(dto.stylesIds) });
+    }
+
+    return this.productRepository.save(product);
+  }
+
+  async update(
+    id: number,
+    updateProductDto: UpdateProductDto,
+    user: any,
+    newImageFile?: Express.Multer.File | null,
+  ): Promise<Product> {
+    const product = await this.findOne(id);
+    if (!product) throw new NotFoundException('Product not found');
+     console.log('product-before--',product.packingModeId)
+    //Object.assign(product, updateProductDto);
+     console.log('product--after-',product.packingModeId); 
+     
+   // process.exit;
+    if (newImageFile) {
+      const cleanName = sanitizeFileName(newImageFile.originalname);
+      const key = `products/${Date.now()}-${cleanName}`;
+
+      // Upload image to S3 (returns the file URL or key)
+      const uploadedUrl = await this.s3service.uploadBuffer(
+        key,
+        newImageFile.buffer,
+        newImageFile.mimetype, // make sure content-type is set!
+      );
+      // Delete old image if exists
+      if (product.defaultImage) {
+        await this.s3service.deleteObject(product.defaultImage);
+      }
+      // Save new URL/key in DB
+      product.defaultImage = uploadedUrl;
+    }
+    // subjects
+  if (updateProductDto.subjectsIds !== undefined) {
+    product.subjects =
+      updateProductDto.subjectsIds.length > 0
+        ? await this.subjectRepo.findBy({ id: In(updateProductDto.subjectsIds) })
+        : [];
+  }
+
+  // styles
+  if (updateProductDto.stylesIds !== undefined) {
+    product.styles =
+      updateProductDto.stylesIds.length > 0
+        ? await this.styleRepo.findBy({ id: In(updateProductDto.stylesIds) })
+        : [];
+  }
+  product.updatedBy = user.sub.toString();
+    product.updatedBy = user.sub.toString();
+    product.category = { id: updateProductDto.category_id } as Productcategory;
+    product.packingMode = { id: updateProductDto.packingModeId } as PackingModeEntity;
+    product.commissionType = { id: updateProductDto.commissionTypeId } as CommissionType;
+    product.shippingTime = { id: updateProductDto.shippingTimeId } as ShippingTime;
+    product.size = { id: updateProductDto.size_id } as Size;
+    console.log('--------product--after-',product.packingModeId); 
+    console.log('product--after-final',product.packingModeId); 
+    return this.productRepository.save(product);
+  }
+
  
   async paginate(
     paginationDto: ProductPaginationDto,
   ): Promise<PaginationResponseDto<ProductDto>> {
-    const { page , limit, search,status } = paginationDto;
+    const { page, limit, search, status } = paginationDto;
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.productRepository.createQueryBuilder('product');
@@ -110,32 +169,14 @@ async create(dto: CreateProductDto, user: any, imageFilename?:Express.Multer.Fil
       .take(limit)
       .getManyAndCount();
 
+    const data = plainToInstance(ProductDto, products, {
+      excludeExtraneousValues: true,
+    });
 
+    return new PaginationResponseDto(data, { total, page, limit });
 
-     /* const [result, products] = await queryBuilder.getManyAndCount();
-  
-      const [result, total] = await queryBuilder.getManyAndCount();*/
-  
-      const data = plainToInstance(ProductDto, products, {
-        excludeExtraneousValues: true,
-      });
-    
-      return new PaginationResponseDto(data, { total, page, limit  });
-
-  /*  return new PaginationResponseDto(
-      plainToInstance(ProductDto, products),
-      {
-        total,
-        page,
-        limit,
-      },
-    );*/
   }
- 
-
- 
- 
-   async findOne(id: number): Promise<Product> {
+  async findOne(id: number): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
       relations: ['owner', 'wishlists', 'displayMappings'],
@@ -146,120 +187,77 @@ async create(dto: CreateProductDto, user: any, imageFilename?:Express.Multer.Fil
     return product;
   }
 
- 
-
-async update(
-  id: number,
-  updateProductDto: UpdateProductDto,
-  user: any,
-  newImageFile?: Express.Multer.File | null,
-): Promise<Product> {
-  const product = await this.findOne(id);
-  if (!product) throw new NotFoundException('Product not found');
-
-  if (newImageFile) {
-    const cleanName = sanitizeFileName(newImageFile.originalname);
-    const key = `products/${Date.now()}-${cleanName}`;
-
-    // Upload image to S3 (returns the file URL or key)
-    const uploadedUrl = await this.s3service.uploadBuffer(
-      key,
-      newImageFile.buffer,
-      newImageFile.mimetype, // make sure content-type is set!
-    );
-    // Delete old image if exists
-    if (product.defaultImage) {
-      await this.s3service.deleteObject(product.defaultImage);
-    }
-    // Save new URL/key in DB
-    product.defaultImage = uploadedUrl;
-  }
-    if (updateProductDto.subjectsIds?.length) {
-     product.subjects = await this.subjectRepo.findBy({ id: In(updateProductDto.subjectsIds) });
-   }
-   if (updateProductDto.stylesIds?.length) {
-    product.styles = await this.styleRepo.findBy({ id: In(updateProductDto.stylesIds) });
-  }
-  Object.assign(product, updateProductDto);
-  product.updatedBy = user.sub.toString();
-  product.category= { id: updateProductDto.category_id } as Productcategory;
-
-  return this.productRepository.save(product);
-}
-
-
- async remove(id: number): Promise<void> {
+  async remove(id: number): Promise<void> {
     const product = await this.findOne(id);
     await this.productRepository.remove(product);
   }
-  
-async addImage(productId: number, imageFilename:Express.Multer.File) {
-  let imageurl;
-  const product = await this.productRepository.findOne({ where: { id: productId } });
-  
-  if (!product)
-    {
+
+  async addImage(productId: number, imageFilename: Express.Multer.File) {
+    let imageurl;
+    const product = await this.productRepository.findOne({ where: { id: productId } });
+
+    if (!product) {
       throw new NotFoundException('Product not found');
     }
-  if(imageFilename){
-    const cleanName = sanitizeFileName(imageFilename.originalname);
-    const key = `products/${Date.now()}-${cleanName}`;
-    imageurl = 
-  await this.s3service.uploadBuffer(key, imageFilename.buffer, imageFilename.mimetype); 
+    if (imageFilename) {
+      const cleanName = sanitizeFileName(imageFilename.originalname);
+      const key = `products/${Date.now()}-${cleanName}`;
+      imageurl =
+        await this.s3service.uploadBuffer(key, imageFilename.buffer, imageFilename.mimetype);
+    }
+
+
+    const image = this.imageRepo.create({
+      //imagePath: `/product-images/${fileName}`, // just the relative path 
+      imagePath: imageurl, // just the relative path
+      product,
+    });
+
+    return this.imageRepo.save(image);
   }
 
 
-  const image = this.imageRepo.create({
-    //imagePath: `/product-images/${fileName}`, // just the relative path 
-    imagePath: imageurl, // just the relative path
-    product,
-  });
-
-  return this.imageRepo.save(image);
-}
-
- 
-   async deleteImage(imageId: number) {
+  async deleteImage(imageId: number) {
     const image = await this.imageRepo.findOne({ where: { id: imageId }, relations: ['product'] });
     if (!image) throw new NotFoundException('Image not found');
 
-   // const fullPath = path.join(process.cwd(), 'uploads/product-images', path.basename(image.imagePath));
+    // const fullPath = path.join(process.cwd(), 'uploads/product-images', path.basename(image.imagePath));
     // if (fs.existsSync(fullPath)) {
     //   fs.unlinkSync(fullPath);
     // }
-     // Delete old image if exists
-  if (image.imagePath) {
-    // const oldKey = this.extractS3Key(blog.titleImage);
-     await this.s3service.deleteObject(image.imagePath);
-   }
+    // Delete old image if exists
+    if (image.imagePath) {
+      // const oldKey = this.extractS3Key(blog.titleImage);
+      await this.s3service.deleteObject(image.imagePath);
+    }
 
     return this.imageRepo.remove(image);
   }
 
-/*   Let me know if you also need:
-
-    Pagination support in findAll
-
-    Filtering by user/owner
-
-    Soft delete logic
-
-    Upload image handling
-
-    Controller methods (@Post, @Get, @Patch, etc.)
-
-async findAll({ page, limit }: { page: number; limit: number }) {
-  const [items, total] = await this.productRepository.findAndCount({
-    take: +limit,
-    skip: (+page - 1) * +limit,
-    order: { createdAt: 'DESC' },
-  });
-
-  return {
-    data: items,
-    total,
-    currentPage: +page,
-    lastPage: Math.ceil(total / +limit),
-  };
-}*/
+  /*   Let me know if you also need:
+  
+      Pagination support in findAll
+  
+      Filtering by user/owner
+  
+      Soft delete logic
+  
+      Upload image handling
+  
+      Controller methods (@Post, @Get, @Patch, etc.)
+  
+  async findAll({ page, limit }: { page: number; limit: number }) {
+    const [items, total] = await this.productRepository.findAndCount({
+      take: +limit,
+      skip: (+page - 1) * +limit,
+      order: { createdAt: 'DESC' },
+    });
+  
+    return {
+      data: items,
+      total,
+      currentPage: +page,
+      lastPage: Math.ceil(total / +limit),
+    };
+  }*/
 }

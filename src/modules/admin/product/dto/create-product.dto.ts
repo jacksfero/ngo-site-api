@@ -133,10 +133,6 @@ export class CreateProductDto {
   @IsBoolean()
   is_lock?: boolean;
 
-  /*@IsOptional()
-  @IsBoolean()
-  inventory?: boolean;*/
-
   @IsOptional()
   @IsBoolean()
   status?: boolean;
@@ -160,7 +156,6 @@ export class CreateProductDto {
   @IsArray()
   @IsOptional()
   subjectsIds?: number[];
-
 
   @IsArray()
   @IsOptional()
