@@ -12,10 +12,11 @@ import { CommissionType } from 'src/shared/entities/commission-type.entity';
 import { ShippingTime } from 'src/shared/entities/shipping-time.entity';
 import { Size } from 'src/shared/entities/size.entity';
 import { Orientation } from 'src/shared/entities/orientation.entity';
+import { User } from 'src/shared/entities/user.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Product, ProductImage, Subject, Style, Productcategory, PackingModeEntity,
-    CommissionType, ShippingTime, Size, Orientation
+    CommissionType, ShippingTime, Size, Orientation,User
 
   ])],
   controllers: [ProductController],

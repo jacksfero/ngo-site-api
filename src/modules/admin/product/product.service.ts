@@ -22,6 +22,7 @@ import { PackingModeEntity } from 'src/shared/entities/packing-mode.entity';
 import { CommissionType } from 'src/shared/entities/commission-type.entity';
 import { ShippingTime } from 'src/shared/entities/shipping-time.entity';
 import { Size } from 'src/shared/entities/size.entity';
+import { User } from 'src/shared/entities/user.entity';
 
 
 @Injectable()
@@ -80,8 +81,9 @@ export class ProductService {
       defaultImage: titleImage,
       // subjects: subjectss,
       //  styles: styless,
-
       category: { id: dto.category_id } as Productcategory,
+      artist: { id: dto.artist_id } as User,
+      owner: { id: dto.owner_id } as User,
       createdBy: user.sub.toString(),
     });
     if (dto.subjectsIds?.length) {
@@ -146,7 +148,8 @@ export class ProductService {
     product.commissionType = { id: updateProductDto.commissionTypeId } as CommissionType;
     product.shippingTime = { id: updateProductDto.shippingTimeId } as ShippingTime;
     product.size = { id: updateProductDto.size_id } as Size;
-
+    product.artist = { id: updateProductDto.artist_id } as User;
+    product.owner = { id: updateProductDto.owner_id } as User;
     //console.log('--------product--after-',product.packingModeId); 
     //console.log('product--after-final',product.packingModeId); 
     return this.productRepository.save(product);
