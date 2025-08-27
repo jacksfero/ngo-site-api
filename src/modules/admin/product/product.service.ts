@@ -17,6 +17,7 @@ import { sanitizeFileName } from 'src/shared/utils/sanitizefilename';
 import { ProductListDto } from './dto/product-list.dto';
 import { Subject } from 'src/shared/entities/subject.entity';
 import { Style } from 'src/shared/entities/style.entity';
+import { Productcategory } from 'src/shared/entities/productcategory.entity';
  
 
 @Injectable()
@@ -31,6 +32,9 @@ export class ProductService {
 
     @InjectRepository(Style)
     private styleRepo: Repository<Style>,
+
+    @InjectRepository(Productcategory)
+    private ProdCatRepo: Repository<Productcategory>,
 
      @InjectRepository(ProductImage)
     private imageRepo: Repository<ProductImage>,
@@ -58,7 +62,7 @@ export class ProductService {
 
 async create(dto: CreateProductDto, user: any, imageFilename?:Express.Multer.File ): Promise<Product> {
   let subjects: any[] = [];
-  let styles: any[] = [];
+  let styles: any[] = []; 
   let titleImage: string | null = null;
   if(imageFilename){
     const cleanName = sanitizeFileName(imageFilename.originalname);
@@ -72,12 +76,16 @@ async create(dto: CreateProductDto, user: any, imageFilename?:Express.Multer.Fil
   if (dto.stylesIds?.length) {
     const styles = await this.styleRepo.findBy({ id: In(dto.stylesIds) });
  }
+ 
+ 
   const product = this.productRepository.create({
     ...dto,
    // defaultImage: imageFilename ? `/product-images/${imageFilename}` : null,
    defaultImage: titleImage,
    subjects: subjects,
    styles: styles,
+   //category: categoryd,
+   category: { id: dto.category_id } as Productcategory,
     createdBy: user.sub.toString(),
   });
 
@@ -174,6 +182,7 @@ async update(
   }
   Object.assign(product, updateProductDto);
   product.updatedBy = user.sub.toString();
+  product.category= { id: updateProductDto.category_id } as Productcategory;
 
   return this.productRepository.save(product);
 }

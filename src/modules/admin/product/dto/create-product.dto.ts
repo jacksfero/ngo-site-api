@@ -1,5 +1,5 @@
 import { 
-  IsArray, 
+  IsArray, IsNumber,
   IsBoolean, 
   IsInt, 
   IsNotEmpty, 
@@ -36,9 +36,9 @@ export class CreateProductDto {
   @IsInt()
   size_id?: number;
 
-  @IsOptional()
-  @IsInt()
-  category_id?: number;
+  @IsNumber()
+  @IsNotEmpty()
+  category_id: number;
 
   @IsOptional()
   @IsInt()
