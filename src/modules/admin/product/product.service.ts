@@ -146,8 +146,9 @@ export class ProductService {
     product.commissionType = { id: updateProductDto.commissionTypeId } as CommissionType;
     product.shippingTime = { id: updateProductDto.shippingTimeId } as ShippingTime;
     product.size = { id: updateProductDto.size_id } as Size;
-    console.log('--------product--after-',product.packingModeId); 
-    console.log('product--after-final',product.packingModeId); 
+
+    //console.log('--------product--after-',product.packingModeId); 
+    //console.log('product--after-final',product.packingModeId); 
     return this.productRepository.save(product);
   }
 
@@ -185,6 +186,17 @@ export class ProductService {
       throw new NotFoundException(`Product with id ${id} not found`);
     }
     return product;
+  }
+
+  async toggleStatus(id: number, user: any): Promise<Product> {
+    const product = await this.productRepository.findOne({ where: { id } });
+    if (!product) {
+      throw new NotFoundException(`product with ID ${id} not found`);
+    }
+    product.status = !product.status;
+    product.updatedBy = user.sub.toString(); // or user.sub.toString()
+
+    return this.productRepository.save(product);
   }
 
   async remove(id: number): Promise<void> {

@@ -7,6 +7,9 @@ export class ProductcategoryResponseDto {
   @Expose()
   name: string;
 
+  @Expose()
+  slug: string;
+
   /*@Expose()
   status: boolean;
 

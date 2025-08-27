@@ -43,9 +43,7 @@ create(
  // const imagePath = file?.filename;
   return this.productService.create(createProductDto, req.user, file);
 }
-
-  
-
+ 
 
 @Get()
   async findAll(
@@ -55,24 +53,14 @@ create(
     return this.productService.paginate(paginationDto);
   }
 
-
-  // @Get()
-  // findAll(@Query('page') page = 1, @Query('limit') limit = 10) {
-  //   return this.productService.findAll({ page, limit });
-  // }
-
+ 
 
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.productService.findOne(+id);
   }
 
-  //  @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto, @Req() req) {
-  //   return this.productService.update(+id, updateProductDto, req.user);
-  // }
- 
- 
+   
 
   @Patch(':id')
 @UseInterceptors(FileInterceptor('defaultImage'))
@@ -87,11 +75,7 @@ async update(
   return this.productService.update(id, dto,req.user, file ?? null );
 }
 
-
-
-
-
-
+ 
 
 
   @Delete(':id')
@@ -99,6 +83,10 @@ async update(
     return this.productService.remove(+id);
   }
 
+  @Patch(':id/toggle-status')
+  async toggleStatus(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    return this.productService.toggleStatus(id, req.user);
+  }
 
 
 @Post(':product_id/upload-image')

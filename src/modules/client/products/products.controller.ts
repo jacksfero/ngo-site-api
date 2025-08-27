@@ -8,6 +8,13 @@ import { PaginationDto } from 'src/shared/dto/pagination.dto';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
+  @Get('activecategorylist')
+  getActiveCategoryList() {
+    return this.productsService.getActiveCategoryList();
+  }
+
+
+
 
   @Get('stylelist')
   getActiveStyleList() {

@@ -14,6 +14,8 @@ import { Surface } from 'src/shared/entities/surface.entity';
 import { Medium } from 'src/shared/entities/medium.entity';
 import { Subject } from 'src/shared/entities/subject.entity';
 import { Inventory } from 'src/shared/entities/inventory.entity';
+import { Productcategory } from 'src/shared/entities/productcategory.entity';
+import { ProductcategoryResponseDto } from 'src/modules/admin/productcategory/dto/pcate-res.dto';
 
  
 @Injectable()
@@ -36,6 +38,9 @@ export class ProductsService {
 
     @InjectRepository(Product)
     private readonly productRepo: Repository<Product>,
+
+    @InjectRepository(Productcategory)
+    private readonly prodCatRepo: Repository<Productcategory>,
 
   ) {}
   async findAll(paginationDto: PaginationDto): Promise<PaginationResponseDto<ProductListItemDto>> {
@@ -143,6 +148,20 @@ export class ProductsService {
     if (!product) throw new NotFoundException('Product not found');
     return product;
   }
+
+
+  async getActiveCategoryList():  Promise<ProductcategoryResponseDto[]> {
+    const prodcat = await this.prodCatRepo.find({
+      order: { name: 'ASC' },
+      where: {
+       status: true, // only active surfaces
+     }
+    });
+    return plainToInstance(ProductcategoryResponseDto, prodcat, {
+      excludeExtraneousValues: true,
+    });
+  }
+
 
   async getActiveStyleList():  Promise<StyleResponseDto[]> {
     const style = await this.styleRepo.find({
