@@ -1,13 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from '../../../shared/entities/product.entity';
 import { ProductImage } from '../../../shared/entities/product-image.entity';
 import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as fs from 'fs';
-import * as path from 'path';
-import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
+ import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ProductDto } from './dto/product.dto';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { plainToInstance } from 'class-transformer';
@@ -23,7 +21,7 @@ import { CommissionType } from 'src/shared/entities/commission-type.entity';
 import { ShippingTime } from 'src/shared/entities/shipping-time.entity';
 import { Size } from 'src/shared/entities/size.entity';
 import { User } from 'src/shared/entities/user.entity';
-
+import { slugify } from 'src/shared/utils/slugify';
 
 @Injectable()
 export class ProductService {
@@ -63,7 +61,18 @@ export class ProductService {
     });
   }
 
+  async generateUniqueSlug(title: string): Promise<string> {
+    const baseSlug = slugify(title);
+    let slug = baseSlug;
+    let count = 1;
 
+    while (await this.productRepository.findOne({ where: { slug } })) {
+      slug = `${baseSlug}-${count}`;
+      count++;
+    }
+
+    return slug;
+  }
 
   async create(dto: CreateProductDto, user: any, imageFilename?: Express.Multer.File): Promise<Product> {
     let subjectss: any[] = [];
@@ -76,10 +85,19 @@ export class ProductService {
         await this.s3service.uploadBuffer(key, imageFilename.buffer, imageFilename.mimetype);
     }
 
+     // Check for existing blog
+     const [existingByTitle, existingBySlug] = await Promise.all([
+      this.productRepository.findOneBy({ productTitle: dto.productTitle }),
+      dto.slug ? this.productRepository.findOneBy({ slug: dto.slug }) : null
+  ]);
+  
+  if (existingByTitle) throw new ConflictException('Product title already exists');
+  if (existingBySlug) throw new ConflictException('Product slug already exists');
+
     const product = this.productRepository.create({
       ...dto,
       defaultImage: titleImage,
-      // subjects: subjectss,
+      slug : await this.generateUniqueSlug(dto.slug),
       //  styles: styless,
       category: { id: dto.category_id } as Productcategory,
       artist: { id: dto.artist_id } as User,
@@ -141,6 +159,9 @@ export class ProductService {
         ? await this.styleRepo.findBy({ id: In(updateProductDto.stylesIds) })
         : [];
   }
+  if (updateProductDto.slug && updateProductDto.slug !== product.slug) {
+    product.slug = await this.generateUniqueSlug(updateProductDto.slug);   
+  }
   product.updatedBy = user.sub.toString();
     product.updatedBy = user.sub.toString();
     product.category = { id: updateProductDto.category_id } as Productcategory;
@@ -159,14 +180,29 @@ export class ProductService {
   async paginate(
     paginationDto: ProductPaginationDto,
   ): Promise<PaginationResponseDto<ProductDto>> {
-    const { page, limit, search, status } = paginationDto;
+    const { page, limit, search,artistId, status,categoryId } = paginationDto;
     const skip = (page - 1) * limit;
+    console.log(categoryId,'----cateid----------')
 
     const queryBuilder = this.productRepository.createQueryBuilder('product');
 
     if (search) {
       queryBuilder.where('product.productTitle LIKE :search', { search: `%${search}%` });
     }
+
+    if (categoryId) {
+      console.log(categoryId,'----cateid----------')
+      queryBuilder.where('product.category_id LIKE :categoryId', { categoryId   });
+    }
+
+    if (artistId) { 
+      queryBuilder.where('product.category_id LIKE :artistId', { artistId  });
+    }
+
+    if (status !== undefined) {
+      queryBuilder.andWhere('product.status = :status', { status });
+    }
+    
 
     const [products, total] = await queryBuilder
       .skip(skip)

@@ -15,6 +15,12 @@ export class ProductDto {
   artist_price: number;
 
   @Expose()
+  is_lock: number;
+
+  @Expose()
+  category_id: number;
+
+  @Expose()
   status: number;
 
   @Expose()

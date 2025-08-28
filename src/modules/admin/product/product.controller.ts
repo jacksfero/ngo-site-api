@@ -13,11 +13,12 @@ import { UploadProductImageDto } from './dto/upload-product-image.dto';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ProductDto } from './dto/product.dto';
-import { PaginationPipe } from 'src/shared/pipes/pagination.pipe';
+ 
 import { PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE } from 'src/shared/config/pagination.config';
 import { ProductPaginationDto } from './dto/product-pagination.dto';
 import { FileValidationPipe } from 'src/shared/pipes/file-size-type-validation.pipe';
 import { ProductListDto } from './dto/product-list.dto';
+import { PaginationClinetPipe } from 'src/shared/pipes/pagination-client.pipe';
 
 
 
@@ -47,7 +48,7 @@ create(
 
 @Get()
   async findAll(
-    @Query(new PaginationPipe(PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE))
+    @Query(new PaginationClinetPipe(PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE))
     @Query() paginationDto: ProductPaginationDto,
   ): Promise<PaginationResponseDto<ProductDto>> {
     return this.productService.paginate(paginationDto);

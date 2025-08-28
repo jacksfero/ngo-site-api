@@ -19,6 +19,9 @@ export class CreateProductDto {
   @IsNotEmpty()
   description: string;
 
+  @IsString() 
+  slug: string;
+
   // ✅ Optional owner & artist IDs (for Admin usage)
   @IsOptional()
   @IsInt()
