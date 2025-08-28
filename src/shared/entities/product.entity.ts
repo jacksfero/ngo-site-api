@@ -30,19 +30,14 @@ export class Product {
   // ✅ Optional Integer fields
   @Column({ type: 'int', nullable: true })
   artist_price: number;
-
- /* @Column({ type: 'int', nullable: true })
-  size_id: number;
- */
+ 
   @Column({ type: 'int', nullable: true })
   medium_id: number;
 
   @Column({ type: 'int', nullable: true })
   surface_id: number;
 
-  // @Column({ type: 'int', nullable: true })
-  // orientation_id: number;
-
+ 
   @Column({ type: 'int', nullable: true })
   width: number;
 
@@ -56,12 +51,7 @@ export class Product {
   weight: number;
 
   @Column({ type: 'int', nullable: true })
-  commission: number;
-
-  // @Column({ type: 'int', nullable: true })
-  // packingMode_id: number;
-
-    
+  commission: number; 
 
   @Column({ type: 'int', nullable: true })
   created_in: number;
@@ -121,24 +111,6 @@ export class Product {
 
   @Column({ type: 'text', nullable: true })
   conditions: string;
-
-  // ✅ Owner (Relation)
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'owner_id' }) // foreign key in DB need to change name owner_id
-  owner: User;
-  
-  // @Column({ type: 'int', nullable: true })
-  // category_id: number;
-
-    // ✅ Category (Relation)
-    @ManyToOne(() => Productcategory)
-    @JoinColumn({ name: 'category_id' }) // foreign key in DB need to change name owner_id
-    category: Productcategory;
-
-  // ✅ Artist (Relation)
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'artist_id' }) // foreign key in DB need to change name owner_id
-  artist: User;
  
   // ✅ Audit Trail
   @Column({ type: 'int', nullable: true })
@@ -177,6 +149,21 @@ contact: ContactUs;
 
 @OneToOne(() => Inventory, (inventory) => inventory.product, { cascade: true })
 productInventory: Inventory;
+
+// ✅ Owner (Relation)
+@ManyToOne(() => User )
+@JoinColumn({ name: 'owner_id' }) // foreign key in DB need to change name owner_id
+owner: User;
+
+  // ✅ Category (Relation)
+@ManyToOne(() => Productcategory)
+@JoinColumn({ name: 'category_id' }) // foreign key in DB need to change name owner_id
+category: Productcategory;
+
+// ✅ Artist (Relation)
+@ManyToOne(() => User )
+@JoinColumn({ name: 'artist_id' }) // foreign key in DB need to change name owner_id
+artist: User;
  
 // 👇 Packing Mode
 @ManyToOne(() => PackingModeEntity, { eager: true }) 
@@ -211,7 +198,7 @@ shippingTimeId: number;
  size_id: number;
 
  // 🟢 Orientation
- @ManyToOne(() => Orientation, { eager: true })
+ @ManyToOne(() => Orientation,  )
  @JoinColumn({ name: 'orientation_id' })
  orientation: Orientation;
 

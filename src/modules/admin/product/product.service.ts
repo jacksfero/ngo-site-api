@@ -183,8 +183,9 @@ export class ProductService {
   async findOne(id: number): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: ['owner', 'wishlists', 'displayMappings'],
+      relations: ['owner','category','artist', 'orientation'],
     });
+    console.log('----------',product);
     if (!product) {
       throw new NotFoundException(`Product with id ${id} not found`);
     }
