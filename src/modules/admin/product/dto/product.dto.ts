@@ -1,6 +1,26 @@
 // src/products/dto/product.dto.ts
-import { Expose } from 'class-transformer';
+import { Expose,Transform,Type } from 'class-transformer';
+export class CategoryDto {
+  @Expose()
+  id: number;
 
+ @Expose()
+ name: string;
+}
+export class ArtistDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  username: string;
+}
+export class OwnerDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  username: string;
+}
 export class ProductDto {
   @Expose()
   id: number;
@@ -13,6 +33,18 @@ export class ProductDto {
 
   @Expose()
   artist_price: number;
+
+  @Expose()
+  @Type(() => ArtistDto)
+  artist: ArtistDto;
+
+  @Expose()
+  @Type(() => OwnerDto)
+  owner: ArtistDto;
+
+  @Expose()
+  @Type(() => CategoryDto)
+  category: CategoryDto;
 
   @Expose()
   is_lock: number;

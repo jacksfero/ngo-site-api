@@ -198,8 +198,7 @@ private async deleteImageFile(filename: string): Promise<void> {
     const blog = await this.findOne(id);
      if (!blog) throw new NotFoundException('blog not found');
      if (dto.slug && dto.slug !== blog.slug) {
-    blog.slug = await this.generateUniqueSlug(dto.slug);
-   
+    blog.slug = await this.generateUniqueSlug(dto.slug);   
   }
    blog.title = dto.title?? blog.title;
     blog.h1Title = dto.h1Title ?? blog.h1Title;

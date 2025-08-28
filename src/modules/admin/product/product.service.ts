@@ -184,21 +184,21 @@ export class ProductService {
     const skip = (page - 1) * limit;
     console.log(categoryId,'----cateid----------')
 
-    const queryBuilder = this.productRepository.createQueryBuilder('product');
-
+    const queryBuilder = this.productRepository.createQueryBuilder('product')
+                         .leftJoinAndSelect('product.artist', 'artist')
+                         .leftJoinAndSelect('product.owner', 'owner')
+                         .leftJoinAndSelect('product.category', 'category');
     if (search) {
-      queryBuilder.where('product.productTitle LIKE :search', { search: `%${search}%` });
+      queryBuilder.andWhere('product.productTitle LIKE :search', { search: `%${search}%` });
     }
-
-    if (categoryId) {
-      console.log(categoryId,'----cateid----------')
-      queryBuilder.where('product.category_id LIKE :categoryId', { categoryId   });
-    }
-
     if (artistId) { 
-      queryBuilder.where('product.category_id LIKE :artistId', { artistId  });
+      queryBuilder.andWhere('product.artist_id LIKE :artistId', { artistId  });
     }
-
+    if (categoryId) {
+     // console.log(categoryId,'----cateid----------')
+      queryBuilder.andWhere('product.category_id LIKE :categoryId', { categoryId   });
+    }
+ 
     if (status !== undefined) {
       queryBuilder.andWhere('product.status = :status', { status });
     }
