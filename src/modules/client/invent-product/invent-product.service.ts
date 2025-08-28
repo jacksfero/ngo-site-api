@@ -27,46 +27,70 @@ export class InventProductService {
   async findAll(
     paginationDto: InventProdPaginatDto,
   ): Promise<PaginationResponseDto<InventProdListDto>> {
-   // let categoryId?:number ;
+    // let categoryId?:number ;
 
-    const { page, limit,search, categoryId, artistId,select /*status, productId, startDate, endDate, */ } = paginationDto;
-   // let categoryId?:number ;
-   
+    const { page, limit, search, categoryId, artistId,select, 
+      styleId, subjectId, orientationId, sizeId,mediumId,surfaceId   } = paginationDto;
+    //  let categoryId?:number ;
+  //  console.log('cateid-----------',categoryId);
+  //  console.log('categoryId----------', categoryId, typeof categoryId);
+  //  console.log('limit-----------',limit);
+  //  console.log('search-----------',search);
     const skip = (page - 1) * limit;
 
     const qb = this.inventoryRepo.createQueryBuilder('inventory')
     .leftJoinAndSelect('inventory.product', 'product')
     .leftJoinAndSelect('product.artist', 'artist') // ✅ CRITICAL: Join the artist
     .leftJoinAndSelect('product.category', 'category')
-   // .leftJoinAndSelect('product.images', 'images')
+    // .leftJoinAndSelect('product.subjects', 'subject') // manytomany
+    // .leftJoinAndSelect('product.styles', 'style')
     .leftJoinAndSelect('inventory.shippingWeight', 'shipping')
     .andWhere('inventory.status = :status', { status:true });
+
+      // ✅ OPTIONAL: Only join many-to-many relations if they're needed for filtering
+  if (subjectId) {
+    qb.leftJoinAndSelect('product.subjects', 'subject');
+  }
+  
+  if (styleId) {
+    qb.leftJoinAndSelect('product.styles', 'style');
+  }
+
     if (search) {
-      qb.andWhere('product.name LIKE :search OR product.description LIKE :search', {
+      qb.andWhere('product.productTitle LIKE :search OR product.description LIKE :search', {
         search: `%${search}%`,
       });
     }
 
+    if (orientationId) {
+       qb.andWhere('product.orientation_id = :orientationId', { orientationId });
+    }
+    if (surfaceId) {
+      qb.andWhere('product.surface_id = :surfaceId', { surfaceId });
+   }
+   if (mediumId) {
+    qb.andWhere('product.medium_id = :mediumId', { mediumId });
+    }
+    if (sizeId) {
+      qb.andWhere('product.size_id = :sizeId', { sizeId });
+    }
+    // ✅ MANY-TO-MANY FILTERS (correct syntax)
+  if (subjectId) {
+    qb.andWhere('subject.id = :subjectId', { subjectId });
+  }
+  
+  if (styleId) {
+    qb.andWhere('style.id = :styleId', { styleId });
+  }
     if (categoryId) {
+      console.log('categoryId-22222---------',categoryId);
       qb.andWhere('product.category_id = :categoryId', { categoryId });
     }
 
     if (artistId) {
       qb.andWhere('product.artist_id = :artistId', { artistId });
     }
-
-  /*  // ✅ Filtering
-    if (status) {
-      qb.andWhere('inventory.status = :status', { status });
-    }
-  
-    if (productId) {
-      qb.andWhere('inventory.product_id = :productId', { productId });
-    }
-  
-    if (startDate && endDate) {
-      qb.andWhere('inventory.startDate BETWEEN :startDate AND :endDate', { startDate, endDate });
-    }*/
+ 
   
  // ✅ Define default fields (always selected)
  const defaultInventoryFields = ['id', 'status', 'price', 'discount','gstSlot','shippingSlot','updatedAt'];

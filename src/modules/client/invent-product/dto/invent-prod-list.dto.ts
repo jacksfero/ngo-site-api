@@ -23,8 +23,8 @@ export class ArtistDto {
 }
 @Exclude()
 export class CategoryDto {
-  // @Expose()
-  // id: number;
+   @Expose()
+   id: number;
 
   @Expose()
   name: string;

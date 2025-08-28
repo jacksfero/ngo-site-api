@@ -12,16 +12,11 @@ export class ProductsController {
   getActiveCategoryList() {
     return this.productsService.getActiveCategoryList();
   }
-
-
-
-
+ 
   @Get('stylelist')
   getActiveStyleList() {
     return this.productsService.getActiveStyleList();
-  }
-
-
+  } 
   @Get('surfacelist')
   getActiveSurfaceList() {
     return this.productsService.getActiveSurfaceList();

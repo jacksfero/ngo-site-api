@@ -1,16 +1,59 @@
-import { IsOptional, IsBoolean, IsString } from 'class-validator';
+import { IsOptional,Min,IsInt,IsNumber, IsBoolean, IsString } from 'class-validator';
 import { Transform,Type } from 'class-transformer';
 import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
 
-
 export class InventProdPaginatDto extends PaginationBaseDto {
 
- 
+    
   @IsOptional()
-  categoryId?: number;
+  @Type(() => Number) 
+  @IsInt()
+  categoryId: number;
 
-   @IsOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
   artistId?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  surfaceId?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  mediumId?: number;
+
+ /* @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  packingmodeId?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  commissiontypeId?: number; */
+  
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  sizeId?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  orientationId?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  subjectId?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  styleId?: number;
 
   @IsOptional()
   @Type(() => String)

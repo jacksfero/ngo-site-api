@@ -165,7 +165,7 @@ export class ProductService {
     const queryBuilder = this.productRepository.createQueryBuilder('product');
 
     if (search) {
-      queryBuilder.where('product.name LIKE :search', { search: `%${search}%` });
+      queryBuilder.where('product.productTitle LIKE :search', { search: `%${search}%` });
     }
 
     const [products, total] = await queryBuilder
@@ -183,9 +183,9 @@ export class ProductService {
   async findOne(id: number): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: ['owner','category','artist', 'orientation'],
+      relations: ['owner','category','artist','subjects','styles'],
     });
-    console.log('----------',product);
+   // console.log('----------',product);
     if (!product) {
       throw new NotFoundException(`Product with id ${id} not found`);
     }

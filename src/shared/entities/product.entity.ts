@@ -166,7 +166,7 @@ category: Productcategory;
 artist: User;
  
 // 👇 Packing Mode
-@ManyToOne(() => PackingModeEntity, { eager: true }) 
+@ManyToOne(() => PackingModeEntity, ) 
 @JoinColumn({ name: 'packing_mode_id' })
 packingMode: PackingModeEntity;
 
@@ -174,7 +174,7 @@ packingMode: PackingModeEntity;
 packingModeId: number;
 
 // 👇 Commission Type
-@ManyToOne(() => CommissionType, { eager: true })
+@ManyToOne(() => CommissionType,  )
 @JoinColumn({ name: 'commission_type_id' })
 commissionType: CommissionType;
 
@@ -182,7 +182,7 @@ commissionType: CommissionType;
 commissionTypeId: number;
 
 // 👇 Shipping Time
-@ManyToOne(() => ShippingTime, { eager: true })
+@ManyToOne(() => ShippingTime, )
 @JoinColumn({ name: 'shipping_time_id' })
 shippingTime: ShippingTime;
 
@@ -190,7 +190,7 @@ shippingTime: ShippingTime;
 shippingTimeId: number;
  
  // 🟢 Add relation to Size
- @ManyToOne(() => Size, { eager: true })
+ @ManyToOne(() => Size, )
  @JoinColumn({ name: 'size_id' })
  size: Size;
  
@@ -206,7 +206,7 @@ shippingTimeId: number;
  orientation_id: number;
 
 
- @ManyToMany(() => Subject,subject => subject.products, { eager: true, cascade: true })
+ @ManyToMany(() => Subject,subject => subject.products,  )
  @JoinTable({
    name: 'products_subject',
    joinColumn: { name: 'product_id', referencedColumnName: 'id' },
@@ -215,7 +215,7 @@ shippingTimeId: number;
  subjects: Subject[];
  
 
- @ManyToMany(() => Style, style => style.products, { eager: true, cascade: true })
+ @ManyToMany(() => Style, style => style.products,  )
  @JoinTable({
    name: 'products_style',
    joinColumn: { name: 'product_id', referencedColumnName: 'id' },
