@@ -1,5 +1,5 @@
 import { Wishlist } from 'src/shared/entities/wishlist.entity';
-import { Column, OneToMany, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToOne, ManyToMany, JoinTable } from 'typeorm';
+import { Column, Unique,OneToMany, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToOne, ManyToMany, JoinTable } from 'typeorm';
 import { User } from './user.entity';
 import { ExhibitionProduct } from './exhibition-product.entity';
 import { ProductImage } from './product-image.entity';
@@ -15,6 +15,7 @@ import { Subject } from './subject.entity';
 import { Style } from './style.entity';
 
 @Entity()
+@Unique(['slug']) // Enforce unique slug
 export class Product {
   @PrimaryGeneratedColumn()
   id: number;
@@ -26,8 +27,10 @@ export class Product {
   @Column({ type: 'varchar', length: 150 })
   description: string;
 
+  @Column({ type: 'varchar', length: 150,default: null  })
+  slug: string;
 
-  // ✅ Optional Integer fields
+   // ✅ Optional Integer fields
   @Column({ type: 'int', nullable: true })
   artist_price: number;
  
@@ -222,6 +225,10 @@ shippingTimeId: number;
    inverseJoinColumn: { name: 'style_id', referencedColumnName: 'id' },
  })
  styles: Style[];
+
+
+
+
 
 }
   
