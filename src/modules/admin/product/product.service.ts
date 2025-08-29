@@ -127,9 +127,9 @@ export class ProductService {
   ): Promise<Product> {
     const product = await this.findOne(id);
     if (!product) throw new NotFoundException('Product not found');
-     console.log('product-before--',product.packingModeId)
+    // console.log('product-before--',product.packingModeId)
     //Object.assign(product, updateProductDto);
-     console.log('product--after-',product.packingModeId); 
+    // console.log('product--after-',product.packingModeId); 
      
    // process.exit;
     if (newImageFile) {
@@ -176,11 +176,34 @@ export class ProductService {
     product.size = { id: updateProductDto.size_id } as Size;
     product.artist = { id: updateProductDto.artist_id } as User;
     product.owner = { id: updateProductDto.owner_id } as User;
-    //console.log('--------product--after-',product.packingModeId); 
-    //console.log('product--after-final',product.packingModeId); 
-    return this.productRepository.save(product);
+  //   product.is_lock = updateProductDto.is_lock !== undefined 
+  // ? Boolean(updateProductDto.is_lock) 
+  // : product.is_lock; // keep existing value
+
+      // 🔹 Multiple boolean fields update
+  const booleanFields: (keyof UpdateProductDto)[] = [
+    'is_lock','original_painting','new_arrival','eliteChoice','affordable_art',
+    'price_on_demand','negotiable','printing_rights','featured','refundable'
+    ,'certificate','is_lock'    
+  ];
+  for (const field of booleanFields) {
+    if (updateProductDto[field] !== undefined) {
+     // (product as any)[field] = Boolean(updateProductDto[field]);
+       (product as any)[field] = this.convertToBoolean(updateProductDto[field]);
+    }
   }
 
+    return this.productRepository.save(product);
+  }
+  private convertToBoolean(value: any): boolean {
+    if (value === null || value === undefined) return false;
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+      const normalized = value.toLowerCase().trim();
+      return normalized === 'true' || normalized === '1' || normalized === 'yes';
+    }
+    return Boolean(value);
+  }
  
   async paginate(
     paginationDto: ProductPaginationDto,
