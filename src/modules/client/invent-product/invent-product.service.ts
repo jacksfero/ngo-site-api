@@ -83,7 +83,7 @@ export class InventProductService {
     qb.andWhere('style.id = :styleId', { styleId });
   }
     if (categoryId) {
-      console.log('categoryId-22222---------',categoryId);
+    //  console.log('categoryId-22222---------',categoryId);
       qb.andWhere('product.category_id = :categoryId', { categoryId });
     }
 
@@ -94,7 +94,7 @@ export class InventProductService {
   
  // ✅ Define default fields (always selected)
  const defaultInventoryFields = ['id', 'status', 'price', 'discount','gstSlot','shippingSlot','updatedAt'];
- const defaultProductFields = ['id', 'productTitle', 'defaultImage'];
+ const defaultProductFields = ['id', 'productTitle','slug', 'defaultImage'];
  const defaultArtistFields = ['id', 'username'];
  const defaultCategoryFields = ['id', 'name'];
  const defaultShippingFields = ['weightSlot', 'costINR'];

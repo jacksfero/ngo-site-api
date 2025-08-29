@@ -13,9 +13,10 @@ import { ShippingTime } from 'src/shared/entities/shipping-time.entity';
 import { Size } from 'src/shared/entities/size.entity';
 import { Orientation } from 'src/shared/entities/orientation.entity';
 import { User } from 'src/shared/entities/user.entity';
+import { Inventory } from 'src/shared/entities/inventory.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product, ProductImage, Subject, Style, Productcategory, PackingModeEntity,
+  imports: [TypeOrmModule.forFeature([Product,Inventory, ProductImage, Subject, Style, Productcategory, PackingModeEntity,
     CommissionType, ShippingTime, Size, Orientation,User
 
   ])],

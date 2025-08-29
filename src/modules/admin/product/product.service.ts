@@ -22,6 +22,7 @@ import { ShippingTime } from 'src/shared/entities/shipping-time.entity';
 import { Size } from 'src/shared/entities/size.entity';
 import { User } from 'src/shared/entities/user.entity';
 import { slugify } from 'src/shared/utils/slugify';
+import { Inventory } from 'src/shared/entities/inventory.entity';
 
 @Injectable()
 export class ProductService {
@@ -45,11 +46,14 @@ export class ProductService {
 
 
   async getProductList(): Promise<ProductListDto[]> {
-    const products = await this.productRepository.find({
-      select: ['id', 'productTitle'],
-      where: { status: true },
-      order: { productTitle: 'ASC' },
-    });
+    const products = await this.productRepository
+      .createQueryBuilder('product')
+      .leftJoin('product.productInventory', 'inventory')
+      .where('product.status = :status', { status: true })
+      .andWhere('inventory.id IS NULL')
+      .select(['product.id', 'product.productTitle'])
+      .orderBy('product.productTitle', 'ASC')
+      .getMany();
 
     const formatted = products.map((p) => ({
       id: p.id,
@@ -60,6 +64,7 @@ export class ProductService {
       excludeExtraneousValues: true,
     });
   }
+ 
 
   async generateUniqueSlug(title: string): Promise<string> {
     const baseSlug = slugify(title);

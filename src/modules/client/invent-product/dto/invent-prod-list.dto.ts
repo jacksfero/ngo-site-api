@@ -41,6 +41,9 @@ export class ProductInvtDto {
   productTitle: string;
 
   @Expose()
+  slug: string;
+
+  @Expose()
   defaultImage: string;
 
   @Expose()
