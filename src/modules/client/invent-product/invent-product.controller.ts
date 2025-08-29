@@ -37,7 +37,7 @@ export class InventProductController {
 
   @Get(':id')
   async findOne(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
   ): Promise<InventProductDetailResponseDto> {
     return this.inventProductService.findOne(id);
   }

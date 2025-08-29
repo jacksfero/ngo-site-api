@@ -9,6 +9,12 @@ export class InventoryDto {
   
     @Expose()
     price: number;
+
+    @Expose()
+    gstSlot: number;
+
+    @Expose()
+    shippingSlot: number;
   }
 
   export class ArtistDto {
@@ -44,6 +50,9 @@ export class InventProductDetailResponseDto {
 
   @Expose()
   productTitle: string;
+
+  @Expose()
+  slug: string;
 
   @Expose()
   description: string;

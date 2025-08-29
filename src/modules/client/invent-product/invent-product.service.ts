@@ -151,7 +151,7 @@ export class InventProductService {
   }
 
  // inventory.service.ts
- async findOne(productId: number): Promise<InventProductDetailResponseDto> {
+ async findOne(productId: string): Promise<InventProductDetailResponseDto> {
   const inventory = await this.inventoryRepo
     .createQueryBuilder('inventory')
     .leftJoinAndSelect('inventory.product', 'product')
@@ -160,11 +160,12 @@ export class InventProductService {
     .leftJoinAndSelect('product.images', 'images')
    // .leftJoinAndSelect('inventory.shippingWeight', 'shippingWeight')
    // .where('product.id = :productId', { productId })
-    .where('inventory.id = :productId', { productId })
+   .where('product.slug = :productId', { productId })
+    //.where('inventory.id = :productId', { productId })
     .select([
       // ✅ Product fields
       'product.id','product.created_in','product.original_painting',
-      'product.productTitle', 'product.negotiable','product.refundable',
+      'product.productTitle','product.slug', 'product.negotiable','product.refundable',
       'product.description', 'product.certificate', 'product.conditions',
       'product.price_on_demand',
 
@@ -186,6 +187,9 @@ export class InventProductService {
       'inventory.id',
       'inventory.discount',
       'inventory.price',
+      'inventory.gstSlot',
+      'inventory.shippingSlot',
+      
 
    /*   // ✅ Shipping weight (if entity has fields)
       'shippingWeight.id',
