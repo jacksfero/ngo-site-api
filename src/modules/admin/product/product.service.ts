@@ -182,7 +182,7 @@ export class ProductService {
   ): Promise<PaginationResponseDto<ProductDto>> {
     const { page, limit, search,artistId, status,categoryId } = paginationDto;
     const skip = (page - 1) * limit;
-    console.log(categoryId,'----cateid----------')
+   
 
     const queryBuilder = this.productRepository.createQueryBuilder('product')
                          .leftJoinAndSelect('product.artist', 'artist')

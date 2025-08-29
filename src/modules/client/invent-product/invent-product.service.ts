@@ -159,7 +159,8 @@ export class InventProductService {
     .leftJoinAndSelect('product.category', 'category')
     .leftJoinAndSelect('product.images', 'images')
    // .leftJoinAndSelect('inventory.shippingWeight', 'shippingWeight')
-    .where('product.id = :productId', { productId })
+   // .where('product.id = :productId', { productId })
+    .where('inventory.id = :productId', { productId })
     .select([
       // ✅ Product fields
       'product.id','product.created_in','product.original_painting',
