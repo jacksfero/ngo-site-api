@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateInventProductDto } from './dto/create-invent-product.dto';
@@ -151,17 +151,21 @@ export class InventProductService {
   }
 
  // inventory.service.ts
- async findOne(productId: string): Promise<InventProductDetailResponseDto> {
+ async findOne(productSlug: string): Promise<InventProductDetailResponseDto> {
   const inventory = await this.inventoryRepo
-    .createQueryBuilder('inventory')
-    .leftJoinAndSelect('inventory.product', 'product')
+  .createQueryBuilder('inventory')
+    .innerJoinAndSelect('inventory.product', 'product') // Changed to innerJoinAndSelect
     .leftJoinAndSelect('product.artist', 'artist')
     .leftJoinAndSelect('product.category', 'category')
     .leftJoinAndSelect('product.images', 'images')
-   // .leftJoinAndSelect('inventory.shippingWeight', 'shippingWeight')
-   // .where('product.id = :productId', { productId })
-   .where('product.slug = :productId', { productId })
-    //.where('inventory.id = :productId', { productId })
+   // .leftJoinAndSelect('product.orientation', 'orientation') // Added orientation
+    .leftJoinAndSelect('product.size', 'size') // Added size
+    .leftJoinAndSelect('inventory.shippingWeight', 'shippingWeight') // Uncommented shipping
+    .where('product.slug = :productSlug', { productSlug }) // Better parameter name
+    .andWhere('inventory.status = :status', { status: true })
+    .andWhere('product.status = :isActive', { isActive: true })
+    // ✅ CRITICAL: Add inventory quantity check for e-commerce
+    //.andWhere('inventory.quantity > :minQuantity', { minQuantity: 0 })
     .select([
       // ✅ Product fields
       'product.id','product.created_in','product.original_painting',
@@ -198,9 +202,9 @@ export class InventProductService {
     ])
     .getOne();
 
-  if (!inventory) {
-    throw new Error(`Product with ID ${productId} not found`);
-  }
+    if (!inventory) {
+      throw new NotFoundException(`Product with slug "${productSlug}" not found or out of stock`);
+    }
 
   return plainToInstance(
     InventProductDetailResponseDto,
