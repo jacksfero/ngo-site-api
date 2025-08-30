@@ -41,6 +41,14 @@ export class ImageDto {
     @Expose()
     name: string;
   }
+
+  export class PackingModeDto {
+    @Expose()
+    id: number;
+  
+    @Expose()
+    name: string;
+  }
   
   export class CategoryDto {
     @Expose()
@@ -104,6 +112,9 @@ conditions: string;
   @Type(() => SizeDto)
   size: SizeDto;
 
+  @Expose()
+  @Type(() => PackingModeDto)
+  packingMode: PackingModeDto;
 
   @Expose()
   @Type(() => CategoryDto)

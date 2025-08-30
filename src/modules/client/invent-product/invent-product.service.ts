@@ -160,6 +160,7 @@ export class InventProductService {
     .leftJoinAndSelect('product.images', 'images')
    // .leftJoinAndSelect('product.orientation', 'orientation') // Added orientation
     .leftJoinAndSelect('product.size', 'size') // Added size
+    .leftJoinAndSelect('product.packingMode', 'packingMode') // Added size
     .leftJoinAndSelect('inventory.shippingWeight', 'shippingWeight') // Uncommented shipping
     .where('product.slug = :productSlug', { productSlug }) // Better parameter name
     .andWhere('inventory.status = :status', { status: true })
@@ -192,6 +193,10 @@ export class InventProductService {
    // ✅ Size fields
       'size.id',
       'size.name',
+      
+      // ✅ Packing mode fields
+      'packingMode.id',
+      'packingMode.name',
 
       // ✅ Inventory fields
       'inventory.id',
