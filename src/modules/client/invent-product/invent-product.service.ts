@@ -171,7 +171,10 @@ export class InventProductService {
       'product.id','product.created_in','product.original_painting',
       'product.productTitle','product.slug', 'product.negotiable','product.refundable',
       'product.description', 'product.certificate', 'product.conditions',
-      'product.price_on_demand',
+      'product.price_on_demand','product.defaultImage','product.printing_rights',
+      
+
+
 
       // ✅ Category fields
       'category.id',
@@ -186,6 +189,9 @@ export class InventProductService {
       'images.id',
       'images.imagePath',
        
+   // ✅ Size fields
+      'size.id',
+      'size.name',
 
       // ✅ Inventory fields
       'inventory.id',

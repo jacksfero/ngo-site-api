@@ -34,7 +34,13 @@ export class ImageDto {
     imagePath: string;
  
   }
+   export class SizeDto {
+    @Expose()
+    id: number;
   
+    @Expose()
+    name: string;
+  }
   
   export class CategoryDto {
     @Expose()
@@ -49,7 +55,14 @@ export class InventProductDetailResponseDto {
   id: number;
 
   @Expose()
-  productTitle: string;
+  productTitle: string; 
+  
+  @Expose()
+  defaultImage: string;
+  
+  
+  @Expose()
+  printing_rights: boolean;
 
   @Expose()
   slug: string;
@@ -58,7 +71,7 @@ export class InventProductDetailResponseDto {
   description: string;
 
   @Expose()
-  price_on_demand: string;
+  price_on_demand: boolean;
   
   @Expose()
   weight: string;
@@ -75,19 +88,21 @@ export class InventProductDetailResponseDto {
 @Expose()
 created_in: string;
 @Expose()
-original_painting: string;
+original_painting: boolean;
 
 @Expose()
-negotiable: string;
+negotiable: boolean;
 @Expose()
-refundable: string;
+refundable: boolean;
 @Expose()
-certificate: string;
+certificate: boolean;
 @Expose()
 conditions: string;
 
 
-
+  @Expose()
+  @Type(() => SizeDto)
+  size: SizeDto;
 
 
   @Expose()
