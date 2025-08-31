@@ -15,6 +15,7 @@ import {
   UploadedFile,
   Query,
   BadRequestException,
+  ParseEnumPipe,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 
@@ -49,7 +50,8 @@ import { CreateWishlistDto } from '../admin/wishlist/dto/create-wishlist.dto';
 import { CreateKycDetailDto,UpdateKycDetailDto } from '../admin/users/dto/create-user-kyc-detail.dto';
 import { CreateBankDetailDto } from '../admin/users/dto/create-user-bank-detail.dto';
 import { UpdateBankDetailDto } from '../admin/users/dto/update-user-bank-detail.dto';
-
+import { FileValidationPipe } from 'src/shared/pipes/file-size-type-validation.pipe';
+import { AddressType } from 'src/shared/entities/users-address.entity';
  
 @Controller('auth')
 export class AuthController {
@@ -196,13 +198,20 @@ updateAbout(@Body() dto: UpdateUsersAboutDto, @Req() req) {
   return this.authService.updateAbout(dto,req.user);
 }
 
+@UseGuards(JwtAuthGuard)
+@Post('upload')
+@UseInterceptors(FileInterceptor('profileimage'))
+uploadProfileImage(
+  @UploadedFile(new FileValidationPipe(2 * 1024 * 1024)) file: Express.Multer.File,
+   @Req() req
+) {
+  return this.authService.uploadProfileImage(file,req.user);
+}
 
- 
-
-  @UseGuards(AuthGuard('jwt'))
-  @Post('profile')
-  getProfile(@Req() req: ExpressRequest) {
-    return req.user;
+@UseGuards(JwtAuthGuard)
+@Get('profileimage')
+  geProfileImage(@Req() req) {
+    return this.authService.geProfileImage(req.user);
   }
 
 /*************User address Section */
@@ -259,9 +268,9 @@ createAddress(@Body() dto: CreateUserAddressDto,@Req() req) {
 }
 
 @UseGuards(JwtAuthGuard)
-@Get('user-address')
-findAllAddress(@Req() req) {
-  return this.authService.findAllForUserAddress(req.user.sub.toString());
+@Get('user-address/:addressType')
+findAllAddress( @Param('addressType', new ParseEnumPipe(AddressType)) addressType: AddressType,@Req() req) {
+  return this.authService.findAllForUserAddress( addressType,req.user);
 }
 
 @UseGuards(JwtAuthGuard)

@@ -5,7 +5,7 @@ import {
   PrimaryGeneratedColumn,
   ManyToMany,
   OneToMany,
-  JoinTable,
+  JoinTable,OneToOne
 } from 'typeorm';
 
 import { Role } from './role.entity';
@@ -17,6 +17,7 @@ import { Cart } from './cart.entity';
 import { UsersAddress } from './users-address.entity';
 import { BankDetail } from './user-bank-detail.entity';
 import { KycDetails } from './user-kyc.entity';
+import { UserProfileImage } from './user-profile-image.entity';
 
  
 @Entity('user')
@@ -87,6 +88,9 @@ bankDetails: BankDetail[];
 
 @OneToMany(() => KycDetails, (kyc) => kyc.user)
 kycDetails: KycDetails[];
+
+@OneToOne(() => UserProfileImage, (profileImage) => profileImage.user)
+profileImage: UserProfileImage;
 
 }
 

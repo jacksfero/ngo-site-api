@@ -24,10 +24,11 @@ import { ProductImage } from 'src/shared/entities/product-image.entity';
 import { Wishlist } from 'src/shared/entities/wishlist.entity';
 import { BankDetail } from 'src/shared/entities/user-bank-detail.entity';
 import { KycDetails } from 'src/shared/entities/user-kyc.entity';
+import { UserProfileImage } from 'src/shared/entities/user-profile-image.entity';
  
 @Module({
   imports: [TypeOrmModule.forFeature([User,Role,OtpVerification,PasswordResetToken,
-    UsersAbout,UsersAddress,BankDetail,KycDetails,Product,ProductImage,Wishlist
+    UsersAbout,UsersAddress,BankDetail,KycDetails,Product,ProductImage,Wishlist,UserProfileImage
   ]),
     UsersModule,
     OtpModule,
