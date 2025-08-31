@@ -8,6 +8,9 @@ export class CreateBankDetailDto {
   accountNumber: string;
 
   @IsString()
+  accountType: string;
+
+  @IsString()
   ifscCode: string;
 
   @IsString()

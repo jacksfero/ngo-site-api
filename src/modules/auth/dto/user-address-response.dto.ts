@@ -9,10 +9,10 @@ export class UserAddressResponseDto {
   state: string;
   country: string;
   pin: string;
-  aadhar: string;
+ // aadhar: string;
   contact: string;
-  GSTIN: string;
-  tradeName: string;
+  //GSTIN: string;
+  other_phone: string;
   createdAt: Date;
   updatedAt: Date;
   user: {

@@ -35,17 +35,17 @@ export class UsersAddress {
     @Column()
     pin: string;
 
-    @Column()
-    aadhar: string;
+   /* @Column()
+    aadhar: string;*/
 
     @Column()
     contact: string;
 
-    @Column()
-    GSTIN: string;
+   /* @Column()
+    GSTIN: string;*/
 
     @Column()
-    tradeName: string;
+    other_phone: string;
 
     @Column({ type: 'varchar', length: 50, nullable: true })
     createdBy: string;

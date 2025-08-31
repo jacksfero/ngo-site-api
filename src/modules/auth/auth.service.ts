@@ -486,7 +486,7 @@ async verifyOtp(dto: VerifyOtpDto) {
     const userId = users.sub.toString();
     const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) throw new NotFoundException('User not found');
-    const bankdetail = await this.kycRepo.find({
+    const bankdetail = await this.kycRepo.findOne({
       where: { userId:   userId   },
     //  relations: ['user'],
     });
@@ -498,13 +498,14 @@ async verifyOtp(dto: VerifyOtpDto) {
 
  
     // ✅ FIND ALL
-    async findAllKyc(userId: number): Promise<KycDetails[]> {
+    async findAllKyc(userId: number): Promise<KycDetails> {
     //  userId = user.sub.toString();
-      const addresses = await this.kycRepo.find({
-        where: { userId:  userId   },
+      const user_kyc = await this.kycRepo.findOne({
+        where: { userId:  userId  },
        // relations: ['user'],
       });
-      return addresses;
+      if (!user_kyc) throw new NotFoundException(`User  KYC not found `,);
+      return user_kyc;
     }
    
   async updatekyc(  dto: UpdateUserAddressDto,user:any) {
@@ -532,7 +533,7 @@ async verifyOtp(dto: VerifyOtpDto) {
     const userId = users.sub.toString();
     const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) throw new NotFoundException('User not found');
-    const bankdetail = await this.BankRepo.find({
+    const bankdetail = await this.BankRepo.findOne({
       where: { userId:   userId   },
     //  relations: ['user'],
     });
@@ -544,13 +545,14 @@ async verifyOtp(dto: VerifyOtpDto) {
 
  
     // ✅ FIND ALL
-    async findAllBank(userId: number): Promise<BankDetail[]> {
+    async findAllBank(userId: number): Promise<BankDetail> {
     //  userId = user.sub.toString();
-      const addresses = await this.BankRepo.find({
+      const bank_details = await this.BankRepo.findOne({
         where: { userId:   userId   },
       //  relations: ['user'],
       });
-      return addresses;
+      if (!bank_details) throw new NotFoundException(`User  Bank Details not found `,);
+      return bank_details;
     }
    
   async updateBank(  dto: UpdateBankDetailDto,user:any) {
@@ -572,15 +574,7 @@ async verifyOtp(dto: VerifyOtpDto) {
   //  return toUserAddressResponse(withUser);
   }
 
-
-
-
-
-
-
-
-
-
+ 
 
 async createProduct(dto: CreateProductDto, user: any, imageFilename?:Express.Multer.File ): Promise<Product> {
   const userId = user.sub.toString();
@@ -771,10 +765,10 @@ export function toUserAddressResponse(address: UsersAddress): UserAddressRespons
     state: address.state,
     country: address.country,
     pin: address.pin,
-    aadhar: address.aadhar,
+   // aadhar: address.aadhar,
     contact: address.contact,
-    GSTIN: address.GSTIN,
-    tradeName: address.tradeName,
+   // GSTIN: address.GSTIN,
+   other_phone: address.other_phone,
     createdAt: address.createdAt,
     updatedAt: address.updatedAt,
     user: {

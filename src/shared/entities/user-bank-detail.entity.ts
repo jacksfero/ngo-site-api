@@ -24,6 +24,9 @@ import {
   
     @Column({ length: 50 })
     accountNumber: string;
+
+    @Column({ length: 100 })
+    accountType: string;
   
     @Column({ length: 20 })
     ifscCode: string;
