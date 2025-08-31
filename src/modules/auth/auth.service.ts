@@ -55,6 +55,7 @@ import { KycDetails } from 'src/shared/entities/user-kyc.entity';
 import { CreateBankDetailDto } from '../admin/users/dto/create-user-bank-detail.dto';
 import { UpdateBankDetailDto } from '../admin/users/dto/update-user-bank-detail.dto';
 import { BankDetail } from 'src/shared/entities/user-bank-detail.entity';
+import { promises } from 'dns';
 
 
  
@@ -397,12 +398,14 @@ async verifyOtp(dto: VerifyOtpDto) {
   }
 
 
-  async findOneAboutByUserId(users:any) {
+  async findOneAboutByUserId(users:any):Promise<UsersAbout> {
     const userId = users.sub.toString();
-    return this.aboutRepo.findOne({
+   const about = await this.aboutRepo.findOne({
       where: { user: { id: userId } },
       relations: ['user'],
     });
+    if (!about) throw new NotFoundException('User About  Details not found');
+    return about;
   }
 
   async updateAbout(dto: UpdateUsersAboutDto,user:any) {
