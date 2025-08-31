@@ -176,7 +176,12 @@ async changePassword(@Req() req, @Body() dto: ChangePasswordDto) {
   @Get('by-role/:roleName')
   async getUsersByRole(@Param('roleName') roleName: string) {
     return this.authService.findUsersByRole(roleName);
+  }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  async getMe(@Req() req) {
+    return this.authService.getLoggedInUser(req.user);
   }
 
 /** Start User about us section */

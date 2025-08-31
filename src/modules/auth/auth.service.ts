@@ -107,7 +107,19 @@ export class AuthService {
     private wishlistRepository: Repository<Wishlist>,
 
   ) {}
+  async getLoggedInUser(users: any): Promise<User> {
+    const userId = users.sub.toString();
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['profileImage', 'addresses'], // 👈 add relations if you need
+    });
 
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
 
   async uploadProfileImage( profileimage: Express.Multer.File,user: any): Promise<UserProfileImage> {
     let image_Url: string | null = null;

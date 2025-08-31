@@ -34,7 +34,7 @@ export class User {
   @Column({ type: 'varchar', length: 150, unique: true, nullable: true })
   mobile: string;
 
-  @Column({ nullable: false })
+  @Column({ nullable: false, select: false})
   password: string;
 
   @ManyToMany(() => Role, (role) => role.users ,{ eager: true })
