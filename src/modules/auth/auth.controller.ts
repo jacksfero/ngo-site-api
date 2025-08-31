@@ -169,9 +169,7 @@ async changePassword(@Req() req, @Body() dto: ChangePasswordDto) {
    return { message: 'Logged out successfully.  ' };
  }
 
-
-
-
+ 
   @Public()
   @Get('by-role/:roleName')
   async getUsersByRole(@Param('roleName') roleName: string) {

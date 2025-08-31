@@ -113,14 +113,14 @@ export class AuthService {
       where: { id: userId },
       relations: ['profileImage', 'addresses'], // 👈 add relations if you need
     });
-
+ 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
     return user;
   }
-
+ 
   async uploadProfileImage( profileimage: Express.Multer.File,user: any): Promise<UserProfileImage> {
     let image_Url: string | null = null;
     const userId = user.sub.toString();
