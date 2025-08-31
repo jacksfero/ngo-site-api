@@ -5,11 +5,7 @@ import { AddressType } from 'src/shared/entities/users-address.entity';
 export class CreateUserAddressDto {
   @IsEnum(AddressType)
   type: AddressType;
-
-  // @IsOptional()
-  // @IsNumber()
-  // id?: number;
-
+ 
 
   @IsString()
   @IsNotEmpty()
@@ -27,18 +23,12 @@ export class CreateUserAddressDto {
   @IsString()
   @Length(4, 10)
   pin: string;
-
-  @IsString()
-  aadhar: string;
-
+        
   @IsString()
   contact: string;
-
+ 
   @IsString()
-  GSTIN: string;
-
-  @IsString()
-  tradeName: string;
+  other_phone: string;
 
   @IsOptional()
   isDefault?: boolean;

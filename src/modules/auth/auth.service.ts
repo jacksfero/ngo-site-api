@@ -462,6 +462,7 @@ async verifyOtp(dto: VerifyOtpDto) {
         where: { user: { id: userId } },
         relations: ['user'],
       });
+      if (!addresses.length) throw new NotFoundException('User Address not found');
       return addresses.map(toUserAddressResponse);
     }
    
@@ -469,6 +470,7 @@ async verifyOtp(dto: VerifyOtpDto) {
     const userId = user.sub.toString();
   const address = await this.addressRepo.findOne({ where: 
       {
+        id:id,
         user: { id: userId },
            },
       relations: ['user'] }); 
@@ -511,7 +513,7 @@ async verifyOtp(dto: VerifyOtpDto) {
       return user_kyc;
     }
    
-  async updatekyc(  dto: UpdateUserAddressDto,user:any) {
+  async updatekyc(  dto: UpdateKycDetailDto,user:any) {
     const userId = user.sub.toString();
   const address = await this.kycRepo.findOne({ where: 
       {
