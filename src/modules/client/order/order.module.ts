@@ -8,9 +8,10 @@ import { Product } from 'src/shared/entities/product.entity';
 import { User } from 'src/shared/entities/user.entity';
 import { Cart } from 'src/shared/entities/cart.entity';
 import { CartItem } from 'src/shared/entities/cart-item.entity';
+import { Inventory } from 'src/shared/entities/inventory.entity';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Order,OrderItem,Product,User,Cart,CartItem])],
+  imports:[TypeOrmModule.forFeature([Order,OrderItem,Product,User,Cart,CartItem,Inventory])],
   controllers: [OrderController],
   providers: [OrderService],
 })

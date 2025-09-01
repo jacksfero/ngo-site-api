@@ -179,10 +179,10 @@ export class InventoryService {
   } 
   if (dto.status) {
     inventory.status = dto.status;
-  } 
+  } */
 if (dto.termsAndConditions) {
     inventory.termsAndConditions = dto.termsAndConditions;
-  } */
+  } 
     return this.inventoryRepo.save(inventory);
   }
 

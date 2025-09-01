@@ -1,35 +1,69 @@
-import { Controller, Get,Req, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Req, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 
 @Controller()
+@UseGuards(JwtAuthGuard) // ✅ Checkout requires authentication
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post('checkout')
-  checkout(@Req() req) {
-    return this.orderService.createFromCart(req.user.sub);
+  async checkout(@Req() req) {
+    try {
+      const userId = req.user.sub.toString();
+      return await this.orderService.createFromCart(userId);
+    } catch (error) {
+      throw new HttpException(
+        `Checkout failed: ${error.message}`,
+        HttpStatus.BAD_REQUEST
+      );
+    }
   }
 
+
   @Get()
-  getOrders(@Req() req) {
-    return this.orderService.findAll(req.user.sub);
+  async getOrders(@Req() req) {
+    try {
+      const userId = req.user.sub.toString();
+      return await this.orderService.findAll(userId);
+    } catch (error) {
+      throw new HttpException(
+        `Failed to fetch orders: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   @Get(':id')
-  getOrder(@Req() req, @Param('id', ParseIntPipe) id: number) {
-    return this.orderService.findOne(req.user.sub, id);
+  async getOrder(@Req() req, @Param('id', ParseIntPipe) id: number) {
+    try {
+      const userId = req.user.sub.toString();
+      return await this.orderService.findOne(userId, id);
+    } catch (error) {
+      throw new HttpException(
+        `Failed to fetch order: ${error.message}`,
+        HttpStatus.NOT_FOUND
+      );
+    }
   }
-
-  // Admin only
-  @Patch(':id/status')
-  //@Roles('admin')
-  updateStatus(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateOrderStatusDto,
-  ) {
-    return this.orderService.updateStatus(id, dto);
-  }
+ 
+   // Admin only
+   @Patch(':id/status')
+   //@Roles('admin') // Uncomment when you have role-based auth
+   async updateStatus(
+     @Param('id', ParseIntPipe) id: number,
+     @Body() dto: UpdateOrderStatusDto,
+   ) {
+     try {
+       return await this.orderService.updateStatus(id, dto);
+     } catch (error) {
+       throw new HttpException(
+         `Failed to update order status: ${error.message}`,
+         HttpStatus.BAD_REQUEST
+       );
+     }
+   }
 }

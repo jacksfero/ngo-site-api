@@ -9,11 +9,15 @@ export class Cart {
   id: number;
 
  // @ManyToOne(() => User, (user) => user.carts)
- @ManyToOne(() => User, { eager: true }) // eager: auto-loads user when fetching cart
+ @ManyToOne(() => User, {   eager: true }) // eager: auto-loads user when fetching cart
  @JoinColumn({ name: 'user_id' })
  user: User;
+ 
 
-  @OneToMany(() => CartItem, (item) => item.cart, { cascade: true })
+ @Column({ nullable: true })
+  guestId?: string; // for guest user
+
+  @OneToMany(() => CartItem, (item) => item.cart, {  cascade: true,eager: true })
   items: CartItem[];
 
   @Column({ default: false })

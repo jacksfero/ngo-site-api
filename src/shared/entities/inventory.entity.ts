@@ -1,7 +1,7 @@
 
 
 import {
-  Entity,
+  Entity,Index,
   PrimaryGeneratedColumn,
   Column,ManyToOne,
   OneToOne,
@@ -13,21 +13,38 @@ import { Product } from './product.entity';
 import { Shipping } from './shipping.entity';
 import { AartworkGstSlot, ShippingGstSlot } from 'src/modules/admin/shipping/enums/gst.enum';
 
-
+export enum InventoryStatus {
+  DRAFT = 'draft',
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  SOLD_OUT = 'sold_out',
+  DISCONTINUED = 'discontinued',
+  ARCHIVED = 'archived',
+}
 
  
 
 @Entity()
+@Index(['product', 'status']) // For product inventory queries
+@Index(['status', 'quantity']) // For stock level queries
 export class Inventory {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => Product, (product) => product.productInventory, { eager: true })
+ /* @OneToOne(() => Product, (product) => product.productInventory, { eager: true })
+  @JoinColumn({ name: 'product_id' })
+  product: Product;*/
+
+  // ✅ FIXED: Change to Many-to-One (one product, multiple inventory records)
+  @ManyToOne(() => Product, (product) => product.productInventory, { 
+    eager: true,
+    onDelete: 'CASCADE' // Delete inventory when product is deleted
+  })
   @JoinColumn({ name: 'product_id' })
   product: Product;
 
-//   @Column({ name: 'product_id', insert: false, update: false })
-// productId: number;
+  @Column({ name: 'product_id' })
+  productId: number; // ✅ Keep productId for easier queries
 
   @CreateDateColumn({ name: 'entry_date' })
   entryDate: Date;
@@ -38,6 +55,8 @@ export class Inventory {
   @Column({ type: 'boolean', default: false })
   status: boolean;
 
+  @Column({ type: 'int', default: 0 })
+  quantity: number; // ✅ CRITICAL: Stock quantity
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   price: number;
@@ -61,19 +80,18 @@ export class Inventory {
 termsAndConditions: string;
 
 
-  @CreateDateColumn()
+@CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  // ✅ Audit Trail
-  @Column({ type: 'int', nullable: true })
-  createdBy: number;
+ // ✅ Audit Trail
+ @Column({ type: 'int', nullable: true })
+ createdBy: number;
 
-
-  @Column({ type: 'int', nullable: true })
-  updatedBy: number;
+ @Column({ type: 'int', nullable: true })
+ updatedBy: number;
 
 
 }

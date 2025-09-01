@@ -111,7 +111,7 @@ export class AuthService {
     const userId = users.sub.toString();
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['profileImage', 'addresses'], // 👈 add relations if you need
+      relations: ['profileImage'], // 👈 add relations if you need
     });
  
     if (!user) {

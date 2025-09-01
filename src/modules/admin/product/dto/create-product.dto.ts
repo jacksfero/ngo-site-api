@@ -14,10 +14,9 @@ export class CreateProductDto {
   @IsNotEmpty()
   productTitle: string;
 
+  @IsOptional()
   @IsString()
-  @MaxLength(150)
-  @IsNotEmpty()
-  description: string;
+   description?: string;
 
   @IsString() 
   slug: string;
