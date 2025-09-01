@@ -39,7 +39,7 @@ export class BlogClientService {
 
        const queryBuilder = this.blogRepo
        .createQueryBuilder('blog')    
-       .select(['blog.id', 'blog.title', 'blog.slug','blog.createdAt','blog.titleImage','blog.blogContent'])
+       .select(['blog.id','blog.title', 'blog.scheduledPublishDate', 'blog.slug','blog.createdAt','blog.titleImage','blog.blogContent'])
        .leftJoin('blog.category', 'category', 'category.status = :isActive', { isActive: true })
        .addSelect([ 'category.name', 'category.slug'])
        .leftJoin('blog.tags', 'tags')

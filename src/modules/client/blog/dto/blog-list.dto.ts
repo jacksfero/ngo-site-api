@@ -75,6 +75,9 @@ export class BlogListDto {
   createdAt: Date;
 
   @Expose()
+  scheduledPublishDate: Date;
+
+  @Expose()
   @Type(() => CategoryDto)
   category?: CategoryDto;
 
