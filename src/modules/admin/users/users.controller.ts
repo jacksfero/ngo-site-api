@@ -32,6 +32,7 @@ import { UpdateUserAddressDto } from 'src/modules/auth/dto/update-user-address.d
 import { CreateBankDetailDto } from './dto/create-user-bank-detail.dto';
 import { UpdateBankDetailDto } from './dto/update-user-bank-detail.dto';
 import { CreateKycDetailDto, UpdateKycDetailDto } from './dto/create-user-kyc-detail.dto';
+import { PaginationClinetPipe } from 'src/shared/pipes/pagination-client.pipe';
 
 @Controller()
 //@UseGuards(PermissionsGuard)
@@ -49,7 +50,7 @@ export class UsersController {
 
   @Get()
   async findAll(
-    @Query(new PaginationPipe(USERS_LIMIT, USERS_MAX_LIMIT, USERS_PAGE))
+    @Query(new PaginationClinetPipe(USERS_LIMIT, USERS_MAX_LIMIT, USERS_PAGE))
     paginationDto: UserPaginationDto
   ): Promise<PaginationResponseDto<UsersListDto>> {
     return this.usersService.findAll(paginationDto);

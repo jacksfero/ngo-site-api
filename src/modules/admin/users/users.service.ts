@@ -163,10 +163,11 @@ async findByUsername(username: string): Promise<User | undefined> {
       );
     }
     if (typeof status === 'boolean') {
+      console.log('status----------',status)
       queryBuilder.andWhere('user.status = :status', { status });
     }
 
-    if (typeof status === 'boolean') {
+    if (typeof is_verified === 'boolean') {
       queryBuilder.andWhere('user.is_verified = :is_verified', { is_verified });
     }
   
@@ -276,7 +277,7 @@ async findByUsername(username: string): Promise<User | undefined> {
       });
       user.roles = roles;
     }
-
+ 
     // Step 5: Save updated user
     return await this.userRepository.save(user);
   }
