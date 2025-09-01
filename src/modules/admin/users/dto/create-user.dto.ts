@@ -16,7 +16,7 @@ export class CreateUserDto {
   @IsEmail()
   email: string;
 
-   @IsNumber()
+   @IsString()
   mobile: string;
 
   @IsString()
