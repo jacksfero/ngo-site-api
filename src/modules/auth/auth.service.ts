@@ -415,12 +415,14 @@ async verifyOtp(dto: VerifyOtpDto) {
   
   async findByEmail(email: string) {
     return this.userRepository.findOne({ where: { email },
-     
+      select: ['id', 'email', 'password', 'mobile', 'is_verified', 'username']
     });
   }
   
   async findByMobile(mobile: string) {
-    return this.userRepository.findOne({ where: { mobile } ,relations: ['roles', 'roles.permissions'] });
+    return this.userRepository.findOne({ where: { mobile } ,relations: ['roles', 'roles.permissions'],
+    select: ['id', 'email', 'password', 'mobile', 'is_verified', 'username']
+  });
   }
 
   async findUsersByRole(roleName: string): Promise<UserListByRoleNameDto[]> {
