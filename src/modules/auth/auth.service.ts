@@ -268,7 +268,7 @@ async verifyOtp(dto: VerifyOtpDto) {
       this.logger.warn(`User ${user.id} has no password set-- ${user}`);
       throw new UnauthorizedException('Account not properly set up. Please reset your password.');
     }
-    console.log('user--------',user)
+   // console.log('user--------',user)
          // ✅ Validate password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     
