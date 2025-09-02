@@ -44,7 +44,7 @@ export class ProductcategoryService {
   }
   async getActiveList():  Promise<ProductcategoryResponseDto[]> {
     const surfaces = await this.procateRepository.find({
-      order: { name: 'ASC' },
+      order: { id: 'DESC' },
       where: {
        status: true, // only active surfaces
      }
@@ -57,7 +57,7 @@ export class ProductcategoryService {
   async findAll(): Promise<Productcategory[]> {
     return this.procateRepository.find({
       order: {
-        createdAt: 'DESC', // sort by newest first
+        id: 'DESC', // sort by newest first
       },
       /*  where: {
          status: true, // only active surfaces

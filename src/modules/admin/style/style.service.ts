@@ -48,7 +48,7 @@ if (existingStyle) {
   async findAll(): Promise<Style[]> {
     const result = await this.styleRepository.find({
       order: {
-        createdAt: 'DESC', // sort by newest first
+        id: 'DESC', // sort by newest first
       },
 
     });    

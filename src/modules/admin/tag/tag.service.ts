@@ -32,7 +32,11 @@ async generateUniqueSlug(title: string): Promise<string> {
   }
 
  async findAll() :Promise<Tag[]>{
-  const tag = await this.tagRepository.find();
+  const tag = await this.tagRepository.find({
+    order: {
+      id: 'DESC', // sort by newest first
+    },
+  });
     return tag;
   }
 

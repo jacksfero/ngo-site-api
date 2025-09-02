@@ -142,7 +142,7 @@ export class InventoryService {
     // ✅ Pagination
     //qb.skip((page - 1) * limit).take(limit);
   
-    const [result, total] = await qb.take(limit).skip(skip).getManyAndCount();
+    const [result, total] = await qb.orderBy('inventory.id', 'DESC').take(limit).skip(skip).getManyAndCount();
   
     // const data = plainToInstance(InventoryResponseDto, items, {
     //   excludeExtraneousValues: true,

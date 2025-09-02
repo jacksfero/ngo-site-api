@@ -76,7 +76,7 @@ export class ShippingService {
   async findAll(): Promise<Shipping[]> {
     const result = await this.shippingRepository.find({
       order: {
-        createdAt: 'DESC', // sort by newest first
+        id: 'DESC', // sort by newest first
       }
     });
     return result;

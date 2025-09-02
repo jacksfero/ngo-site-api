@@ -57,7 +57,10 @@ export class RolesService {
   }
 
   async findAllRoles(): Promise<Role[]> {
-    return this.roleRepository.find({ relations: ['permissions'] });
+    return this.roleRepository.find({ relations: ['permissions'],order: {
+      id: 'DESC', // sort by newest first
+    },
+   });
   }
 
   async findRoleById(id: number): Promise<Role> {

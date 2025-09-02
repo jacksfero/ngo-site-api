@@ -58,7 +58,7 @@ export class SurfaceService {
   async findAll(): Promise<Surface[]> {
     return this.surfaceRepository.find({
       order: {
-        createdAt: 'DESC', // sort by newest first
+        id: 'DESC', // sort by newest first
       },
       //  where: {
       //   status: true, // only active surfaces

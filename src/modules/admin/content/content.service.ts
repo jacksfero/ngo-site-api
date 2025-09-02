@@ -23,7 +23,12 @@ export class ContentService {
   }
 
   async findAll(): Promise<Content[]> {
-    const result = await this.contentRepository.find();
+    const result = await this.contentRepository.find({
+      order: {
+        id: 'DESC', // sort by newest first
+      },
+
+    });    
     return result;
   }
 

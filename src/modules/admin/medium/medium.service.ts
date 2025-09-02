@@ -70,7 +70,7 @@ export class MediumService {
   async findAll(): Promise<Medium[]> {
     return this.mediumRepository.find({
       order: {
-        createdAt: 'DESC', // sort by newest first
+        id: 'DESC', // sort by newest first
       },
       /* where: {
         status: true, // only active surfaces

@@ -152,7 +152,7 @@ async findByUsername(username: string): Promise<User | undefined> {
     const queryBuilder = this.userRepository
     .createQueryBuilder('user')
     .leftJoinAndSelect('user.roles', 'role')
-    .orderBy('user.createdAt', 'DESC')
+    .orderBy('user.id', 'DESC')
     .take(limit)
     .skip(skip);
   
@@ -163,7 +163,7 @@ async findByUsername(username: string): Promise<User | undefined> {
       );
     }
     if (typeof status === 'boolean') {
-      console.log('status----------',status)
+      //console.log('status----------',status)
       queryBuilder.andWhere('user.status = :status', { status });
     }
 

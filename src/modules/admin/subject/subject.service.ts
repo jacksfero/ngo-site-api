@@ -49,7 +49,7 @@ export class SubjectService {
   async findAll(): Promise<Subject[]> {
    return this.subjectRepository.find({
       order: {
-        createdAt: 'DESC', // sort by newest first
+        id: 'DESC', // sort by newest first
       },
       
     });

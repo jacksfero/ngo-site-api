@@ -22,7 +22,12 @@ export class PolicyService {
   }
 
   async findAll(): Promise<Policy[]> {
-    const result = await this.policyRepository.find();
+    const result = await this.policyRepository.find({
+      order: {
+        id: 'DESC', // sort by newest first
+      },
+
+    });    
     return result;
   }
 

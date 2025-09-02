@@ -233,7 +233,8 @@ export class ProductService {
     
 
     const [products, total] = await queryBuilder
-      .skip(skip)
+    .orderBy('product.id', 'DESC')
+    .skip(skip)
       .take(limit)
       .getManyAndCount();
 

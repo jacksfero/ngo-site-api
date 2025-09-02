@@ -24,6 +24,10 @@ export class VideoService {
 async findAll():Promise<Video[]> {
   return this.videoRepo.find({
     relations: ['user'], // only needed if `eager: false` in entity
+    order: {
+      id: 'DESC', // sort by newest first
+    },
+  
   });
 }
  async findOne(id: number):Promise<Video> {

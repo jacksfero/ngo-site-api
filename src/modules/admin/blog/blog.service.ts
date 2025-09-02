@@ -130,7 +130,7 @@ private async deleteImageFile(filename: string): Promise<void> {
     .leftJoinAndSelect('blog.category', 'category')
     .leftJoinAndSelect('blog.tags', 'tags')
     .leftJoinAndSelect('blog.author', 'author')
-    .orderBy('blog.createdAt', 'DESC')
+    .orderBy('blog.id', 'DESC')
     .take(limit)
     .skip(skip);
   

@@ -59,7 +59,7 @@ export class WishlistService {
     return this.wishlistRepository.find({
       where: { user: { id: userId } },
       relations: ['product'],
-      order: { createdAt: 'DESC' },
+      order: { id: 'DESC' },
     });
   }
 

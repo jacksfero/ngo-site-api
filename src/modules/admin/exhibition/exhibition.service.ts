@@ -46,7 +46,12 @@ export class ExhibitionService {
   }
 
  async findAll() :Promise<Exhibition[]> {
-     const result = await this.exhibitionRepository.find();
+     const result = await this.exhibitionRepository.find({
+      order: {
+        id: 'DESC', // sort by newest first
+      },
+
+     });
      return result;
 
   /*   return this.exhibitionRepository.find({
