@@ -103,7 +103,7 @@ export class OrderService {
         items: [],
         totalAmount: total,
         status: OrderStatus.PENDING,
-        //shippingAddress: cart.user.shippingAddress, // Add if available
+       // shippingAddress: cart.user.shippingAddress, // Add if available
       });
 
       // ✅ Create order items

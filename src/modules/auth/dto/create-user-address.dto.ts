@@ -6,7 +6,6 @@ export class CreateUserAddressDto {
   @IsEnum(AddressType)
   type: AddressType;
  
-
   @IsString()
   @IsNotEmpty()
   address: string;

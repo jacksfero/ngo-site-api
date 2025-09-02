@@ -20,5 +20,5 @@ export class UserPaginationDto extends PaginationBaseDto {
 
   @IsOptional()
   @IsString()
-  role?: string;
+  userTypeID?: string;
 }

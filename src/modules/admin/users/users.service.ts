@@ -145,7 +145,7 @@ async findByUsername(username: string): Promise<User | undefined> {
   async findAll(
     paginationDto: UserPaginationDto,
   ): Promise<PaginationResponseDto<UsersListDto>> {
-    const { page , limit, search,status,is_verified,role  } = paginationDto;
+    const { page , limit, search,status,is_verified,userTypeID  } = paginationDto;
     const skip = (page - 1) * limit;
     //const search = search || '';
   
@@ -171,8 +171,8 @@ async findByUsername(username: string): Promise<User | undefined> {
       queryBuilder.andWhere('user.is_verified = :is_verified', { is_verified });
     }
   
-    if (role) {
-      queryBuilder.andWhere('role.name = :role', { role });
+    if (userTypeID) {
+      queryBuilder.andWhere('role.id = :userTypeID', { userTypeID });
     } 
   
     const [result, total] = await queryBuilder.getManyAndCount();
