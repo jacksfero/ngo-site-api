@@ -1,12 +1,14 @@
-import { IsNotEmpty,IsString,MinLength } from "class-validator";
+import { IsNotEmpty,IsString,MinLength,MaxLength } from "class-validator";
+import { IsValidPassword } from "src/core/decorators/password.decorator";
 
 export class LoginDto {
     @IsNotEmpty()
     @IsString()
+    @MaxLength(100)
     loginId: string;
   
     @IsNotEmpty()
     @IsString()
-    @MinLength(8, { message: 'Password must be at least 8 characters long' })
+    @IsValidPassword()
     password: string;
   }

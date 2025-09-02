@@ -19,6 +19,13 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   }
  
   async validate(loginId: string, password: string): Promise<any> {
+
+     // ✅ Add input validation
+     if (!loginId || !password) {
+      throw new BadRequestException('Login ID and password are required');
+    }
+
+
     // Step 1: Convert to DTO
      const dto = plainToInstance(LoginDto, { loginId, password });
 
@@ -33,7 +40,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     } 
 
     // Step 3: Proceed with user validation
-    const user =   this.authService.validateUser(loginId, password);
+    const user =  await this.authService.validateUser(loginId, password);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }

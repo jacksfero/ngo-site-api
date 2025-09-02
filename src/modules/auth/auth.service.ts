@@ -25,8 +25,7 @@ import { OtpService } from 'src/shared/otp/otp.service';
 import { ResendOtpDto } from './dto/resend-verification.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { OtpType,UserType,StartEmailVerificationDto, StartMobileVerificationDto } from './dto/start-verification.dto';
-//import { LoginDto } from './dto/login.dto';
-//import { OtpLoginDto } from './dto/otp-login.dto';
+ 
 import { SendOtpDto } from './dto/send-otp.dto';
 import { PasswordResetToken } from 'src/shared/entities/password-reset-token.entity';
 import { randomBytes } from 'crypto';
@@ -261,23 +260,32 @@ async verifyOtp(dto: VerifyOtpDto) {
     
         if (!user) {
           this.logger.warn(`User not found for loginId: ${loginId}`);
-          throw new NotFoundException(`User not found for loginId: ${loginId}`);
+          throw new NotFoundException('Invalid credentials');
         }
+
+         // ✅ CRITICAL: Check if user has a password set
+    if (!user.password) {
+      this.logger.warn(`User ${user.id} has no password set`);
+      throw new UnauthorizedException('Account not properly set up. Please reset your password.');
+    }
     
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-       // console.log('Is password valid?', isPasswordValid);
+         // ✅ Validate password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     
-        if (!isPasswordValid) {
-          this.logger.warn(`Invalid password attempt for user: ${user.id}`);
-          throw new UnauthorizedException(`Invalid password`);
-        }
+    if (!isPasswordValid) {
+      this.logger.warn(`Invalid password attempt for user: ${user.id}`);
+      throw new UnauthorizedException('Invalid credentials');
+    }
     
         const { password: _, ...result } = user;
         return result;
     
       } catch (error) {
-        this.logger.error(`Error during validation: ${error.message}`);
-        throw new BadRequestException(`Error during validation: ${error.message}`);
+        if (error instanceof NotFoundException || error instanceof UnauthorizedException) {
+          throw new UnauthorizedException('Invalid credentials');
+        }
+        
+        throw new BadRequestException('Authentication failed');
       }
     }
     
