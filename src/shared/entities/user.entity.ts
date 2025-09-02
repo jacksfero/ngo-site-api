@@ -34,6 +34,9 @@ export class User {
   @Column({ type: 'varchar', length: 150, unique: true, nullable: true})
   email: string;
 
+ @Column({ type: 'varchar', length: 50,   nullable: true })
+  phonecode: string;
+
   @Column({ type: 'varchar', length: 150, unique: true, nullable: true })
   mobile: string;
 
