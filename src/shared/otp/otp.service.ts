@@ -1,4 +1,4 @@
-import { Injectable, Inject,ForbiddenException, HttpException, HttpStatus, BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Inject,Logger,ForbiddenException, HttpException, HttpStatus, BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { OtpVerification } from '../entities/OtpVerification.entity';
@@ -17,8 +17,9 @@ export type OtpVerificationResult =
 
 @Injectable()
 export class OtpService {
-
+  private readonly logger = new Logger(OtpService.name);
   constructor(
+
     @InjectRepository(User)
     private readonly userReposs: Repository<User>,
 
@@ -163,6 +164,7 @@ export class OtpService {
       }
   
       if (differenceInSeconds(new Date(), existingOtp.updatedAt) < 30) {
+        this.logger.warn(`Please wait before requesting -- ${differenceInSeconds(new Date(), existingOtp.updatedAt)} another OTP: ${existingOtp.updatedAt} -new date ${new Date()}- user data- ${JSON.stringify(existingOtp)}`);
         throw new BadRequestException('Please wait before requesting another OTP.');
       }
   
@@ -174,7 +176,7 @@ export class OtpService {
       if (user) {
         existingOtp.user = user;
       }
-      
+       
       existingOtp.attempts = isAfter(existingOtp.updatedAt, tenMinutesAgo)
         ? existingOtp.attempts + 1
         : 1;

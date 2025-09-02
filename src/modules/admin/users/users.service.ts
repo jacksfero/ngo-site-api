@@ -229,10 +229,10 @@ async findByUsername(username: string): Promise<User | undefined> {
     return await this.userRepository.findOne({ 
       where: { id },
       relations: ['roles'], // include relations if needed
-      select: ['id', 'username', 'password'] // Customize as needed
+    //  select: ['id', 'username','email','mobile','status','is_verified', 'password'] // Customize as needed
     });
   } catch (error) {
-    throw new Error(`User search failed for ${id}`, error.stack);
+    throw new Error(`User search failed for ${id}` );
    // return null; // Explicit null (TypeORM's standard)
   }
   }

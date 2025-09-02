@@ -31,7 +31,6 @@ export enum PaymentMethod {
 }
 
 @Entity('payments')
-@Index(['txnId']) // For faster lookup by transaction ID
 @Index(['order', 'status']) // For order payment status queries
 @Index(['user', 'createdAt']) // For user payment history
 export class Payment {
