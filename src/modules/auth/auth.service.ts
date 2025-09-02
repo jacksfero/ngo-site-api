@@ -321,7 +321,7 @@ async verifyOtp(dto: VerifyOtpDto) {
    return this.otpService.sendOtp(identifier,type,UserType.FORGOT_PASSWORD, ipAddress);
    // return this.otpService.sendOtp(identifier,type,userType as UserType, ipAddress);
   }  
-
+ 
   async verifyForgotPasswordOtp(dto: VerifyOtpDto, ipAddress?: string) {
 
     const result = await this.otpService.verifyOtp({ ...dto, userType: UserType.FORGOT_PASSWORD });
