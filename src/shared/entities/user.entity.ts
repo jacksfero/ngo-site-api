@@ -5,7 +5,9 @@ import {
   PrimaryGeneratedColumn,
   ManyToMany,
   OneToMany,
-  JoinTable,OneToOne
+  JoinTable,OneToOne,
+  ManyToOne,
+  JoinColumn
 } from 'typeorm';
 
 import { Role } from './role.entity';
@@ -18,6 +20,7 @@ import { UsersAddress } from './users-address.entity';
 import { BankDetail } from './user-bank-detail.entity';
 import { KycDetails } from './user-kyc.entity';
 import { UserProfileImage } from './user-profile-image.entity';
+import { ArtistType } from './artist-type.entity';
 
  
 @Entity('user')
@@ -57,13 +60,22 @@ blogs: Blog[];
  @OneToMany(() => ExhibitionProduct, (map) => map.user)
   displayMappings: ExhibitionProduct[];
 
-
-
   @Column({ type: 'boolean', nullable: true })
   is_verified: boolean;
 
   @Column({ type: 'boolean', default: false })
   status: boolean;
+
+  @Column({ type: 'boolean', default: false })
+  featured_artist: boolean;
+
+ // 🟢 Add relation to Artist Type
+ @ManyToOne(() => ArtistType, )
+ @JoinColumn({ name: 'artist_type_id' })
+ artistType: ArtistType;
+ 
+ @Column({ name: 'artist_type_id', nullable: true })
+ artist_type_id: number;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
   createdBy: string;
