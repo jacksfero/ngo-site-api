@@ -52,6 +52,10 @@ export class BlogListDto {
  
   @Expose()
   createdAt: Date;
+
+  @Expose()
+  scheduledPublishDate: Date;
+  
   
   @Expose()
   @Type(() => AuthorDto)

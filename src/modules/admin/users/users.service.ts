@@ -100,7 +100,7 @@ export class UsersService {
    const users = await this.userRepository
     .createQueryBuilder('user')
     .leftJoinAndSelect('user.roles', 'role')
-    .where('role.name = :roleName', { roleName })
+    .where('role.id = :roleName', { roleName })
     .andWhere('user.status = :status', { status: true })
     .select([
       'user.id',

@@ -315,30 +315,5 @@ export class ProductService {
     return this.imageRepo.remove(image);
   }
 
-  /*   Let me know if you also need:
   
-      Pagination support in findAll
-  
-      Filtering by user/owner
-  
-      Soft delete logic
-  
-      Upload image handling
-  
-      Controller methods (@Post, @Get, @Patch, etc.)
-  
-  async findAll({ page, limit }: { page: number; limit: number }) {
-    const [items, total] = await this.productRepository.findAndCount({
-      take: +limit,
-      skip: (+page - 1) * +limit,
-      order: { createdAt: 'DESC' },
-    });
-  
-    return {
-      data: items,
-      total,
-      currentPage: +page,
-      lastPage: Math.ceil(total / +limit),
-    };
-  }*/
 }
