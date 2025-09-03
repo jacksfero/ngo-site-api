@@ -187,7 +187,9 @@ if (dto.termsAndConditions) {
   }
 
   async findOne(id: number): Promise<Inventory> {
-    const inventory = await this.inventoryRepo.findOne({ where: { id }, relations: ['product'] });
+    const inventory = await this.inventoryRepo.findOne({
+       where: { id }, 
+       relations: ['product','product.artist','product.size','product.shippingTime','product.commissionType'] });
     if (!inventory) throw new NotFoundException('Inventory not found');
     return inventory;
   }
