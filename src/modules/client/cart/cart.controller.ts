@@ -7,16 +7,17 @@ import { Request, Response } from 'express';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { Public } from 'src/core/decorators/public.decorator';
 import { LocalAuthGuard } from 'src/modules/auth/guards/local-auth.guard';
+import { OptionalJwtAuthGuard } from 'src/modules/auth/guards/optional-jwt-auth.guard';
  
 
 @Controller()
  
-//@UseGuards(LocalAuthGuard) // ✅ This is KEY
+ //@UseGuards(LocalAuthGuard) // ✅ This is KEY
  //@UseGuards(JwtAuthGuard) // protect with auth
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 
- 
+  @UseGuards(OptionalJwtAuthGuard)
  @Get()
   async getCart(
     @Req() req,
@@ -40,7 +41,7 @@ export class CartController {
     }
   }
  
- 
+  @UseGuards(OptionalJwtAuthGuard)
   @Post('add')
   async addToCart(
     @Body() dto: AddToCartDto,
@@ -83,7 +84,7 @@ export class CartController {
     }
   }
  
- 
+  @UseGuards(OptionalJwtAuthGuard)
   @Patch('update')
   async updateItem(
     @Body() dto: UpdateCartItemDto,
@@ -116,6 +117,7 @@ export class CartController {
     }
   }
 
+  @UseGuards(OptionalJwtAuthGuard)
   @Delete('remove/:id')
   async removeItem(
     @Param('id', ParseIntPipe) id: number,

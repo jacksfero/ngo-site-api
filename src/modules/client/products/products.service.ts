@@ -152,7 +152,7 @@ export class ProductsService {
 
   async getActiveCategoryList():  Promise<ProductcategoryResponseDto[]> {
     const prodcat = await this.prodCatRepo.find({
-      order: { name: 'ASC' },
+      order: { id: 'ASC' },
       where: {
        status: true, // only active surfaces
      }

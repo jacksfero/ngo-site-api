@@ -231,7 +231,6 @@ export class ProductService {
       queryBuilder.andWhere('product.status = :status', { status });
     }
     
-
     const [products, total] = await queryBuilder
     .orderBy('product.id', 'DESC')
     .skip(skip)

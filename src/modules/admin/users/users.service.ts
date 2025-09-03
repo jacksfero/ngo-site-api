@@ -107,6 +107,7 @@ export class UsersService {
       'user.username',
       
     ])
+    .orderBy('user.username', 'ASC')
     .getMany();
  if (!users || users.length === 0) {
       throw new NotFoundException('No users found with the given role');

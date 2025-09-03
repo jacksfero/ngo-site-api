@@ -12,13 +12,13 @@ export class CreateExhibitionDto {
     description: string;
 
     @IsOptional()
-    @IsDateString()
+   // @IsDateString()
     dateStart: Date;
 
     @IsOptional()
-    @IsDateString()
+    //@IsDateString()
     dateEnd: Date;
-
+ 
     @IsOptional()
     @IsString()
     imageURL?: string | null;
