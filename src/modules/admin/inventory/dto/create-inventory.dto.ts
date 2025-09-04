@@ -24,7 +24,11 @@ export class CreateInventoryDto {
 
   @IsOptional()
   @IsNumber()
-  discount?: number;
+  discount?: number;  
+  
+  @IsOptional()
+  @IsNumber()
+  quantity?: number;
 
   @IsOptional()
   @IsEnum(AartworkGstSlot)
