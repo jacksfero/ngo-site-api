@@ -6,6 +6,40 @@ export class InventProdPaginatDto extends PaginationBaseDto {
 
     
   @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => {
+    if (value === 'true' || value === '1') return true;
+    if (value === 'false' || value === '0') return false;
+    return value;
+  })
+  new_arrival?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => {
+    if (value === 'true' || value === '1') return true;
+    if (value === 'false' || value === '0') return false;
+    return value;
+  })
+  eliteChoice?: boolean;
+
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => {
+    if (value === 'true' || value === '1') return true;
+    if (value === 'false' || value === '0') return false;
+    return value;
+  })
+  affordable_art?: boolean;
+
+ @IsOptional()
+  @Type(() => Number) 
+  @IsInt()
+  discount: number;
+
+
+  @IsOptional()
   @Type(() => Number) 
   @IsInt()
   categoryId: number;

@@ -7,6 +7,7 @@ import {
   IsEmail,
   IsNumber,IsBoolean
 } from 'class-validator';
+import { IsValidPassword } from 'src/core/decorators/password.decorator';
 
 export class CreateUserDto {
    @IsOptional()
@@ -17,15 +18,23 @@ export class CreateUserDto {
   email: string;
 
    @IsString()
-  mobile: string;
+  mobile: string; 
+  
+  @IsOptional()
+  @IsString()
+  phonecode?: string;
 
   @IsString()
-  @MinLength(6)
+  @IsValidPassword()
   password: string;
 
   @IsOptional()
   @IsBoolean()
   status?: boolean;
+  
+  @IsOptional()
+  @IsBoolean()
+  featured_artist?: boolean;
 
   @IsOptional()
   @IsBoolean()
@@ -35,4 +44,9 @@ export class CreateUserDto {
   @IsArray()
   @IsInt({ each: true })
   roleIds?: number[];
+
+  @IsOptional()
+  @IsArray()
+  @IsInt()
+  artist_type_id?: number;
 }

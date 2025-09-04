@@ -62,21 +62,14 @@ export class AuthController {
      * POST /auth/start-registration
      */
 
-
-
-
-
-
-
+  
   @Public()
   @Post('start-email-verification')
   startEmail(@Body() dto: StartEmailVerificationDto, @Req() req: ExpressRequest) {
     const ipAddress = req.ip;
     return this.authService.sendEmailOtp(dto.email, OtpType.EMAIL, dto.userType, ipAddress);
   }
-
-
-
+ 
   @Public()
   @Post('start-mobile-verification')
   startMobile(@Body() dto: StartMobileVerificationDto, @Req() req: ExpressRequest) {

@@ -68,8 +68,7 @@ export class ExhibitionService {
   
 
 async  findOne(id: number):Promise<Exhibition> {
-      const exhibition = await this.exhibitionRepository.findOne({
-        
+      const exhibition = await this.exhibitionRepository.findOne({        
         where: { id } ,
         relations:[
           'displayMappings',

@@ -19,14 +19,14 @@ import { AssignRolesDto } from './dto/assign-roles.dto';
 import { CreateUsersAboutDto } from './dto/create-users-about.dto';
 import { UpdateUsersAboutDto } from './dto/update-users-about.dto';
 import path from 'path';
- 
+
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
- 
+
 import { UsersListDto } from './dto/users-list.dto';
 import { UserPaginationDto } from './dto/user-pagination.dto';
 import { PaginationPipe } from 'src/shared/pipes/pagination.pipe';
- 
-import { USERS_LIMIT ,USERS_MAX_LIMIT, USERS_PAGE} from 'src/shared/config/pagination.config';
+
+import { USERS_LIMIT, USERS_MAX_LIMIT, USERS_PAGE } from 'src/shared/config/pagination.config';
 import { CreateUserAddressDto } from 'src/modules/auth/dto/create-user-address.dto';
 import { UpdateUserAddressDto } from 'src/modules/auth/dto/update-user-address.dto';
 import { CreateBankDetailDto } from './dto/create-user-bank-detail.dto';
@@ -40,13 +40,13 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) { }
 
   //@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
- // @Permissions('create_user') // Custom decorator (optional)
- // @RequirePermissions('create_user') // ✅ Good for RBAC, uncomment if needed
+  // @Permissions('create_user') // Custom decorator (optional)
+  // @RequirePermissions('create_user') // ✅ Good for RBAC, uncomment if needed
   @Post()
   create(@Body() createUserDto: CreateUserDto, @Req() req) {
     return this.usersService.create(createUserDto, req.user);
   }
-  
+
 
   @Get()
   async findAll(
@@ -56,17 +56,30 @@ export class UsersController {
     return this.usersService.findAll(paginationDto);
   }
 
- /* @Get()
-  async findAll(
-    @Query() paginationDto: UserPaginationDto,
-  ): Promise<PaginationResponseDto<UsersListDto>> {
-    return this.usersService.findAll(paginationDto);
-  }
-*/
+  /* @Get()
+   async findAll(
+     @Query() paginationDto: UserPaginationDto,
+   ): Promise<PaginationResponseDto<UsersListDto>> {
+     return this.usersService.findAll(paginationDto);
+   }
+ */
   @Get('by-role/:roleName')
-  async getUsersByRole(@Param('roleName') roleName: string) {
-    const users = await this.usersService.findUsersByRole(roleName);
+  async getUsersByRole(
+    @Param('roleName') roleName: string,
+    @Query('featured_artist') featured_artist?: boolean,
+
+  ) {
+    const users = await this.usersService.findUsersByRole(
+      roleName,
+      featured_artist??undefined  
+
+    );
     return users;
+  }
+
+  @Get('artisttypelist')
+  GetArtistTypeList() {
+    return this.usersService.GetArtistTypeList();
   }
 
   /** Start User about us section */
@@ -101,8 +114,8 @@ export class UsersController {
   }
 
   @Patch('user-address/:id')
-  updateAddress(@Param('id') id: number, @Body() dto: UpdateUserAddressDto,@Req() req) {
-    return this.usersService.updateAddress(  id, dto, req.user);
+  updateAddress(@Param('id') id: number, @Body() dto: UpdateUserAddressDto, @Req() req) {
+    return this.usersService.updateAddress(id, dto, req.user);
   }
 
 
@@ -113,10 +126,10 @@ export class UsersController {
   ) {
     return this.usersService.createBankDetail(id, dto, req.user);
   }
- 
+
   @Get('user-bank/:id')
-  findOneBankDetail(@Param('id') id: number ) {
-    return this.usersService.findOneBankDetail(+id  );
+  findOneBankDetail(@Param('id') id: number) {
+    return this.usersService.findOneBankDetail(+id);
   }
 
   @Patch('user-bank/:id')
@@ -125,7 +138,7 @@ export class UsersController {
     @Body() dto: UpdateBankDetailDto,
     @Req() req,
   ) {
-    return this.usersService.updateBankDetail(+id,   dto, req.user);
+    return this.usersService.updateBankDetail(+id, dto, req.user);
   }
 
   @Post('user-kyc/:id')
@@ -135,10 +148,10 @@ export class UsersController {
   ) {
     return this.usersService.createkycDetail(id, dto, req.user);
   }
- 
+
   @Get('user-kyc/:id')
-  findOnekycDetail(@Param('id') id: number ) {
-    return this.usersService.findOnekycDetail(+id  );
+  findOnekycDetail(@Param('id') id: number) {
+    return this.usersService.findOnekycDetail(+id);
   }
 
   @Patch('user-kyc/:id')
@@ -147,7 +160,7 @@ export class UsersController {
     @Body() dto: UpdateKycDetailDto,
     @Req() req,
   ) {
-    return this.usersService.updatekycDetail(+id,   dto, req.user);
+    return this.usersService.updatekycDetail(+id, dto, req.user);
   }
 
 
@@ -155,10 +168,10 @@ export class UsersController {
 
 
 
- /* @Delete('user-address/:id')
-  removeAddress( @Param('id') id: number) {
-    return this.usersService.removeAddress( id);
-  }*/
+  /* @Delete('user-address/:id')
+   removeAddress( @Param('id') id: number) {
+     return this.usersService.removeAddress( id);
+   }*/
 
   /** End User about us section */
   @Get(':id')
@@ -177,13 +190,13 @@ export class UsersController {
     return this.usersService.assignRolesToUser(+id, dto);
   }
 
-  
+
 
 
   @Patch(':id')
-update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto) {
-  return this.usersService.update(id, dto);
-}
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto) {
+    return this.usersService.update(id, dto);
+  }
 
   @Delete(':id')
   remove(@Param('id') id: string) {

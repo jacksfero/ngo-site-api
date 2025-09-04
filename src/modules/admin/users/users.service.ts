@@ -28,6 +28,7 @@ import { CreateBankDetailDto } from './dto/create-user-bank-detail.dto';
 import { UpdateBankDetailDto } from './dto/update-user-bank-detail.dto';
 import { KycDetails } from 'src/shared/entities/user-kyc.entity';
 import { CreateKycDetailDto, UpdateKycDetailDto } from './dto/create-user-kyc-detail.dto';
+import { ArtistType } from 'src/shared/entities/artist-type.entity';
  
 
 @Injectable()
@@ -53,8 +54,22 @@ export class UsersService {
     @InjectRepository(KycDetails)
     private kycRepo: Repository<KycDetails>,
 
+    @InjectRepository(ArtistType)
+    private artistTypeRepo: Repository<ArtistType>,
+
 
   ) {}
+  async GetArtistTypeList(): Promise<ArtistType[]> {
+    const user = await this.artistTypeRepo.find({
+      order:{
+        name: "ASC"
+    }
+      
+    });
+
+    return user;
+  }
+
 
   async create(dto: CreateUserDto, currentUser: any): Promise<User> {
     const { roleIds, status, email, mobile, ...rest } = dto;
@@ -88,6 +103,9 @@ export class UsersService {
       newUser.roles = roles;
     }
     newUser.createdBy = currentUser.sub.toString();
+    if (dto.artist_type_id) newUser.artist_type_id = dto.artist_type_id;
+    if (dto.featured_artist) newUser.featured_artist = dto.featured_artist;
+    if (dto.phonecode) newUser.phonecode = dto.phonecode;
 
     // You can optionally log or use currentUser here for audit tracking
   
@@ -96,8 +114,8 @@ export class UsersService {
   }
  
 
-  async findUsersByRole(roleName: string):  Promise<UserListByRoleNameDto[]> {
-   const users = await this.userRepository
+  async findUsersByRole(roleName: string,featured_artist?: boolean):  Promise<UserListByRoleNameDto[]> {
+   const query = await this.userRepository
     .createQueryBuilder('user')
     .leftJoinAndSelect('user.roles', 'role')
     .where('role.id = :roleName', { roleName })
@@ -107,8 +125,13 @@ export class UsersService {
       'user.username',
       
     ])
-    .orderBy('user.username', 'ASC')
-    .getMany();
+    .orderBy('user.username', 'ASC');
+   // .getMany();
+    if (featured_artist) {
+      query.andWhere('user.featured_artist = :featured_artist', { featured_artist });
+    }
+    const users = await query.getMany();
+
  if (!users || users.length === 0) {
       throw new NotFoundException('No users found with the given role');
     }
@@ -124,7 +147,7 @@ async findByUsername_bk(username: string): Promise<User | null> {
       select: ['id', 'username', 'password'] // Customize as needed
     });
   } catch (error) {
-    throw new Error(`User search failed for ${username}`, error.stack);
+    throw new Error(`User search failed for ${username}`, );
    // return null; // Explicit null (TypeORM's standard)
   }
 }
@@ -229,7 +252,7 @@ async findByUsername(username: string): Promise<User | undefined> {
     try {
     return await this.userRepository.findOne({ 
       where: { id },
-      relations: ['roles'], // include relations if needed
+      relations: ['roles','artistType'], // include relations if needed
     //  select: ['id', 'username','email','mobile','status','is_verified', 'password'] // Customize as needed
     });
   } catch (error) {
@@ -269,7 +292,10 @@ async findByUsername(username: string): Promise<User | undefined> {
     // Step 3: Merge fields
     Object.assign(user, { ...rest });
     if (email) user.email = email;
-    if (mobile) user.mobile = mobile;
+    if (mobile) user.mobile = mobile; 
+    if (dto.artist_type_id) user.artist_type_id = dto.artist_type_id;
+    if (dto.featured_artist) user.featured_artist = dto.featured_artist;
+    if (dto.phonecode) user.phonecode = dto.phonecode;
 
     // Step 4: Update roles if provided
     if (roleIds?.length) {

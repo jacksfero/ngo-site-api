@@ -247,7 +247,10 @@ export class ProductService {
   async findOne(id: number): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: ['owner','category','artist','subjects','styles'],
+      relations: ['owner','category','artist','subjects','styles',
+      'images', 'packingMode', 'commissionType', 'shippingTime', 'size',
+       'orientation' 
+    ],
     });
    // console.log('----------',product);
     if (!product) {

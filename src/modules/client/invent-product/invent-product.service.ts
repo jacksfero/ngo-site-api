@@ -30,7 +30,8 @@ export class InventProductService {
     // let categoryId?:number ;
 
     const { page, limit, search, categoryId, artistId,select, 
-      styleId, subjectId, orientationId, sizeId,mediumId,surfaceId   } = paginationDto;
+      styleId, subjectId, orientationId, sizeId,mediumId,surfaceId,
+      affordable_art,eliteChoice,new_arrival,discount   } = paginationDto;
     //  let categoryId?:number ;
   //  console.log('cateid-----------',categoryId);
   //  console.log('categoryId----------', categoryId, typeof categoryId);
@@ -90,7 +91,19 @@ export class InventProductService {
     if (artistId) {
       qb.andWhere('product.artist_id = :artistId', { artistId });
     }
- 
+    if (new_arrival) {
+      qb.andWhere('product.new_arrival = :new_arrival', { new_arrival });
+     
+    }
+    if (eliteChoice) {
+      qb.andWhere('product.eliteChoice = :eliteChoice', { eliteChoice });
+    }
+    if (affordable_art) {
+      qb.andWhere('product.affordable_art = :affordable_art', { affordable_art });
+    }
+    if (discount) {
+      qb.andWhere('product.commission_type_id != 1 ');
+    }
   
  // ✅ Define default fields (always selected)
  const defaultInventoryFields = ['id', 'status', 'price', 'discount','gstSlot','shippingSlot','updatedAt'];
