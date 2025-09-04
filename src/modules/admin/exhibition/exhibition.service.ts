@@ -68,7 +68,15 @@ export class ExhibitionService {
   
 
 async  findOne(id: number):Promise<Exhibition> {
-      const exhibition = await this.exhibitionRepository.findOne({ where: { id } });
+      const exhibition = await this.exhibitionRepository.findOne({
+        
+        where: { id } ,
+        relations:[
+          'displayMappings',
+          'displayMappings.product'
+        ]
+      
+      });
          if (!exhibition) throw new NotFoundException(`exhibition ${id} not found`);
          return exhibition;
   }
