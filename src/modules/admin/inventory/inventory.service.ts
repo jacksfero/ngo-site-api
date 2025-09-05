@@ -168,7 +168,11 @@ export class InventoryService {
   }
  
   async findByProduct(productId: number): Promise<Inventory> {
-    const inventory = await this.inventoryRepo.findOne({ where: { product: { id: productId } }, relations: ['product'] });
+    const inventory = await this.inventoryRepo.findOne({
+       where: { product: { id: productId } }, 
+       relations: ['product'] 
+      
+      });
     if (!inventory) throw new NotFoundException('Inventory not found for this product');
     return inventory;
   }
@@ -199,7 +203,8 @@ if (dto.termsAndConditions) {
   async findOne(id: number): Promise<Inventory> {
     const inventory = await this.inventoryRepo.findOne({
        where: { id }, 
-       relations: ['product','product.artist','product.size','product.shippingTime','product.commissionType'] });
+       relations: ['product','product.artist','product.size','product.shippingTime',
+       'product.commissionType', 'product.packingMode', 'product.category'] });
     if (!inventory) throw new NotFoundException('Inventory not found');
     return inventory;
   }

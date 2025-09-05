@@ -5,14 +5,19 @@ import {
   IsNotEmpty, 
   IsOptional, 
   IsString, 
-  MaxLength 
+  MaxLength ,IsEnum
 } from 'class-validator';
+import { ProductStatus } from 'src/shared/entities/product.entity';
 
 export class CreateProductDto {
   @IsString()
   @MaxLength(150)
   @IsNotEmpty()
   productTitle: string;
+
+  @IsOptional()
+  @IsEnum(ProductStatus)
+  is_active?: ProductStatus; // For direct status input
 
   @IsOptional()
   @IsString()
@@ -94,6 +99,8 @@ export class CreateProductDto {
   @IsOptional()
   @IsBoolean()
   original_painting?: boolean;
+
+
 
   @IsOptional()
   @IsBoolean()

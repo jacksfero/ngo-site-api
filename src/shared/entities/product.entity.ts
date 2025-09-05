@@ -14,6 +14,15 @@ import { Orientation } from './orientation.entity';
 import { Subject } from './subject.entity';
 import { Style } from './style.entity';
 
+
+export enum ProductStatus {
+  ACTIVE = 'Active',
+  INACTIVE = 'Inactive', 
+  SOLD_OUT = 'Sold_Out',
+  SOLD_BY_ARTIST = 'Sold_by_Artist',
+  TRASH = 'Trash'
+}
+
 @Entity()
 @Unique(['slug']) // Enforce unique slug
 export class Product {
@@ -53,8 +62,7 @@ export class Product {
   @Column({ type: 'int', nullable: true })
   weight: number;
 
-  @Column({ type: 'int', nullable: true })
-  commission: number; 
+ 
 
   @Column({ type: 'int', nullable: true })
   created_in: number;
@@ -102,8 +110,16 @@ export class Product {
   /*@Column({ type: 'boolean', default: false })
   inventory: boolean;*/
 
-  @Column({ type: 'boolean', default: false })
-  status: boolean;
+    // @Column({ type: 'boolean', default: false })
+    // status: boolean;
+
+   // ✅ Add status field with enum
+   @Column({
+    type: 'enum',
+    enum: ProductStatus,
+    default: ProductStatus.INACTIVE
+  })
+  is_active: ProductStatus;
 
   // ✅ Remarks & Conditions
   @Column({ type: 'text', nullable: true })

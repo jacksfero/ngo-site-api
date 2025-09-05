@@ -1,17 +1,18 @@
-import { IsOptional,IsInt, IsBoolean, IsString } from 'class-validator';
+import { IsOptional,IsInt, IsBoolean, IsString, IsEnum } from 'class-validator';
 import { Transform,Type } from 'class-transformer';
 import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
+import { ProductStatus } from 'src/shared/entities/product.entity';
 
 
 export class ProductPaginationDto extends PaginationBaseDto {
-  @IsOptional()
-  @IsBoolean()
-  @Transform(({ value }) => {
-    if (value === 'true' || value === '1') return true;
-    if (value === 'false' || value === '0') return false;
-    return value;
-  })
-  status?: boolean;
+  // @IsOptional()
+  // @IsBoolean()
+  // @Transform(({ value }) => {
+  //   if (value === 'true' || value === '1') return true;
+  //   if (value === 'false' || value === '0') return false;
+  //   return value;
+  // })
+  // status?: boolean;
 
   @IsOptional()
   @Type(() => Number) 
@@ -23,6 +24,10 @@ export class ProductPaginationDto extends PaginationBaseDto {
   @IsInt()
   artistId: number;
 
+
+  @IsOptional()
+  @IsEnum(ProductStatus)
+  is_active?: ProductStatus; // For direct status input
 
  /* @IsOptional()
   @IsBoolean()

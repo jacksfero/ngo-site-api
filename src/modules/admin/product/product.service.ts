@@ -1,7 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { Product } from '../../../shared/entities/product.entity';
+import { Product, ProductStatus } from '../../../shared/entities/product.entity';
 import { ProductImage } from '../../../shared/entities/product-image.entity';
 import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -50,7 +50,8 @@ export class ProductService {
     const products = await this.productRepository
       .createQueryBuilder('product')
       .leftJoin('product.productInventory', 'inventory')
-      .where('product.status = :status', { status: true })
+     // .where('product.status = :status', { status: true })
+      .where('product.is_active = :is_active', { is_active:'Active' })
       .andWhere('inventory.id IS NULL')
       .select(['product.id', 'product.productTitle'])
       .orderBy('product.productTitle', 'ASC')
@@ -97,7 +98,7 @@ export class ProductService {
       dto.slug ? this.productRepository.findOneBy({ slug: dto.slug }) : null
   ]);
   
-  if (existingByTitle) throw new ConflictException('Product title already exists');
+  //if (existingByTitle) throw new ConflictException('Product title already exists');
   if (existingBySlug) throw new ConflictException('Product slug already exists');
 
     const product = this.productRepository.create({
@@ -168,7 +169,9 @@ export class ProductService {
   if (updateProductDto.slug && updateProductDto.slug !== product.slug) {
     product.slug = await this.generateUniqueSlug(updateProductDto.slug);   
   }
-  product.updatedBy = user.sub.toString();
+  //if (updateProductDto.status !== undefined) {  
+    product.is_active =  updateProductDto.is_active as ProductStatus;
+ // }
     product.updatedBy = user.sub.toString();
     if (updateProductDto.productTitle !== undefined) {
       product.productTitle = updateProductDto.productTitle;
@@ -212,6 +215,8 @@ export class ProductService {
 
     return this.productRepository.save(product);
   }
+
+
   private convertToBoolean(value: any): boolean {
     if (value === null || value === undefined) return false;
     if (typeof value === 'boolean') return value;
@@ -225,7 +230,7 @@ export class ProductService {
   async paginate(
     paginationDto: ProductPaginationDto,
   ): Promise<PaginationResponseDto<ProductDto>> {
-    const { page, limit, search,artistId, status,categoryId } = paginationDto;
+    const { page, limit,is_active, search,artistId, /*status,*/ categoryId } = paginationDto;
     const skip = (page - 1) * limit;
    
 
@@ -244,8 +249,12 @@ export class ProductService {
       queryBuilder.andWhere('product.category_id LIKE :categoryId', { categoryId   });
     }
  
-    if (status !== undefined) {
-      queryBuilder.andWhere('product.status = :status', { status });
+    // if (status !== undefined) {
+    //   queryBuilder.andWhere('product.status = :status', { status });
+    // }
+
+    if (is_active !== undefined) {
+      queryBuilder.andWhere('product.is_active = :is_active', { is_active });
     }
     
     const [products, total] = await queryBuilder
@@ -281,7 +290,7 @@ export class ProductService {
     if (!product) {
       throw new NotFoundException(`product with ID ${id} not found`);
     }
-    product.status = !product.status;
+   // product.status = !product.status;
     product.updatedBy = user.sub.toString(); // or user.sub.toString()
 
     return this.productRepository.save(product);

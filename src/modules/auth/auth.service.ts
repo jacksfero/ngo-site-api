@@ -56,6 +56,12 @@ import { UpdateBankDetailDto } from '../admin/users/dto/update-user-bank-detail.
 import { BankDetail } from 'src/shared/entities/user-bank-detail.entity';
  
 import { UserProfileImage } from 'src/shared/entities/user-profile-image.entity';
+import { Productcategory } from 'src/shared/entities/productcategory.entity';
+import { PackingModeEntity } from 'src/shared/entities/packing-mode.entity';
+import { CommissionType } from 'src/shared/entities/commission-type.entity';
+import { ShippingTime } from 'src/shared/entities/shipping-time.entity';
+import { Size } from 'src/shared/entities/size.entity';
+import { Orientation } from 'src/shared/entities/orientation.entity';
 
 
  
@@ -666,7 +672,12 @@ async createProduct(dto: CreateProductDto, user: any, imageFilename?:Express.Mul
 async findAllProducts(
   paginationDto: ProductPaginationDto,
 ): Promise<PaginationResponseDto<ProductDto>> {
-  const { page , limit, search,status } = paginationDto;
+  const { page , limit, search, 
+    is_active
+    //status
+
+
+   } = paginationDto;
   const skip = (page - 1) * limit;
 
   const queryBuilder = this.productRepository.createQueryBuilder('product');
@@ -731,8 +742,30 @@ async updateProduct(
     product.defaultImage = uploadedUrl;
   }
 
-  Object.assign(product, updateProductDto);
+//  Object.assign(product, updateProductDto);
   product.updatedBy = user.sub.toString();
+  if (updateProductDto.productTitle !== undefined) {
+    product.productTitle = updateProductDto.productTitle;
+  }if (updateProductDto.description !== undefined) {
+    product.description = updateProductDto.description;
+  }if (updateProductDto.width !== undefined) {
+    product.width = updateProductDto.width;
+  }if (updateProductDto.height !== undefined) {
+    product.height = updateProductDto.height;
+  }if (updateProductDto.depth !== undefined) {
+    product.depth = updateProductDto.depth;
+  }if (updateProductDto.weight !== undefined) {
+    product.weight = updateProductDto.weight;
+  }if (updateProductDto.created_in !== undefined) {
+    product.created_in = updateProductDto.created_in;
+  }
+  product.category = { id: updateProductDto.category_id } as Productcategory;
+  product.packingMode = { id: updateProductDto.packingModeId } as PackingModeEntity;
+  product.commissionType = { id: updateProductDto.commissionTypeId } as CommissionType;
+  product.shippingTime = { id: updateProductDto.shippingTimeId } as ShippingTime;
+  product.size = { id: updateProductDto.size_id } as Size;
+ 
+  product.orientation = { id: updateProductDto.orientation_id } as Orientation;
 
   return this.productRepository.save(product);
 }
