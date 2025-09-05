@@ -1,14 +1,24 @@
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
-import { IsEnum, IsOptional, IsString, IsNumberString } from 'class-validator';
+import { IsEnum, IsOptional, IsInt, IsString, IsNumberString } from 'class-validator';
 import { Type } from 'class-transformer';
 //import { InventoryStatus } from 'src/shared/entities/inventory.entity';
 import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
 
 export class InventoryPaginationDto extends PaginationBaseDto {
-    // declare status?: InventoryStatus; // ✅ fixes overwrite warning
+  // declare status?: InventoryStatus; // ✅ fixes overwrite warning
 
-      @IsOptional()       
-      status?: Boolean;
+  @IsOptional()
+  status?: Boolean;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  categoryId: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  artistId: number;
 
   @IsOptional()
   @IsNumberString()

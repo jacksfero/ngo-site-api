@@ -25,7 +25,7 @@ export class KycDetails {
   @Column({ length: 50 })
   pan_gstin: string;
 
-  @Column({ length: 20 })
+  @Column()
   trade_name: string;
 
   @Column({ type: 'varchar', length: 50, nullable: true })

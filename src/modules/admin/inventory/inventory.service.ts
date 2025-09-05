@@ -76,7 +76,9 @@ export class InventoryService {
   async findAll(
     paginationDto: InventoryPaginationDto,
   ): Promise<PaginationResponseDto<InventoryResponseDto>> {
-    const { page, limit, status, productId, startDate, endDate, select } = paginationDto;
+    const { page, limit, status, productId, startDate,
+      categoryId,artistId,search,
+      endDate, select } = paginationDto;
     const skip = (page - 1) * limit;
 
     const qb = this.inventoryRepo.createQueryBuilder('inventory')
@@ -84,11 +86,19 @@ export class InventoryService {
     .leftJoinAndSelect('product.artist', 'artist') // ✅ CRITICAL: Join the artist
     .leftJoinAndSelect('inventory.shippingWeight', 'shipping');
 
-
+   // console.log(artistId,'----artist---id-=======---------')
     // ✅ Filtering
     if (status) {
       qb.andWhere('inventory.status = :status', { status });
     }
+    if (artistId) { 
+       console.log(artistId,'----artist id----------')
+      qb.andWhere('product.artist_id = :artistId', { artistId  });
+    }
+    if (categoryId) {
+      // console.log(categoryId,'----cateid----------')
+       qb.andWhere('product.category_id LIKE :categoryId', { categoryId   });
+     }
   
     if (productId) {
       qb.andWhere('inventory.product_id = :productId', { productId });

@@ -6,6 +6,7 @@ import {
     JoinColumn,
 } from 'typeorm';
 import { User } from './user.entity';
+import { text } from 'stream/consumers';
 
 
 @Entity()
@@ -19,16 +20,16 @@ export class UsersAbout {
     @JoinColumn({ name: 'owner_id' }) // foreign key in DB need to change name owner_id
     user: User;
 
-    @Column()
+    @Column({type:'text',nullable: true })
     about: string;
 
-    @Column()
+    @Column({type:'text',nullable: true })
     awards: string;
 
-    @Column()
+    @Column({type:'text',nullable: true })
     shows: string;
 
-    @Column()
+    @Column({type:'text',nullable: true })
     exhibition: string;
 
     @Column({ type: 'varchar', length: 50, nullable: true })

@@ -23,6 +23,7 @@ import { Size } from 'src/shared/entities/size.entity';
 import { User } from 'src/shared/entities/user.entity';
 import { slugify } from 'src/shared/utils/slugify';
 import { Inventory } from 'src/shared/entities/inventory.entity';
+import { Orientation } from 'src/shared/entities/orientation.entity';
 
 @Injectable()
 export class ProductService {
@@ -169,6 +170,21 @@ export class ProductService {
   }
   product.updatedBy = user.sub.toString();
     product.updatedBy = user.sub.toString();
+    if (updateProductDto.productTitle !== undefined) {
+      product.productTitle = updateProductDto.productTitle;
+    }if (updateProductDto.description !== undefined) {
+      product.description = updateProductDto.description;
+    }if (updateProductDto.width !== undefined) {
+      product.width = updateProductDto.width;
+    }if (updateProductDto.height !== undefined) {
+      product.height = updateProductDto.height;
+    }if (updateProductDto.depth !== undefined) {
+      product.depth = updateProductDto.depth;
+    }if (updateProductDto.weight !== undefined) {
+      product.weight = updateProductDto.weight;
+    }if (updateProductDto.created_in !== undefined) {
+      product.created_in = updateProductDto.created_in;
+    }
     product.category = { id: updateProductDto.category_id } as Productcategory;
     product.packingMode = { id: updateProductDto.packingModeId } as PackingModeEntity;
     product.commissionType = { id: updateProductDto.commissionTypeId } as CommissionType;
@@ -176,6 +192,7 @@ export class ProductService {
     product.size = { id: updateProductDto.size_id } as Size;
     product.artist = { id: updateProductDto.artist_id } as User;
     product.owner = { id: updateProductDto.owner_id } as User;
+    product.orientation = { id: updateProductDto.orientation_id } as Orientation;
   //   product.is_lock = updateProductDto.is_lock !== undefined 
   // ? Boolean(updateProductDto.is_lock) 
   // : product.is_lock; // keep existing value

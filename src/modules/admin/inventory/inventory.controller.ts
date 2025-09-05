@@ -3,12 +3,12 @@ import { InventoryService } from './inventory.service';
 import { CreateInventoryDto } from './dto/create-inventory.dto';
 import { UpdateInventoryDto } from './dto/update-inventory.dto';
 import { Inventory } from 'src/shared/entities/inventory.entity';
-import { PaginationPipe } from 'src/shared/pipes/pagination.pipe';
 import { INVENTORY_LIMIT,INVENTORY_MAX_LIMIT,INVENTORY_PAGE } from 'src/shared/config/pagination.config';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { InventoryPaginationDto } from './dto/inventory-pagination.dto';
 import { InventoryResponseDto } from './dto/inventry-response.dto';
 import { InventoryStatusDto } from './dto/inventory-status.dto';
+import { PaginationClinetPipe } from 'src/shared/pipes/pagination-client.pipe';
 
 
 @Controller()
@@ -29,7 +29,7 @@ export class InventoryController {
  
   @Get()
   async findAll(
-    @Query(new PaginationPipe(INVENTORY_LIMIT, INVENTORY_MAX_LIMIT, INVENTORY_PAGE))
+    @Query(new PaginationClinetPipe(INVENTORY_LIMIT, INVENTORY_MAX_LIMIT, INVENTORY_PAGE))
     @Query() paginationDto: InventoryPaginationDto,
   ): Promise<PaginationResponseDto<InventoryResponseDto>> 
   {
