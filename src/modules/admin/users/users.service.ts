@@ -429,7 +429,7 @@ async findByUsername(username: string): Promise<User | undefined> {
   //   return await this.addressRepo.save(address);
   // }
 
-  async createAddress(dto: CreateUserAddressDto,userId: number,  user: any) {
+  async createAddress(dto: CreateUserAddressDto,userId: number,  users: any) {
     // limit rules
     if (dto.type === AddressType.PERSONAL) {
       const existing = await this.addressRepo.count({ where: { userId, type: AddressType.PERSONAL } });
@@ -442,11 +442,11 @@ async findByUsername(username: string): Promise<User | undefined> {
         throw new BadRequestException(`You can only add up to 5 ${dto.type} addresses`);
       }
     }
- // console.log('----------------');  
+  console.log('-------console.log---------',userId);  
     const address = this.addressRepo.create({ ...dto, 
-              userId,
-        createdBy:user.sub.toString(),
-       // updatedBy: user.sub.toString(),
+      user: { id: userId },
+        createdBy:users.sub.toString(),
+       updatedBy: users.sub.toString(),
 
      });
   
@@ -457,11 +457,20 @@ async findByUsername(username: string): Promise<User | undefined> {
     return this.addressRepo.save(address);
   }
 
-  async findAllForUserAddress(userId: number) {
-    return await this.addressRepo.find({
-      where: { user: { id: userId } },
+  async findAllForUserAddress(userId: number, addressType: AddressType,) {
+    const addresses = await this.addressRepo.find({
+      where: { 
+        user: { id: userId },
+        type: addressType, // ✅ type safe enum filter
+      },
       relations: ['user'],
     });
+  
+    if (!addresses.length) {
+      throw new NotFoundException(`User Address not found for type: ${addressType}`);
+    }
+  
+    return addresses;
   }
 
   async updateAddress(id: number, dto: UpdateUserAddressDto, user:any) {

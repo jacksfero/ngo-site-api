@@ -9,6 +9,7 @@ import {
   UseGuards,
   ParseIntPipe,
   Query,
+  ParseEnumPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -33,6 +34,7 @@ import { CreateBankDetailDto } from './dto/create-user-bank-detail.dto';
 import { UpdateBankDetailDto } from './dto/update-user-bank-detail.dto';
 import { CreateKycDetailDto, UpdateKycDetailDto } from './dto/create-user-kyc-detail.dto';
 import { PaginationClinetPipe } from 'src/shared/pipes/pagination-client.pipe';
+import { AddressType } from 'src/shared/entities/users-address.entity';
 
 @Controller()
 //@UseGuards(PermissionsGuard)
@@ -108,9 +110,12 @@ export class UsersController {
     return this.usersService.createAddress(dto, id, req.user);
   }
 
-  @Get('user-address/:id')
-  findAllAddress(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.findAllForUserAddress(id);
+  @Get('user-address/:id/:addressType')
+  findAllAddress(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('addressType', new ParseEnumPipe(AddressType)) addressType: AddressType,
+  ) {
+    return this.usersService.findAllForUserAddress(id,addressType);
   }
 
   @Patch('user-address/:id')
