@@ -91,8 +91,11 @@ export class InventoryService {
     if (status) {
       qb.andWhere('inventory.status = :status', { status });
     }
+    if (search) {
+      qb.andWhere('product.productTitle LIKE :search', { search: `%${search}%` });
+    }
     if (artistId) { 
-       console.log(artistId,'----artist id----------')
+      // console.log(artistId,'----artist id----------')
       qb.andWhere('product.artist_id = :artistId', { artistId  });
     }
     if (categoryId) {
@@ -112,7 +115,7 @@ export class InventoryService {
  const defaultInventoryFields = ['id', 'status', 'price', 'discount','gstSlot','shippingSlot','updatedAt'];
  const defaultProductFields = ['id', 'productTitle', 'defaultImage'];
  const defaultArtistFields = ['id', 'username'];
- const defaultShippingFields = ['weightSlot', 'costINR'];
+ const defaultShippingFields = ['weightSlot', 'costINR', 'CostOthers'];
 
  // ✅ Process requested fields
  let selectedFields: string[] = [];
