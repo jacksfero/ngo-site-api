@@ -353,10 +353,7 @@ create(
     @Req() req,
     @Body() createWishlistDto: CreateWishlistDto,
   ) {
-    //const user = req; // ✅ user is available from JWT payload
-    // const userId = req.user?.sub; // ✅ Strongly typed
-    //  console.log(user,'---------PayLoad---------');
-
+ 
     return this.authService.addToWishlist(req.user, createWishlistDto);
   }
 
