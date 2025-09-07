@@ -72,6 +72,15 @@ blogs: Blog[];
   @Column({ type: 'boolean', default: false })
   featured_artist: boolean;
 
+ @Column({ type: 'boolean', default: false })
+  homePageDisplay: boolean;
+
+  @Column({ type: 'boolean', default: false })
+  profileEdit: boolean;
+
+  @Column({ type: 'varchar', length: 255,   nullable: true })
+  adminRemark: string;
+
  // 🟢 Add relation to Artist Type
  @ManyToOne(() => ArtistType, )
  @JoinColumn({ name: 'artist_type_id' })

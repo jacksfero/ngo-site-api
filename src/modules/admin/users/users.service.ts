@@ -305,7 +305,7 @@ async findByUsername(username: string): Promise<User | undefined> {
     const { roleIds, email, mobile, ...rest } = dto;
 
     // Step 1: Find the user
-    const user = await this.userRepository.findOne({ where: { id }, relations: ['roles'] });
+    const user = await this.userRepository.findOne({ where: { id }, relations: ['roles','artistType'] });
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
@@ -333,10 +333,14 @@ async findByUsername(username: string): Promise<User | undefined> {
     Object.assign(user, { ...rest });
     if (email) user.email = email;
     if (mobile) user.mobile = mobile; 
-    if (dto.artist_type_id) user.artist_type_id = dto.artist_type_id;
+    //if (dto.artist_type_id) user.artistType = dto.artist_type_id;
+    if (dto.artist_type_id) user.artistType = { id: dto.artist_type_id } as ArtistType;
     if (dto.featured_artist) user.featured_artist = dto.featured_artist;
+    if (dto.adminRemark) user.adminRemark = dto.adminRemark;
     if (dto.phonecode) user.phonecode = dto.phonecode;
-
+    if (dto.homePageDisplay) user.homePageDisplay = dto.homePageDisplay;
+    if (dto.profileEdit) user.profileEdit = dto.profileEdit;
+     
     // Step 4: Update roles if provided
     if (roleIds?.length) {
       const roles = await this.roleRepository.find({
@@ -354,8 +358,7 @@ async findByUsername(username: string): Promise<User | undefined> {
     if (!surface) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-    surface.status = !surface.status;
-    
+    surface.status = !surface.status;    
 
     return this.userRepository.save(surface);
   }

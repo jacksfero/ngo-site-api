@@ -17,7 +17,7 @@ export class CreateUserDto {
   @IsEmail()
   email: string;
 
-   @IsString()
+  @IsString()
   mobile: string; 
   
   @IsOptional()
@@ -41,12 +41,24 @@ export class CreateUserDto {
   is_verified?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  profileEdit?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  homePageDisplay?: boolean;
+
+  @IsOptional()
+  @IsString()
+  adminRemark?: string;
+
+  @IsOptional()
   @IsArray()
   @IsInt({ each: true })
   roleIds?: number[];
 
   @IsOptional()
-  @IsArray()
+  //@IsArray()
   @IsInt()
   artist_type_id?: number;
 }
