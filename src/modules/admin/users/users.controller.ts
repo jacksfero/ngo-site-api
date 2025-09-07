@@ -10,6 +10,8 @@ import {
   ParseIntPipe,
   Query,
   ParseEnumPipe,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -35,6 +37,8 @@ import { UpdateBankDetailDto } from './dto/update-user-bank-detail.dto';
 import { CreateKycDetailDto, UpdateKycDetailDto } from './dto/create-user-kyc-detail.dto';
 import { PaginationClinetPipe } from 'src/shared/pipes/pagination-client.pipe';
 import { AddressType } from 'src/shared/entities/users-address.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { FileValidationPipe } from 'src/shared/pipes/file-size-type-validation.pipe';
 
 @Controller()
 //@UseGuards(PermissionsGuard)
@@ -57,7 +61,7 @@ export class UsersController {
   ): Promise<PaginationResponseDto<UsersListDto>> {
     return this.usersService.findAll(paginationDto);
   }
-
+ 
   /* @Get()
    async findAll(
      @Query() paginationDto: UserPaginationDto,
@@ -82,6 +86,21 @@ export class UsersController {
   @Get('artisttypelist')
   GetArtistTypeList() {
     return this.usersService.GetArtistTypeList();
+  }
+
+  @Post('upload/:userId')
+  @UseInterceptors(FileInterceptor('profileimage'))
+  uploadProfileImage(
+    @Param('userId', ParseIntPipe) userId: number,
+    @UploadedFile(new FileValidationPipe(2 * 1024 * 1024)) file: Express.Multer.File,    
+     @Req() req
+  ) {
+    return this.usersService.uploadProfileImage(userId,file,req.user);
+  }
+
+  @Get('profileimage/:userId')
+  geProfileImage( @Param('userId', ParseIntPipe) userId: number,) {
+    return this.usersService.geProfileImage(userId);
   }
 
   /** Start User about us section */

@@ -10,9 +10,10 @@ import { UsersAddress } from 'src/shared/entities/users-address.entity';
 import { BankDetail } from 'src/shared/entities/user-bank-detail.entity';
 import { KycDetails } from 'src/shared/entities/user-kyc.entity';
 import { ArtistType } from 'src/shared/entities/artist-type.entity';
+import { UserProfileImage } from 'src/shared/entities/user-profile-image.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, ArtistType, Role, Permission,UsersAbout,UsersAddress,BankDetail,KycDetails])],
+  imports: [TypeOrmModule.forFeature([User, UserProfileImage, ArtistType, Role, Permission,UsersAbout,UsersAddress,BankDetail,KycDetails])],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService],

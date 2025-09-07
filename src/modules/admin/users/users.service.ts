@@ -29,11 +29,16 @@ import { UpdateBankDetailDto } from './dto/update-user-bank-detail.dto';
 import { KycDetails } from 'src/shared/entities/user-kyc.entity';
 import { CreateKycDetailDto, UpdateKycDetailDto } from './dto/create-user-kyc-detail.dto';
 import { ArtistType } from 'src/shared/entities/artist-type.entity';
- 
+import { sanitizeFileName } from 'src/shared/utils/sanitizefilename';
+import { UserProfileImage } from 'src/shared/entities/user-profile-image.entity';
+import { S3Service } from 'src/shared/s3/s3.service'; 
 
 @Injectable()
 export class UsersService {
-  constructor(
+
+ constructor(
+
+    private readonly s3service: S3Service,
 
     @InjectRepository(User)
     private userRepository: Repository<User>,
@@ -41,8 +46,7 @@ export class UsersService {
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
 
-
-     @InjectRepository(UsersAbout)
+    @InjectRepository(UsersAbout)
     private aboutRepo: Repository<UsersAbout>,
 
     @InjectRepository(UsersAddress)
@@ -51,12 +55,14 @@ export class UsersService {
     @InjectRepository(BankDetail)
     private bankRepo: Repository<BankDetail>,
 
+    @InjectRepository(UserProfileImage)
+    private readonly profileImageRepo: Repository<UserProfileImage>,
+
     @InjectRepository(KycDetails)
     private kycRepo: Repository<KycDetails>,
 
     @InjectRepository(ArtistType)
     private artistTypeRepo: Repository<ArtistType>,
-
 
   ) {}
   async GetArtistTypeList(): Promise<ArtistType[]> {
@@ -207,6 +213,40 @@ async findByUsername(username: string): Promise<User | undefined> {
   
     return new PaginationResponseDto(data, { total, page, limit  });
   }
+
+  async uploadProfileImage(uId: number,profileimage: Express.Multer.File, user: any): Promise<UserProfileImage> {
+    let image_Url: string | null = null;
+    const userId = user.sub.toString();
+    const userd = await this.userRepository.findOne({ where: { id: uId } });
+    if (!userd) throw new NotFoundException('User not found');
+
+    if (profileimage) {
+      const cleanName = sanitizeFileName(profileimage.originalname);
+      const key = `profile/${Date.now()}-${cleanName}`;
+      image_Url =
+        await this.s3service.uploadBuffer(key, profileimage.buffer, profileimage.mimetype);
+    }
+
+    // Check if already exists
+    let profileImage = await this.profileImageRepo.findOne({ where: { user: { id: uId } }, relations: ['user'] });
+    if (profileImage) {
+      profileImage.imageUrl = image_Url;
+    } else {
+      profileImage = this.profileImageRepo.create({ imageUrl: image_Url, user: userd });
+    }
+
+    return this.profileImageRepo.save(profileImage);
+  }
+
+  async geProfileImage(userId: number): Promise<UserProfileImage> {
+   // const userId = user.sub.toString();
+    const profileImage = await this.profileImageRepo.findOne({
+      where: { user: { id: userId } },
+    });
+    if (!profileImage) throw new NotFoundException('Profile image not found');
+    return profileImage;
+  }
+  
  /* async findAll(
     paginationDto: UserPaginationDto,
   ): Promise<PaginationResponseDto<UsersListDto>> {
