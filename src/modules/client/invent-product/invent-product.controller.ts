@@ -13,11 +13,7 @@ import { PaginationClinetPipe } from 'src/shared/pipes/pagination-client.pipe';
 export class InventProductController {
   constructor(private readonly inventProductService: InventProductService) {}
 
-  @Post()
-  create(@Body() createInventProductDto: CreateInventProductDto) {
-    return this.inventProductService.create(createInventProductDto);
-  }
-
+  
   @Get()
   async findAll(
     @Query(new PaginationClinetPipe(FRONT_INVENT_PRODUCTS_LIMIT, FRONT_INVENT_PRODUCTS_MAX_LIMIT, FRONT_INVENT_PRODUCTS_PAGE))
@@ -42,13 +38,5 @@ export class InventProductController {
     return this.inventProductService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateInventProductDto: UpdateInventProductDto) {
-    return this.inventProductService.update(+id, updateInventProductDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.inventProductService.remove(+id);
-  }
+  
 }

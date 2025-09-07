@@ -107,6 +107,9 @@ export class Product {
   @Column({ type: 'boolean', default: false })
   is_lock: boolean;
 
+  @Column({ type: 'boolean', default: true })
+  terms_and_conditions: boolean;
+
   /*@Column({ type: 'boolean', default: false })
   inventory: boolean;*/
 
@@ -165,7 +168,6 @@ images: ProductImage[];
 @OneToOne(() => ContactUs, (contactUs) => contactUs.product)
 contact: ContactUs;
  
-
 @OneToOne(() => Inventory, (inventory) => inventory.product, { cascade: true })
 productInventory: Inventory;
 
@@ -224,7 +226,6 @@ shippingTimeId: number;
  @Column({ name: 'orientation_id', nullable: true })
  orientation_id: number;
 
-
  @ManyToMany(() => Subject,subject => subject.products,  )
  @JoinTable({
    name: 'products_subject',
@@ -233,7 +234,6 @@ shippingTimeId: number;
  })
  subjects: Subject[];
  
-
  @ManyToMany(() => Style, style => style.products,  )
  @JoinTable({
    name: 'products_style',

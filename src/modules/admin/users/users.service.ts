@@ -328,7 +328,7 @@ async findByUsername(username: string): Promise<User | undefined> {
         throw new BadRequestException('Mobile already in use by another user');
       }
     }
-
+    
     // Step 3: Merge fields
     Object.assign(user, { ...rest });
     if (email) user.email = email;
@@ -340,6 +340,9 @@ async findByUsername(username: string): Promise<User | undefined> {
     if (dto.phonecode) user.phonecode = dto.phonecode;
     if (dto.homePageDisplay) user.homePageDisplay = dto.homePageDisplay;
     if (dto.profileEdit) user.profileEdit = dto.profileEdit;
+    if(dto.password){
+      user.password = await bcrypt.hash(dto.password, 10)
+      }
      
     // Step 4: Update roles if provided
     if (roleIds?.length) {

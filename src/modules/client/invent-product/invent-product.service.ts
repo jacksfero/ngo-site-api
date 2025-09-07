@@ -20,16 +20,14 @@ export class InventProductService {
   ) {}
 
 
-  create(createInventProductDto: CreateInventProductDto) {
-    return 'This action adds a new inventProduct';
-  }
+  
 
   async findAll(
     paginationDto: InventProdPaginatDto,
   ): Promise<PaginationResponseDto<InventProdListDto>> {
     // let categoryId?:number ;
 
-    const { page, limit, search, categoryId, artistId,select, 
+    const { page, limit, search,isActive, categoryId, artistId,select, 
       styleId, subjectId, orientationId, sizeId,mediumId,surfaceId,
       affordable_art,eliteChoice,new_arrival,discount   } = paginationDto;
     //  let categoryId?:number ;
@@ -46,7 +44,8 @@ export class InventProductService {
     // .leftJoinAndSelect('product.subjects', 'subject') // manytomany
     // .leftJoinAndSelect('product.styles', 'style')
     .leftJoinAndSelect('inventory.shippingWeight', 'shipping')
-    .andWhere('inventory.status = :status', { status:true });
+    .andWhere('inventory.status = :status', { status:true })
+    .andWhere('product.is_active = :isActive', { isActive: true });
 
       // ✅ OPTIONAL: Only join many-to-many relations if they're needed for filtering
   if (subjectId) {
@@ -177,7 +176,7 @@ export class InventProductService {
     .leftJoinAndSelect('inventory.shippingWeight', 'shippingWeight') // Uncommented shipping
     .where('product.slug = :productSlug', { productSlug }) // Better parameter name
     .andWhere('inventory.status = :status', { status: true })
-    .andWhere('product.status = :isActive', { isActive: true })
+    .andWhere('product.is_active = :isActive', { isActive: true })
     // ✅ CRITICAL: Add inventory quantity check for e-commerce
     //.andWhere('inventory.quantity > :minQuantity', { minQuantity: 0 })
     .select([
@@ -241,13 +240,7 @@ export class InventProductService {
 }
 
 
-  update(id: number, updateInventProductDto: UpdateInventProductDto) {
-    return `This action updates a #${id} inventProduct`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} inventProduct`;
-  }
+  
 }
 
 

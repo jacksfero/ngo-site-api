@@ -110,6 +110,7 @@ export class ProductService {
       artist: { id: dto.artist_id } as User,
       owner: { id: dto.owner_id } as User,
       createdBy: user.sub.toString(),
+      is_active : dto.is_active as ProductStatus,
     });
     if (dto.subjectsIds?.length) {
       product.subjects = await this.subjectRepo.findBy({ id: In(dto.subjectsIds) });
@@ -204,7 +205,7 @@ export class ProductService {
   const booleanFields: (keyof UpdateProductDto)[] = [
     'is_lock','original_painting','new_arrival','eliteChoice','affordable_art',
     'price_on_demand','negotiable','printing_rights','featured','refundable'
-    ,'certificate','is_lock'    
+    ,'certificate','is_lock' ,'terms_and_conditions'    
   ];
   for (const field of booleanFields) {
     if (updateProductDto[field] !== undefined) {

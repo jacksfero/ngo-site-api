@@ -183,7 +183,7 @@ export class ProductsService {
        .leftJoin('product.productInventory', 'inventoryProduct')
        .leftJoin('product.category', 'category')
       .where('surface.status = :status', { status: true })
-      .andWhere('product.status = :active', { active: true })
+      .andWhere('product.is_active = :active', { active: true })
       .andWhere('category.slug = :slug', { slug })
       .andWhere('inventoryProduct.status = :active', { active: true })
       .orderBy('surface.surfaceName', 'ASC')
@@ -200,7 +200,7 @@ export class ProductsService {
     .leftJoin('product.productInventory', 'inventory') 
     .leftJoin('product.category', 'category')
      .where('style.status = :styleStatus', { styleStatus: true })  
-     .andWhere('product.status = :productStatus', { productStatus: true })  
+     .andWhere('product.is_active = :productStatus', { productStatus: true })  
      .andWhere('inventory.status = :inventoryStatus', { inventoryStatus: true })  
      .andWhere('category.slug = :slug', { slug })
     .getMany();
@@ -227,7 +227,7 @@ export class ProductsService {
        .leftJoin('product.productInventory', 'inventoryProduct')
        .leftJoin('product.category', 'category')
       .where('subject.status = :status', { status: true })
-      .andWhere('product.status = :active', { active: true })
+      .andWhere('product.is_active = :active', { active: true })
       .andWhere('category.slug = :slug', {  slug })
       .andWhere('inventoryProduct.status = :active', { active: true })
       .orderBy('subject.subject', 'ASC')
@@ -257,7 +257,7 @@ export class ProductsService {
      .leftJoin('product.productInventory', 'inventoryProduct')
      .leftJoin('product.category', 'category')
     .where('medium.status = :status', { status: true })
-    .andWhere('product.status = :active', { active: true })
+    .andWhere('product.is_active = :active', { active: true })
     .andWhere('category.slug = :slug', { slug })
     .andWhere('inventoryProduct.status = :active', { active: true })
     .orderBy('medium.name', 'ASC')
@@ -290,24 +290,5 @@ export class ProductsService {
     });
   }
 
-  /*
-    create(createProductDto: CreateProductDto) {
-      return 'This action adds a new product';
-    }
   
-    findAll() {
-      return `This action returns all products`;
-    }
-  
-    findOne(id: number) {
-      return `This action returns a #${id} product`;
-    }
-  
-    update(id: number, updateProductDto: UpdateProductDto) {
-      return `This action updates a #${id} product`;
-    }
-  
-    remove(id: number) {
-      return `This action removes a #${id} product`;
-    }*/
 }

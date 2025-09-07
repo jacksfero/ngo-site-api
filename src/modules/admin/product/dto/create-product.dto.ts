@@ -100,8 +100,6 @@ export class CreateProductDto {
   @IsBoolean()
   original_painting?: boolean;
 
-
-
   @IsOptional()
   @IsBoolean()
   new_arrival?: boolean;
@@ -109,6 +107,10 @@ export class CreateProductDto {
   @IsOptional()
   @IsBoolean()
   eliteChoice?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  terms_and_conditions?: boolean;  
 
   @IsOptional()
   @IsBoolean()
