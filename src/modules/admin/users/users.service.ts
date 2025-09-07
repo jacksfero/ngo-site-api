@@ -292,7 +292,7 @@ async findByUsername(username: string): Promise<User | undefined> {
     try {
     return await this.userRepository.findOne({ 
       where: { id },
-      relations: ['roles','artistType'], // include relations if needed
+      relations: ['roles','artistType','profileImage'], // include relations if needed
     //  select: ['id', 'username','email','mobile','status','is_verified', 'password'] // Customize as needed
     });
   } catch (error) {
