@@ -81,11 +81,11 @@ blogs: Blog[];
   @Column({ type: 'varchar', length: 255,   nullable: true })
   adminRemark: string;
 
- // 🟢 Add relation to Artist Type
+ // 🟢 Add relation to Artist test Type
  @ManyToOne(() => ArtistType, )
  @JoinColumn({ name: 'artist_type_id' })
  artistType: ArtistType;
- 
+  
  @Column({ name: 'artist_type_id', nullable: true })
  artist_type_id: number;
 
