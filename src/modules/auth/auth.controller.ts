@@ -61,7 +61,13 @@ export class AuthController {
      * Step 1: Start Registration - Send OTP
      * POST /auth/start-registration
      */
-
+  @Public()
+  @Get('artistslist/:id')
+  async getArtistList(
+    @Param('id') id: number,
+  ) {
+    return this.authService.getArtistList(id);
+  }
   
   @Public()
   @Post('start-email-verification')
@@ -138,6 +144,7 @@ export class AuthController {
   async verifyForgotPasswordOtp(@Body() dto: VerifyOtpDto, @Ip() ipAddress?: string) {
     return this.authService.verifyForgotPasswordOtp(dto, ipAddress);
   }
+
   
   
   @Public()

@@ -111,7 +111,25 @@ export class AuthService {
     @InjectRepository(Wishlist)
     private wishlistRepository: Repository<Wishlist>,
 
-  ) { }
+  ) {}
+
+  async getArtistList(id: number) {
+    const artists = await this.userRepository
+      .createQueryBuilder('user')
+      .innerJoin('user.roles', 'roles')
+      .where('roles.id = :roleId', { roleId: 4 })
+      .andWhere('user.artist_type_id = :artist_type_id', { artist_type_id: id })
+      .select(['user.id', 'user.username', 'user.artist_type_id'])
+      .getMany();
+  
+    if (artists.length === 0) {
+      throw new NotFoundException('Artists not found');
+    }
+  
+    return artists;
+  }
+
+
   async getLoggedInUser(users: any): Promise<User> {
     const userId = users.sub.toString();
     const user = await this.userRepository.findOne({

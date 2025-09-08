@@ -22,6 +22,8 @@ export class InventProductController {
     return this.inventProductService.findAll(paginationDto);
   } 
 
+ 
+
   // async findAll(
   //   @Query(new PaginationPipe(FRONT_INVENT_PRODUCTS_LIMIT, FRONT_INVENT_PRODUCTS_MAX_LIMIT, FRONT_INVENT_PRODUCTS_PAGE), 
   //         // new ValidationPipe({ transform: true })
