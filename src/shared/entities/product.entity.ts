@@ -61,9 +61,7 @@ export class Product {
 
   @Column({ type: 'int', nullable: true })
   weight: number;
-
  
-
   @Column({ type: 'int', nullable: true })
   created_in: number;
 
@@ -182,7 +180,7 @@ owner: User;
 category: Productcategory;
 
 // ✅ Artist (Relation)
-@ManyToOne(() => User )
+@ManyToOne(() => User, (user) => user.products,)
 @JoinColumn({ name: 'artist_id' }) // foreign key in DB need to change name owner_id
 artist: User;
  

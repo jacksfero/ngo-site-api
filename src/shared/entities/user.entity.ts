@@ -21,6 +21,7 @@ import { BankDetail } from './user-bank-detail.entity';
 import { KycDetails } from './user-kyc.entity';
 import { UserProfileImage } from './user-profile-image.entity';
 import { ArtistType } from './artist-type.entity';
+import { Product } from './product.entity';
 
  
 @Entity('user')
@@ -59,6 +60,9 @@ videos: Video[];
 
 @OneToMany(() => Blog, (blog) => blog.author)
 blogs: Blog[];
+
+@OneToMany(() => Product, (product) => product.artist)
+products: Blog[];
 
  @OneToMany(() => ExhibitionProduct, (map) => map.user)
   displayMappings: ExhibitionProduct[];

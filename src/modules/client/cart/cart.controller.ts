@@ -17,6 +17,8 @@ import { OptionalJwtAuthGuard } from 'src/modules/auth/guards/optional-jwt-auth.
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 
+ 
+
   @UseGuards(OptionalJwtAuthGuard)
  @Get()
   async getCart(
@@ -211,15 +213,14 @@ export class CartController {
      }
    }
 
-  private setGuestCookie(res: Response, guestId: string): void {
-    res.cookie('guestCartId', guestId, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      path: '/',
-    });
-  }
+private setGuestCookie(res: Response, guestId: string) {
+  res.cookie('guestCartId', guestId, {
+    httpOnly: true,   // prevents JS access
+    secure: true,     // required for HTTPS (Render is HTTPS)
+    sameSite: 'none', // VERY important for cross-domain
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+  });
+}
 }
  /*  @Put('update/:itemId')
   async updateCartItem(
