@@ -221,7 +221,7 @@ private setGuestCookie(res: Response, guestId: string) {
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   });
 }
-}
+} 
  /*  @Put('update/:itemId')
   async updateCartItem(
     @Param('itemId') itemId: number,

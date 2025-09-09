@@ -247,46 +247,7 @@ async findByUsername(username: string): Promise<User | undefined> {
     return profileImage;
   }
   
- /* async findAll(
-    paginationDto: UserPaginationDto,
-  ): Promise<PaginationResponseDto<UsersListDto>> {
-    const { page = USERS_PAGE, limit = USERS_LIMIT, search,is_verified, status, role } = paginationDto;
-    const skip = (page - 1) * limit;
-    
   
-    const queryBuilder = this.userRepository
-    .createQueryBuilder('user')
-    .leftJoinAndSelect('user.roles', 'role')
-    .orderBy('user.createdAt', 'DESC')
-    .take(limit)
-    .skip(skip);
-  
-    if (search) {
-      queryBuilder.andWhere(
-        '(LOWER(user.username) LIKE :search OR LOWER(user.email) LIKE :search OR LOWER(user.mobile) LIKE :search)',
-        { search: `%${search.toLowerCase()}%` },
-      );
-    }
-    if (typeof status === 'boolean') {
-      queryBuilder.andWhere('user.status = :status', { status });
-    }
-
-    if (typeof status === 'boolean') {
-      queryBuilder.andWhere('user.is_verified = :is_verified', { is_verified });
-    }
-  
-    if (role) {
-      queryBuilder.andWhere('role.name = :role', { role });
-    }
-  
-    const [result, total] = await queryBuilder.getManyAndCount();
-  
-    const data = plainToInstance(UsersListDto, result, {
-      excludeExtraneousValues: true,
-    });
-  
-    return new PaginationResponseDto(data, { total, page, limit });
-  }*/
 
  async findOne(id: number) {
     try {

@@ -61,6 +61,25 @@ export class AuthController {
      * Step 1: Start Registration - Send OTP
      * POST /auth/start-registration
      */
+
+
+  @Public()
+  @Get('artistsartwork/:id')
+  async getArtistsByUserId(
+    @Param('id') id: number,
+  ) {
+    return this.authService.getArtistsByUserId(id);
+  }
+
+
+  @Public()
+  @Get('artistslistartwork/:id')
+  async getArtistsWithArtworkCount(
+    @Param('id') id: number,
+  ) {
+    return this.authService.getArtistsWithArtworkCount(id);
+  }
+
   @Public()
   @Get('artistslist/:id')
   async getArtistList(

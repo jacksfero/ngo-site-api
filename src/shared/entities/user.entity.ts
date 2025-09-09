@@ -22,6 +22,7 @@ import { KycDetails } from './user-kyc.entity';
 import { UserProfileImage } from './user-profile-image.entity';
 import { ArtistType } from './artist-type.entity';
 import { Product } from './product.entity';
+import { UsersAbout } from './users-about.entity';
 
  
 @Entity('user')
@@ -114,6 +115,9 @@ addresses: UsersAddress[];
 
 @OneToMany(() => BankDetail, (bank) => bank.user)
 bankDetails: BankDetail[];
+
+@OneToMany(() => UsersAbout, (about) => about.user)
+aboutDetails: UsersAbout;
 
 @OneToMany(() => KycDetails, (kyc) => kyc.user)
 kycDetails: KycDetails[];

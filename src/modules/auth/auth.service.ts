@@ -113,6 +113,70 @@ export class AuthService {
 
   ) {}
 
+  // artist.service.ts
+async getArtistsWithArtworkCount(id: number) {
+  const roleId = 4; // ✅ Artist role ID (keep configurable at top)
+
+  const artists = await this.userRepository
+    .createQueryBuilder('user')
+    .innerJoin('user.roles', 'roles')
+    .leftJoin('user.products', 'product') // assuming relation user.products exists
+    .leftJoin('product.productInventory', 'inventory') // assuming relation user.products exists
+    .where('user.artist_type_id = :artist_type_id', { artist_type_id: id }) // artist role
+    .andWhere('roles.id = :roleId', { roleId })
+    .andWhere('product.is_active = :status', { status: 'Active' }) // filter only active artworks in inventory
+    .andWhere('inventory.status = :statuss', { statuss: true }) // filter only active artworks in inventory
+    .select('user.id', 'id')
+    .addSelect('user.username', 'username')
+    .addSelect('user.artist_type_id', 'artist_type_id')    
+    .addSelect('ANY_VALUE(product.defaultImage)', 'defaultImage')
+    .addSelect('COUNT(product.id)', 'artworkCount')
+    .groupBy('user.id') 
+    .getMany();
+
+  if (artists.length === 0) {
+    throw new NotFoundException('No artists found with artworks');
+  }
+
+  return artists;
+}
+
+
+async getArtistsByUserId(id: number) {
+  const roleId = 4; // ✅ Artist role ID (keep configurable at top)
+  const artists = await this.userRepository
+    .createQueryBuilder('user')
+    .innerJoinAndSelect('user.roles', 'roles')
+    .innerJoinAndSelect('user.profileImage', 'profileImage')
+    .innerJoinAndSelect('user.aboutDetails', 'aboutDetails')
+    .where('user.id = :id', { id })
+    .andWhere('roles.id = :roleId', { roleId}) // ✅ restrict only artists
+   // .where('roles.id = :roleId', { roleId: 4 })
+   // .andWhere('user.artist_type_id = :artist_type_id', { artist_type_id: id })
+    //.select(['user.id', 'user.username', 'user.artist_type_id'])
+   // .orderBy('user.username', 'ASC')
+    .getOne();
+
+    if (!artists) {
+      throw new NotFoundException('Artists not found');
+    }  
+
+
+  // ✅ If roles is an array (common in RBAC systems)
+  const isArtist = artists.roles.some((role) => role.id === roleId);
+
+  if (!isArtist) {
+    throw new NotFoundException('Artist not found');
+  }
+
+  
+  return artists;
+}
+
+
+
+
+
   async getArtistList(id: number) {
     const artists = await this.userRepository
       .createQueryBuilder('user')
@@ -120,12 +184,12 @@ export class AuthService {
       .where('roles.id = :roleId', { roleId: 4 })
       .andWhere('user.artist_type_id = :artist_type_id', { artist_type_id: id })
       .select(['user.id', 'user.username', 'user.artist_type_id'])
+      .orderBy('user.username', 'ASC')
       .getMany();
   
     if (artists.length === 0) {
       throw new NotFoundException('Artists not found');
-    }
-  
+    }  
     return artists;
   }
 
@@ -1181,4 +1245,58 @@ export function toUserAddressResponse(address: UsersAddress): UserAddressRespons
 
   return { message: 'OTP verified successfully.' };
 }
+
+
+
+
+
+
+
+
+async getArtistsWithArtworkCount() {
+  const subQuery = this.userRepository
+    .createQueryBuilder('u')
+    .select('p.userId', 'userId')
+    .addSelect('p.defaultImage', 'defaultImage')
+    .innerJoin('u.products', 'p')
+    .innerJoin('p.productInventory', 'inv')
+    .where('p.is_active = :status', { status: 'Active' })
+    .andWhere('inv.status = :statuss', { statuss: true })
+    .orderBy('inv.updatedAt', 'DESC');
+
+  const artists = await this.userRepository
+    .createQueryBuilder('user')
+    .innerJoin('user.roles', 'roles')
+    .leftJoin('user.products', 'product')
+    .leftJoin('product.productInventory', 'inventory')
+    .where('roles.id = :roleId', { roleId: 13 }) // artist role
+    .andWhere('product.is_active = :status', { status: 'Active' })
+    .andWhere('inventory.status = :statuss', { statuss: true })
+    .select('user.id', 'id')
+    .addSelect('user.username', 'username')
+    .addSelect('user.artist_type_id', 'artist_type_id')
+    .addSelect('COUNT(product.id)', 'artworkCount')
+    .addSelect((qb) => {
+      return qb
+        .subQuery()
+        .select('p.defaultImage')
+        .from('product', 'p')
+        .innerJoin('p.productInventory', 'inv')
+        .where('p.userId = user.id')
+        .andWhere('p.is_active = :status', { status: 'Active' })
+        .andWhere('inv.status = :statuss', { statuss: true })
+        .orderBy('inv.updatedAt', 'DESC')
+        .limit(1);
+    }, 'defaultImage')
+    .groupBy('user.id')
+    .setParameters({ status: 'Active', statuss: true })
+    .getRawMany();
+
+  if (artists.length === 0) {
+    throw new NotFoundException('No artists found with artworks');
+  }
+
+  return artists;
+}
+
 */
