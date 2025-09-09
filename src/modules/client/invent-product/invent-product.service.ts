@@ -9,6 +9,7 @@ import { Inventory } from 'src/shared/entities/inventory.entity';
 import { InventProdPaginatDto } from './dto/invent-product-paginate.dto';
 import { InventProdListDto } from './dto/invent-prod-list.dto';
 import { InventProductDetailResponseDto } from './dto/invent-product-detail-response.dto';
+import { ProductStatus } from 'src/shared/entities/product.entity';
 
 
 @Injectable()
@@ -44,8 +45,9 @@ export class InventProductService {
     // .leftJoinAndSelect('product.subjects', 'subject') // manytomany
     // .leftJoinAndSelect('product.styles', 'style')
     .leftJoinAndSelect('inventory.shippingWeight', 'shipping')
-    .andWhere('inventory.status = :status', { status:true })
-    .andWhere('product.is_active = :isActive', { isActive: true });
+    .where('inventory.status = :status', { status:true })
+    //.andWhere('product.is_active = :isActive', { isActive: "Active" });
+    .andWhere('product.is_active = :isActive', { isActive:  ProductStatus.ACTIVE })
 
       // ✅ OPTIONAL: Only join many-to-many relations if they're needed for filtering
   if (subjectId) {
@@ -176,7 +178,9 @@ export class InventProductService {
     .leftJoinAndSelect('inventory.shippingWeight', 'shippingWeight') // Uncommented shipping
     .where('product.slug = :productSlug', { productSlug }) // Better parameter name
     .andWhere('inventory.status = :status', { status: true })
-    .andWhere('product.is_active = :isActive', { isActive: true })
+    .andWhere('product.is_active IN (:...statuses)', { 
+      statuses: [ProductStatus.ACTIVE, ProductStatus.SOLD_OUT] 
+    })
     // ✅ CRITICAL: Add inventory quantity check for e-commerce
     //.andWhere('inventory.quantity > :minQuantity', { minQuantity: 0 })
     .select([
@@ -239,7 +243,145 @@ export class InventProductService {
   );
 }
 
+async soldArtworkByArtist(
+  paginationDto: InventProdPaginatDto,
+): Promise<PaginationResponseDto<InventProdListDto>> {
+  // let categoryId?:number ;
 
+  const { page, limit, search,isActive, categoryId, artistId,select, 
+    styleId, subjectId, orientationId, sizeId,mediumId,surfaceId,
+    affordable_art,eliteChoice,new_arrival,discount   } = paginationDto;
+  //  let categoryId?:number ;
+//  console.log('cateid-----------',categoryId);
+//  console.log('categoryId----------', categoryId, typeof categoryId);
+//  console.log('limit-----------',limit);
+//  console.log('search-----------',search);
+  const skip = (page - 1) * limit;
+
+  const qb = this.inventoryRepo.createQueryBuilder('inventory')
+  .leftJoinAndSelect('inventory.product', 'product')
+  .leftJoinAndSelect('product.artist', 'artist') // ✅ CRITICAL: Join the artist
+  .leftJoinAndSelect('product.category', 'category')
+  // .leftJoinAndSelect('product.subjects', 'subject') // manytomany
+  // .leftJoinAndSelect('product.styles', 'style')
+  .leftJoinAndSelect('inventory.shippingWeight', 'shipping')
+  .where('inventory.status = :status', { status:true })
+  .andWhere('product.is_active = :statuses', { statuses:  ProductStatus.SOLD_OUT })
+
+    // ✅ OPTIONAL: Only join many-to-many relations if they're needed for filtering
+if (subjectId) {
+  qb.leftJoinAndSelect('product.subjects', 'subject');
+}
+
+if (styleId) {
+  qb.leftJoinAndSelect('product.styles', 'style');
+}
+
+  if (search) {
+    qb.andWhere('product.productTitle LIKE :search OR product.description LIKE :search', {
+      search: `%${search}%`,
+    });
+  }
+
+  if (orientationId) {
+     qb.andWhere('product.orientation_id = :orientationId', { orientationId });
+  }
+  if (surfaceId) {
+    qb.andWhere('product.surface_id = :surfaceId', { surfaceId });
+ }
+ if (mediumId) {
+  qb.andWhere('product.medium_id = :mediumId', { mediumId });
+  }
+  if (sizeId) {
+    qb.andWhere('product.size_id = :sizeId', { sizeId });
+  }
+  // ✅ MANY-TO-MANY FILTERS (correct syntax)
+if (subjectId) {
+  qb.andWhere('subject.id = :subjectId', { subjectId });
+}
+
+if (styleId) {
+  qb.andWhere('style.id = :styleId', { styleId });
+}
+  if (categoryId) {
+  //  console.log('categoryId-22222---------',categoryId);
+    qb.andWhere('product.category_id = :categoryId', { categoryId });
+  }
+
+  if (artistId) {
+    qb.andWhere('product.artist_id = :artistId', { artistId });
+  }
+  if (new_arrival) {
+    qb.andWhere('product.new_arrival = :new_arrival', { new_arrival });
+   
+  }
+  if (eliteChoice) {
+    qb.andWhere('product.eliteChoice = :eliteChoice', { eliteChoice });
+  }
+  if (affordable_art) {
+    qb.andWhere('product.affordable_art = :affordable_art', { affordable_art });
+  }
+  if (discount) {
+    qb.andWhere('product.commission_type_id != 1 ');
+  }
+
+// ✅ Define default fields (always selected)
+const defaultInventoryFields = ['id', 'status', 'price', 'discount','gstSlot','shippingSlot','updatedAt'];
+const defaultProductFields = ['id', 'productTitle','slug', 'defaultImage'];
+const defaultArtistFields = ['id', 'username'];
+const defaultCategoryFields = ['id', 'name'];
+const defaultShippingFields = ['weightSlot', 'costINR'];
+
+// ✅ Process requested fields
+let selectedFields: string[] = [];
+  // ✅ Select only requested fields
+  // ✅ Select only requested fields
+  if (select) {
+    const requestedFields = select.split(',').map((f) => f.trim());
+    
+    // Filter valid inventory fields
+    const validRequestedFields = requestedFields.filter(field => 
+      this.inventoryRepo.metadata.propertiesMap.hasOwnProperty(field)
+    );
+    
+    selectedFields = [...defaultInventoryFields, ...validRequestedFields];
+  } else {
+    // If no select parameter, use all default fields
+    selectedFields = defaultInventoryFields;
+  }
+
+  // ✅ Always select the default relation fields
+  qb.select([
+    // Inventory fields
+    ...selectedFields.map(field => `inventory.${field}`),
+    
+    // Default product fields (always included)
+    ...defaultProductFields.map(field => `product.${field}`),
+    
+    // Default artist fields (always included)
+    ...defaultCategoryFields.map(field => `category.${field}`),
+
+    // Default artist fields (always included)
+    ...defaultArtistFields.map(field => `artist.${field}`),
+    
+    // Default shipping fields (always included)
+    ...defaultShippingFields.map(field => `shipping.${field}`),
+  ]);
+ // console.log('------aaaaaa---=======---------')
+ //// process.exit();
+
+  // ✅ Pagination
+  //qb.skip((page - 1) * limit).take(limit);
+
+  const [result, total] = await qb.take(limit).skip(skip).getManyAndCount();
+
+
+  const data = plainToInstance(InventProdListDto, result, {
+    excludeExtraneousValues: true,
+  });
+
+  return new PaginationResponseDto<InventProdListDto>(data, { total, page, limit  }); 
+}
   
 }
 
