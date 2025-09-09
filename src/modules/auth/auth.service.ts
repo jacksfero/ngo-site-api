@@ -146,7 +146,7 @@ async getArtistsWithArtworkCount(id: number) {
 
  
 async getArtistsByUserId(id: number) {
-  const roleId = 13; // ✅ Artist role ID (keep configurable at top)
+  const roleId = 4; // ✅ Artist role ID (keep configurable at top)
   const artists = await this.userRepository
     .createQueryBuilder('user')
     .innerJoinAndSelect('user.roles', 'roles')
