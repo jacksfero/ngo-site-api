@@ -108,10 +108,10 @@ export class InventProductService {
   
  // ✅ Define default fields (always selected)
  const defaultInventoryFields = ['id', 'status', 'price', 'discount','gstSlot','shippingSlot','updatedAt'];
- const defaultProductFields = ['id', 'productTitle','is_active','depth','height','width','weight','slug', 'defaultImage'];
+ const defaultProductFields = ['id', 'productTitle','price_on_demand','is_active','depth','height','width','weight','slug', 'defaultImage'];
  const defaultArtistFields = ['id', 'username'];
  const defaultCategoryFields = ['id', 'name'];
- const defaultShippingFields = ['weightSlot', 'costINR'];
+ const defaultShippingFields = ['weightSlot', 'costINR', 'CostOthers'];
 
  // ✅ Process requested fields
  let selectedFields: string[] = [];
@@ -326,10 +326,10 @@ if (styleId) {
 // ✅ Define default fields (always selected)
 const defaultInventoryFields = ['id', 'status', 'price', 'discount','gstSlot','shippingSlot','updatedAt'];
 //const defaultProductFields = ['id', 'productTitle','slug', 'defaultImage'];
-const defaultProductFields = ['id', 'productTitle','is_active','depth','height','width','weight','slug', 'defaultImage'];
+const defaultProductFields = ['id', 'productTitle','is_active','price_on_demand','depth','height','width','weight','slug', 'defaultImage'];
 const defaultArtistFields = ['id', 'username'];
 const defaultCategoryFields = ['id', 'name'];
-const defaultShippingFields = ['weightSlot', 'costINR'];
+const defaultShippingFields = ['weightSlot', 'costINR', 'CostOthers'];
 
 // ✅ Process requested fields
 let selectedFields: string[] = [];
