@@ -115,30 +115,33 @@ export class AuthService {
 
   // artist.service.ts
 async getArtistsWithArtworkCount(id: number) {
-  const roleId = 4; // ✅ Artist role ID (keep configurable at top)
+  const roleId = 13; // ✅ Artist role ID (keep configurable at top)
 
   const artists = await this.userRepository
-    .createQueryBuilder('user')
-    .innerJoin('user.roles', 'roles')
-    .leftJoin('user.products', 'product') // assuming relation user.products exists
-    .leftJoin('product.productInventory', 'inventory') // assuming relation user.products exists
-    .where('user.artist_type_id = :artist_type_id', { artist_type_id: id }) // artist role
-    .andWhere('roles.id = :roleId', { roleId })
-    .andWhere('product.is_active = :status', { status: 'Active' }) // filter only active artworks in inventory
-    .andWhere('inventory.status = :statuss', { statuss: true }) // filter only active artworks in inventory
-    .select('user.id', 'id')
-    .addSelect('user.username', 'username')
-    .addSelect('user.artist_type_id', 'artist_type_id')    
-    .addSelect('ANY_VALUE(product.defaultImage)', 'defaultImage')
-    .addSelect('COUNT(product.id)', 'artworkCount')
-    .groupBy('user.id') 
-    .getMany();
+  .createQueryBuilder('user')
+  .innerJoin('user.roles', 'roles')
+  .innerJoin('user.products', 'product') // user must have product
+  .innerJoin('product.productInventory', 'inventory') // product must have inventory
+  .where('roles.id = :roleId', { roleId })
+  .andWhere('user.artist_type_id = :artistTypeId', { artistTypeId:id })
+  .andWhere('user.status = :userstatus', { userstatus: true })
+  .andWhere('product.is_active = :productStatus', { productStatus: 'Active' })
+  .andWhere('inventory.status = :inventoryStatus', { inventoryStatus: true })
+  .select('user.id', 'id')
+  .addSelect('user.username', 'username')
+  .addSelect('ANY_VALUE(product.defaultImage)', 'defaultImage')
+  .addSelect('user.artist_type_id', 'artist_type_id')
+  .addSelect('COUNT(product.id)', 'artworkCount') // ✅ count of valid products
+  .groupBy('user.id')
+  .addGroupBy('user.artist_type_id')
+  .addGroupBy('user.username')
+  .getRawMany();
+ 
+   if (artists.length === 0) {
+     throw new NotFoundException('No artists found with artworks');
+    }
 
-  if (artists.length === 0) {
-    throw new NotFoundException('No artists found with artworks');
-  }
-
-  return artists;
+  return artists; 
 }
 
 
