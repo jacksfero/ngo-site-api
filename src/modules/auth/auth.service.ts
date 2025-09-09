@@ -144,16 +144,18 @@ async getArtistsWithArtworkCount(id: number) {
   return artists; 
 }
 
-
+ 
 async getArtistsByUserId(id: number) {
-  const roleId = 4; // ✅ Artist role ID (keep configurable at top)
+  const roleId = 13; // ✅ Artist role ID (keep configurable at top)
   const artists = await this.userRepository
     .createQueryBuilder('user')
     .innerJoinAndSelect('user.roles', 'roles')
     .innerJoinAndSelect('user.profileImage', 'profileImage')
-    .innerJoinAndSelect('user.aboutDetails', 'aboutDetails')
+      .innerJoinAndSelect('user.aboutDetails', 'aboutDetails')
+      .innerJoinAndSelect('user.addresses', 'address')
     .where('user.id = :id', { id })
     .andWhere('roles.id = :roleId', { roleId}) // ✅ restrict only artists
+      .andWhere('address.type = :type', { type:AddressType.PERSONAL})
    // .where('roles.id = :roleId', { roleId: 4 })
    // .andWhere('user.artist_type_id = :artist_type_id', { artist_type_id: id })
     //.select(['user.id', 'user.username', 'user.artist_type_id'])
