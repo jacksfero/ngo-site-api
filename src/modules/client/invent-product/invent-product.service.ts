@@ -108,7 +108,7 @@ export class InventProductService {
   
  // ✅ Define default fields (always selected)
  const defaultInventoryFields = ['id', 'status', 'price', 'discount','gstSlot','shippingSlot','updatedAt'];
- const defaultProductFields = ['id', 'productTitle','slug', 'defaultImage'];
+ const defaultProductFields = ['id', 'productTitle','is_active','depth','height','width','weight','slug', 'defaultImage'];
  const defaultArtistFields = ['id', 'username'];
  const defaultCategoryFields = ['id', 'name'];
  const defaultShippingFields = ['weightSlot', 'costINR'];
@@ -189,10 +189,9 @@ export class InventProductService {
       'product.productTitle','product.slug', 'product.negotiable','product.refundable',
       'product.description', 'product.certificate', 'product.conditions',
       'product.price_on_demand','product.defaultImage','product.printing_rights',
-      
-
-
-
+      'product.width','product.height','product.depth',
+      'product.weight', 'product.is_active',
+ 
       // ✅ Category fields
       'category.id',
       'category.name',
@@ -200,8 +199,7 @@ export class InventProductService {
       // ✅ Artist fields
       'artist.id',
       'artist.username',
-      
-
+       
       // ✅ Images fields
       'images.id',
       'images.imagePath',
@@ -327,14 +325,14 @@ if (styleId) {
 
 // ✅ Define default fields (always selected)
 const defaultInventoryFields = ['id', 'status', 'price', 'discount','gstSlot','shippingSlot','updatedAt'];
-const defaultProductFields = ['id', 'productTitle','slug', 'defaultImage'];
+//const defaultProductFields = ['id', 'productTitle','slug', 'defaultImage'];
+const defaultProductFields = ['id', 'productTitle','is_active','depth','height','width','weight','slug', 'defaultImage'];
 const defaultArtistFields = ['id', 'username'];
 const defaultCategoryFields = ['id', 'name'];
 const defaultShippingFields = ['weightSlot', 'costINR'];
 
 // ✅ Process requested fields
 let selectedFields: string[] = [];
-  // ✅ Select only requested fields
   // ✅ Select only requested fields
   if (select) {
     const requestedFields = select.split(',').map((f) => f.trim());

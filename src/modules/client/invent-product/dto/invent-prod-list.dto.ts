@@ -1,4 +1,6 @@
 import { Expose, Exclude, Type } from 'class-transformer';
+import { IsEnum } from 'class-validator';
+import { ProductStatus } from 'src/shared/entities/product.entity';
 //import { InventoryStatus } from 'src/shared/entities/inventory.entity';
 
 
@@ -45,6 +47,25 @@ export class ProductInvtDto {
 
   @Expose()
   defaultImage: string;
+
+  @Expose()
+  price_on_demand: boolean;
+  
+  @Expose()
+  weight: string;
+
+  @Expose()
+  width: string;
+
+  @Expose()
+  height: string;
+
+  @Expose()
+  depth: string;
+
+  @Expose()
+  @IsEnum(ProductStatus, { each: true }) // validate against enum
+  is_active: ProductStatus;
 
   @Expose()
   @Type(() => CategoryDto)

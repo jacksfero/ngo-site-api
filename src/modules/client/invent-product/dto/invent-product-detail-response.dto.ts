@@ -1,5 +1,7 @@
 // dto/product-detail-response.dto.ts
 import { Expose, Type } from 'class-transformer';
+import { IsEnum } from 'class-validator';
+import { ProductStatus } from 'src/shared/entities/product.entity';
 export class InventoryDto {
     @Expose()
     id: number;
@@ -93,8 +95,13 @@ export class InventProductDetailResponseDto {
   @Expose()
   depth: string;
 
+  @Expose()
+  @IsEnum(ProductStatus, { each: true }) // validate against enum
+  is_active: ProductStatus;
+
 @Expose()
 created_in: string;
+
 @Expose()
 original_painting: boolean;
 
