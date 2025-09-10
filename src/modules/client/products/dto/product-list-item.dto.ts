@@ -13,6 +13,8 @@ export class ProductListItemDto {
  @Expose()
   productTitle: string;
   
+  @Expose()
+  slug: string;
   
   @Expose()
   artist_price: number;
