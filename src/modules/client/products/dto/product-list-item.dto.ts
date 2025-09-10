@@ -2,6 +2,8 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 import { ArtistDto } from 'src/modules/auth/dto/artist.dto';
 import { ImageDto } from './product-image.dto';
+import { CategoryDto } from '../../invent-product/dto/invent-prod-list.dto';
+
 
 @Exclude()
 export class ProductListItemDto {
@@ -14,6 +16,21 @@ export class ProductListItemDto {
   
   @Expose()
   artist_price: number;
+
+  @Expose()
+  price_on_demand: number;
+
+  @Expose()
+  width: number;
+
+  @Expose()
+  height: number;
+
+  @Expose()
+  depth: number;
+
+  @Expose()
+  weight: number;
   
    @Expose()
   defaultImage: string|null;
@@ -21,12 +38,10 @@ export class ProductListItemDto {
    @Expose()
   createdAt: Date;
 
-   @Expose()
-  category?: {
-    id: number;
-    name: string;
-  };
-
+ 
+  @Expose()
+  @Type(() => CategoryDto)
+  category: CategoryDto;
    
 
    @Expose()
