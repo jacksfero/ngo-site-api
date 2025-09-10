@@ -38,12 +38,107 @@ export class ExhibitionService {
   );
 }
 
+async getExhibitionArtistsWithProductCount(exhibitionId: number) {
+  const result = await this.exhibitionRepo
+    .createQueryBuilder('exhibition')
+    .innerJoin('exhibition.exhibitionProducts', 'exhibitionProduct')
+    .innerJoin('exhibitionProduct.product', 'product')
+    .innerJoin('product.artist', 'artist') // product belongs to artist
+    .innerJoin('artist.roles', 'roles') // artist must have role
+    .where('exhibition.id = :exhibitionId', { exhibitionId })
+    .andWhere('roles.id = :roleId', { roleId: 13 }) // 13 = Artist role
+    .select('exhibition.id', 'exhibitionId')
+    .addSelect('artist.id', 'artistId')
+    .addSelect('artist.username', 'artistName')
+    .addSelect('COUNT(product.id)', 'productCount')
+    .groupBy('exhibition.id')
+    .addGroupBy('artist.id')
+    .getRawMany();
 
+  return result;
+}
+async nextonlineExhi_BKA(id: number) {
+  const exhibition = await this.exhibitionRepo
+    .createQueryBuilder('exhibition')
+    .leftJoinAndSelect('exhibition.displayMappings', 'exhprod')
+    .leftJoinAndSelect('exhprod.product', 'product')
+    .leftJoinAndSelect('product.category', 'category')
+    .leftJoinAndSelect('product.artist', 'artist')
+    .leftJoinAndSelect('artist.profileImage', 'proimg')
+    .where('exhibition.id = :exhibitionId', { exhibitionId: id })
+     
+    
+    .getOne();
+
+  //if (!exhibition.length) throw new NotFoundException('Exhibition not found');
+
+   
+
+  return exhibition;
+}
  
+async nextonlineExhi(id: number) {
+  const exhibition = await this.exhibitionRepo
+    .createQueryBuilder('exhibition')
+    .leftJoin('exhibition.displayMappings', 'exhprod')
+    .leftJoin('exhprod.product', 'product')
+    .leftJoin('product.artist', 'artist')
+    .leftJoin('artist.profileImage', 'proimg')
+    .where('exhibition.id = :exhibitionId', { exhibitionId: id })
+    .select([
+      'exhibition.id AS exhibition_id',
+      'exhibition.ExibitionTitle AS exhibition_title',
+      'exhibition.description AS exhibition_description',
+      'exhibition.imageURL AS exhibition_imgurl',
+      'exhibition.dateStart AS exhibition_startDate',
+      'exhibition.dateEnd AS exhibition_endDate',
+      'artist.id AS artist_id',
+      'artist.username AS artist_username',
+      'proimg.imageUrl AS artist_img',
+    ])
+    .groupBy('exhibition.id')
+    .addGroupBy('artist.id')
+    .getRawMany();
+
+  if (!exhibition.length) throw new NotFoundException('Exhibition not found');
+
+  // ✅ Now destructuring works correctly
+  const {
+    exhibition_id,
+    exhibition_title,
+    exhibition_description,
+    exhibition_imgurl,
+    exhibition_startDate,
+    exhibition_endDate,
+  } = exhibition[0];
+
+  const result = {
+    id: exhibition_id,
+    title: exhibition_title,
+    desc: exhibition_description,
+    imgurl: exhibition_imgurl,
+    startDate: exhibition_startDate,
+    endDate: exhibition_endDate,
+    artists: exhibition.map((e) => ({
+      id: e.artist_id,
+      username: e.artist_username,
+      img: e.artist_img,
+    })),
+  };
+
+  return result;
+}
+
+
+
 async findOnePublic(id: number): Promise<ExhibitionDetailDto> {
   const exhibition = await this.exhibitionRepo.findOne({
     where: { id, status: true },
-    relations: ['displayMappings', 'displayMappings.product', 'displayMappings.product.images', 'displayMappings.product.artist']
+    relations: ['displayMappings', 'displayMappings.product',
+    'displayMappings.product.category','displayMappings.product.artist',
+     'displayMappings.product.artist.profileImage'
+    
+    ]
   });
 
   if (!exhibition) throw new NotFoundException('Exhibition not found');

@@ -8,14 +8,27 @@ import { PaginationDto } from 'src/shared/dto/pagination.dto';
 export class ExhibitionController {
   constructor(private readonly exhibitionService: ExhibitionService) {}
 
-  @Get('')
+  @Get()
 findAllPublic(@Query() paginationDto: PaginationDto) {
  // console.log('aaaaaaaaaaaaaaaa================');
   return this.exhibitionService.findPublicAll(paginationDto);
+}
+
+@Get('nextexhi/:id')
+nextonlineExhi(@Param('id', ParseIntPipe) id: number) {
+  console.log('id-------------',id)
+  return this.exhibitionService.nextonlineExhi(id);
+}
+
+
+@Get('exhi/:id')
+findOnePublicexh(@Param('id', ParseIntPipe) id: number) {
+  return this.exhibitionService.getExhibitionArtistsWithProductCount(id);
 }
 
 @Get(':id')
 findOnePublic(@Param('id', ParseIntPipe) id: number) {
   return this.exhibitionService.findOnePublic(id);
 }
+
 }
