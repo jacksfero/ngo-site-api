@@ -32,6 +32,9 @@ export class UsersAbout {
     @Column({type:'text',nullable: true })
     exhibition: string;
 
+    @Column({type:'text',nullable: true })
+    meta_desc: string;
+
     @Column({ type: 'varchar', length: 50, nullable: true })
     createdBy: string;
 

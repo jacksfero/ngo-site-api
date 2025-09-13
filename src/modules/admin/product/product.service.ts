@@ -92,14 +92,14 @@ export class ProductService {
         await this.s3service.uploadBuffer(key, imageFilename.buffer, imageFilename.mimetype);
     }
 
-     // Check for existing blog
-     const [existingByTitle, existingBySlug] = await Promise.all([
-      this.productRepository.findOneBy({ productTitle: dto.productTitle }),
-      dto.slug ? this.productRepository.findOneBy({ slug: dto.slug }) : null
-  ]);
+  //    // Check for existing blog
+  //    const [existingByTitle, existingBySlug] = await Promise.all([
+  //     this.productRepository.findOneBy({ productTitle: dto.productTitle }),
+  //     dto.slug ? this.productRepository.findOneBy({ slug: dto.slug }) : null
+  // ]);
   
   //if (existingByTitle) throw new ConflictException('Product title already exists');
-  if (existingBySlug) throw new ConflictException('Product slug already exists');
+ // if (existingBySlug) throw new ConflictException('Product slug already exists');
 
     const product = this.productRepository.create({
       ...dto,

@@ -68,9 +68,8 @@ export class UsersService {
   async GetArtistTypeList(): Promise<ArtistType[]> {
     const user = await this.artistTypeRepo.find({
       order:{
-        name: "ASC"
-    }
-      
+        id: "ASC"
+    }      
     });
 
     return user;
@@ -379,9 +378,7 @@ async findByUsername(username: string): Promise<User | undefined> {
     return User;
   }
 
-
-
-
+ 
 /** Start User about us section */
  async createUserAbout(dto: CreateUsersAboutDto,userId: number,users:any) {
     const user = await this.userRepository.findOneBy({ id: userId });
