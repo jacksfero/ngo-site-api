@@ -8,6 +8,7 @@ import { CartModule } from './cart/cart.module';
 import { OrderModule } from './order/order.module';
 import { InventProductModule } from './invent-product/invent-product.module';
 //import { PaymentModule } from './payment/payment.module';
+import { ContentModule } from './content/content.module';
 
 
 @Module({
@@ -18,7 +19,7 @@ import { InventProductModule } from './invent-product/invent-product.module';
     ExhibitionModule,
     InventProductModule,
     CartModule,
-    OrderModule,
+    OrderModule,ContentModule,
     RouterModule.register([
       {
         path: 'client', // Prefix for all child routes
@@ -29,9 +30,11 @@ import { InventProductModule } from './invent-product/invent-product.module';
           { path: 'invent-product', module: InventProductModule },
           { path: 'cart', module: CartModule },
           { path: 'order', module: OrderModule },
+          { path: 'content', module: ContentModule },
         ],
       }, 
     ]),
+    
    // PaymentModule,
 
    

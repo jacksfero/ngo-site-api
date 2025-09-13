@@ -12,6 +12,10 @@ export class CreateUsersAboutDto {
 
   @IsString()
   shows: string;
+  
+  @IsOptional()
+  @IsString()
+  meta_desc: string;
 
   @IsString()
   exhibition: string;
