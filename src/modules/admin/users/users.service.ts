@@ -108,7 +108,7 @@ export class UsersService {
       newUser.roles = roles;
     }
     newUser.createdBy = currentUser.sub.toString();
-    if (dto.artist_type_id) newUser.artist_type_id = dto.artist_type_id;
+    if (dto.artist_type_id) newUser.artistType = { id: dto.artist_type_id } as ArtistType;
     if (dto.featured_artist) newUser.featured_artist = dto.featured_artist;
     if (dto.phonecode) newUser.phonecode = dto.phonecode;
 
@@ -294,7 +294,17 @@ async findByUsername(username: string): Promise<User | undefined> {
     if (email) user.email = email;
     if (mobile) user.mobile = mobile; 
     //if (dto.artist_type_id) user.artistType = dto.artist_type_id;
-    if (dto.artist_type_id) user.artistType = { id: dto.artist_type_id } as ArtistType;
+  //  if (dto.artist_type_id) user.artistType = { id: dto.artist_type_id } as ArtistType;
+
+  if (dto.artist_type_id === null) {
+    user.artistType = null;
+  } else if (dto.artist_type_id !== undefined) {
+    user.artistType = { id: dto.artist_type_id } as ArtistType;
+  }
+
+
+
+
     if (dto.featured_artist) user.featured_artist = dto.featured_artist;
     if (dto.adminRemark) user.adminRemark = dto.adminRemark;
     if (dto.phonecode) user.phonecode = dto.phonecode;

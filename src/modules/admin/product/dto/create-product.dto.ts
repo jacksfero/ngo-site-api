@@ -162,7 +162,11 @@ export class CreateProductDto {
 
   @IsOptional()
   @IsString()
-  defaultImage?: string;
+  defaultImage?: string | null;
+
+  @IsOptional()
+  @IsString()
+  alt_text?: string | null;
 
   @IsArray()
   @IsOptional()

@@ -88,12 +88,12 @@ products: Blog[];
   adminRemark: string;
 
  // 🟢 Add relation to Artist test Type
- @ManyToOne(() => ArtistType, )
+ @ManyToOne(() => ArtistType,  { nullable: true, onDelete: 'SET NULL'  })
  @JoinColumn({ name: 'artist_type_id' })
- artistType: ArtistType;
+ artistType: ArtistType|null;
   
- @Column({ name: 'artist_type_id', nullable: true })
- artist_type_id: number;
+//  @Column({ name: 'artist_type_id', nullable: true })
+//  artist_type_id: number;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
   createdBy: string;

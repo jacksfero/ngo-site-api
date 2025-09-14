@@ -4,10 +4,11 @@ import {
   IsString,
   IsOptional,
   IsInt,
-  IsEmail,
+  IsEmail, 
   IsNumber,IsBoolean
 } from 'class-validator';
 import { IsValidPassword } from 'src/core/decorators/password.decorator';
+import { IsNull } from 'typeorm';
 
 export class CreateUserDto {
    @IsOptional()
@@ -58,7 +59,7 @@ export class CreateUserDto {
   roleIds?: number[];
 
   @IsOptional()
-  //@IsArray()
   @IsInt()
-  artist_type_id?: number;
+  artist_type_id?: number | null;
+  
 }

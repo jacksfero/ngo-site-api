@@ -96,11 +96,12 @@ async update(
 async uploadImage(
   @Param('product_id', ParseIntPipe) productId: number,
   @UploadedFile(new FileValidationPipe(2 * 1024 * 1024)) file: Express.Multer.File,
+  @Body('alt_text') alt_text?: string,
 ) {
   if (!file) {
     throw new BadRequestException('Image file is required');
   }
-  return this.productService.addImage(productId, file);
+  return this.productService.addImage(productId, file,alt_text ?? null);
 }
 
 @Delete('delete-image/:imageId')

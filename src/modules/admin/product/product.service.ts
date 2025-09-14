@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product, ProductStatus } from '../../../shared/entities/product.entity';
@@ -174,6 +174,10 @@ export class ProductService {
     product.is_active =  updateProductDto.is_active as ProductStatus;
  // }
     product.updatedBy = user.sub.toString();
+
+    product.alt_text = updateProductDto.alt_text ?? null;
+
+
     if (updateProductDto.productTitle !== undefined) {
       product.productTitle = updateProductDto.productTitle;
     }if (updateProductDto.description !== undefined) {
@@ -302,24 +306,32 @@ export class ProductService {
     await this.productRepository.remove(product);
   }
 
-  async addImage(productId: number, imageFilename: Express.Multer.File) {
+  async addImage(productId: number, file: Express.Multer.File,alt_text?:string|null) {
     let imageurl;
     const product = await this.productRepository.findOne({ where: { id: productId } });
 
     if (!product) {
       throw new NotFoundException('Product not found');
     }
-    if (imageFilename) {
-      const cleanName = sanitizeFileName(imageFilename.originalname);
+    if (file) {
+      const cleanName = sanitizeFileName(file.originalname);
       const key = `products/${Date.now()}-${cleanName}`;
-      imageurl =
-        await this.s3service.uploadBuffer(key, imageFilename.buffer, imageFilename.mimetype);
+      try {
+        imageurl = await this.s3service.uploadBuffer(
+          key,
+          file.buffer,
+          file.mimetype
+        );
+      } catch (error) {
+        throw new BadRequestException('Image upload failed');
+      }
     }
 
 
     const image = this.imageRepo.create({
       //imagePath: `/product-images/${fileName}`, // just the relative path 
       imagePath: imageurl, // just the relative path
+      alt_text:alt_text ?? null,
       product,
     });
 

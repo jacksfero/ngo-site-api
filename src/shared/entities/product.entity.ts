@@ -152,6 +152,10 @@ export class Product {
 @Column({ type: 'varchar', length: 255, nullable: true })
 defaultImage: string | null;
 
+@Column({ type: 'varchar', length: 150, nullable: true })
+alt_text: string | null;
+
+
  @OneToMany(() => ProductImage, (image) => image.product, { cascade: true, /*eager: true*/ })
 images: ProductImage[];
 
