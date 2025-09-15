@@ -75,7 +75,7 @@ export class ProductService {
       excludeExtraneousValues: true,
     });
   }
- 
+  
 
   async generateUniqueSlug(title: string): Promise<string> {
     const baseSlug = slugify(title);
