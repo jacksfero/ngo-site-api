@@ -34,14 +34,13 @@ export class ProductController {
 
 
 @Post()
-//@UseInterceptors(FileInterceptor('defaultImage', productImageUploadOptions))
 @UseInterceptors(FileInterceptor('defaultImage'))
 create(
   @Body() createProductDto: CreateProductDto,
   @UploadedFile(new FileValidationPipe(2 * 1024 * 1024)) file: Express.Multer.File,
   @Req() req,
 ) {
- // const imagePath = file?.filename;
+ 
   return this.productService.create(createProductDto, req.user, file);
 }
  

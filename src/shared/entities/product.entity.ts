@@ -13,6 +13,8 @@ import { Size } from './size.entity';
 import { Orientation } from './orientation.entity';
 import { Subject } from './subject.entity';
 import { Style } from './style.entity';
+import { Medium } from './medium.entity';
+import { Surface } from './surface.entity';
 
 
 export enum ProductStatus {
@@ -33,8 +35,8 @@ export class Product {
   @Column({ type: 'varchar', length: 150 })
   productTitle: string;
 
-  @Column({ type: 'varchar', length: 150 })
-  description: string;
+  @Column({ type: 'varchar', length: 150,nullable: true })
+  description: string|null;
 
   @Column({ type: 'varchar', length: 150,default: null  })
   slug: string;
@@ -43,13 +45,7 @@ export class Product {
   @Column({ type: 'int', nullable: true })
   artist_price: number;
  
-  @Column({ type: 'int', nullable: true })
-  medium_id: number;
-
-  @Column({ type: 'int', nullable: true })
-  surface_id: number;
-
- 
+  
   @Column({ type: 'int', nullable: true })
   width: number;
 
@@ -149,8 +145,10 @@ export class Product {
   })
   updatedAt: Date;
 
+
 @Column({ type: 'varchar', length: 255, nullable: true })
 defaultImage: string | null;
+
 
 @Column({ type: 'varchar', length: 150, nullable: true })
 alt_text: string | null;
@@ -173,6 +171,11 @@ contact: ContactUs;
 @OneToOne(() => Inventory, (inventory) => inventory.product, { cascade: true })
 productInventory: Inventory;
 
+
+
+
+
+
 // ✅ Owner (Relation)
 @ManyToOne(() => User )
 @JoinColumn({ name: 'owner_id' }) // foreign key in DB need to change name owner_id
@@ -187,7 +190,25 @@ category: Productcategory;
 @ManyToOne(() => User, (user) => user.products,)
 @JoinColumn({ name: 'artist_id' }) // foreign key in DB need to change name owner_id
 artist: User;
+
+
+// 👇 Medium Mode
+@ManyToOne(() => Medium,  { nullable: true, onDelete: 'SET NULL'  }) 
+@JoinColumn({ name: 'medium_id' })
+medium: Medium|null;
+
+// @Column({ name: 'medium_id', nullable: true })
+// mediumId: number;
+
+// 👇 Surface Mode
+@ManyToOne(() => Surface,   { nullable: true, onDelete: 'SET NULL'  }) 
+@JoinColumn({ name: 'surface_id' })
+surface: Surface|null;
  
+// @Column({ name: 'surface_id', nullable: true })
+// surfaceId: number;
+
+
 // 👇 Packing Mode
 @ManyToOne(() => PackingModeEntity, ) 
 @JoinColumn({ name: 'packing_mode_id' })

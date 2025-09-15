@@ -24,6 +24,8 @@ import { User } from 'src/shared/entities/user.entity';
 import { slugify } from 'src/shared/utils/slugify';
 import { Inventory } from 'src/shared/entities/inventory.entity';
 import { Orientation } from 'src/shared/entities/orientation.entity';
+import { Surface } from 'src/shared/entities/surface.entity';
+import { Medium } from 'src/shared/entities/medium.entity';
 
 @Injectable()
 export class ProductService {
@@ -37,6 +39,13 @@ export class ProductService {
 
     @InjectRepository(Style)
     private styleRepo: Repository<Style>,
+
+    @InjectRepository(Medium)
+    private mediumRepo: Repository<Medium>,
+
+    @InjectRepository(Surface)
+    private surfaceRepo: Repository<Surface>,
+
 
     @InjectRepository(Productcategory)
     private ProdCatRepo: Repository<Productcategory>,
@@ -82,8 +91,7 @@ export class ProductService {
   }
 
   async create(dto: CreateProductDto, user: any, imageFilename?: Express.Multer.File): Promise<Product> {
-    let subjectss: any[] = [];
-    let styless: any[] = [];
+    
     let titleImage: string | null = null;
     if (imageFilename) {
       const cleanName = sanitizeFileName(imageFilename.originalname);
@@ -91,27 +99,23 @@ export class ProductService {
       titleImage =
         await this.s3service.uploadBuffer(key, imageFilename.buffer, imageFilename.mimetype);
     }
-
-  //    // Check for existing blog
-  //    const [existingByTitle, existingBySlug] = await Promise.all([
-  //     this.productRepository.findOneBy({ productTitle: dto.productTitle }),
-  //     dto.slug ? this.productRepository.findOneBy({ slug: dto.slug }) : null
-  // ]);
-  
-  //if (existingByTitle) throw new ConflictException('Product title already exists');
- // if (existingBySlug) throw new ConflictException('Product slug already exists');
-
+ 
     const product = this.productRepository.create({
       ...dto,
       defaultImage: titleImage,
-      slug : await this.generateUniqueSlug(dto.slug),
-      //  styles: styless,
+      slug: await this.generateUniqueSlug(dto.slug),
       category: { id: dto.category_id } as Productcategory,
       artist: { id: dto.artist_id } as User,
       owner: { id: dto.owner_id } as User,
       createdBy: user.sub.toString(),
-      is_active : dto.is_active as ProductStatus,
-    });
+      is_active:  dto.is_active as ProductStatus,
+     // surface: { id: dto.surface_id } as Surface,
+   //   medium: { id: dto.medium_id } as Medium,
+ 
+
+       ...(dto.surface_id && { surface: { id: dto.surface_id } as Surface }),
+       ...(dto.medium_id && { medium: { id: dto.medium_id } as Medium }),
+    }); 
     if (dto.subjectsIds?.length) {
       product.subjects = await this.subjectRepo.findBy({ id: In(dto.subjectsIds) });
     }
@@ -121,7 +125,7 @@ export class ProductService {
 
     return this.productRepository.save(product);
   }
-
+ 
   async update(
     id: number,
     updateProductDto: UpdateProductDto,
@@ -201,9 +205,34 @@ export class ProductService {
     product.artist = { id: updateProductDto.artist_id } as User;
     product.owner = { id: updateProductDto.owner_id } as User;
     product.orientation = { id: updateProductDto.orientation_id } as Orientation;
-  //   product.is_lock = updateProductDto.is_lock !== undefined 
-  // ? Boolean(updateProductDto.is_lock) 
-  // : product.is_lock; // keep existing value
+   // product.surface = {id: updateProductDto.surface_id } as Surface  ;
+   // product.medium = { id: updateProductDto.medium_id } as Medium   ;
+    
+// Surface
+if (updateProductDto.surface_id !== undefined) {
+  if (updateProductDto.surface_id === null) {
+    product.surface = null; // remove relation
+  } else {
+    const surface = await this.surfaceRepo.findOne({ where: { id: updateProductDto.surface_id } });
+    if (!surface) {
+      throw new BadRequestException(`Surface ${updateProductDto.surface_id} not found`);
+    }
+    product.surface = surface;
+  }
+}
+
+// Medium
+if (updateProductDto.medium_id !== undefined) {
+  if (updateProductDto.medium_id === null) {
+    product.medium = null;
+  } else {
+    const medium = await this.mediumRepo.findOne({ where: { id: updateProductDto.medium_id } });
+    if (!medium) {
+      throw new BadRequestException(`Medium ${updateProductDto.medium_id} not found`);
+    }
+    product.medium = medium;
+  }
+}
 
       // 🔹 Multiple boolean fields update
   const booleanFields: (keyof UpdateProductDto)[] = [
@@ -280,7 +309,7 @@ export class ProductService {
       where: { id },
       relations: ['owner','category','artist','subjects','styles',
       'images', 'packingMode', 'commissionType', 'shippingTime', 'size',
-       'orientation' 
+       'medium', 'surface' ,
     ],
     });
    // console.log('----------',product);
