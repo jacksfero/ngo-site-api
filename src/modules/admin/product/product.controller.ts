@@ -104,6 +104,18 @@ async uploadImage(
   return this.productService.addImage(productId, file,alt_text ?? null);
 }
 
+
+@Patch('image/:image_id/alt-text')
+async updateImageAltText(
+  @Param('image_id', ParseIntPipe) imageId: number,
+  @Body('alt_text') altText: string,
+) {
+  if (!altText) {
+    throw new BadRequestException('alt_text is required');
+  }
+  return this.productService.updateImageAltText(imageId, altText);
+}
+
 @Delete('delete-image/:imageId')
 async deleteImage(@Param('imageId') imageId: number) {
   return this.productService.deleteImage(imageId);

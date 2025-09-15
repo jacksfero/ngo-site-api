@@ -327,7 +327,7 @@ export class ProductService {
       }
     }
 
-
+     
     const image = this.imageRepo.create({
       //imagePath: `/product-images/${fileName}`, // just the relative path 
       imagePath: imageurl, // just the relative path
@@ -337,7 +337,21 @@ export class ProductService {
 
     return this.imageRepo.save(image);
   }
-
+  async updateImageAltText(imageId: number, altText: string) {
+    const image = await this.imageRepo.findOne({ where: { id: imageId } });
+  
+    if (!image) {
+      throw new NotFoundException('Image not found');
+    }
+  
+    image.alt_text = altText;
+    await this.imageRepo.save(image);
+  
+    return {
+      message: 'Alt text updated successfully',
+      image,
+    };
+  }
 
   async deleteImage(imageId: number) {
     const image = await this.imageRepo.findOne({ where: { id: imageId }, relations: ['product'] });
