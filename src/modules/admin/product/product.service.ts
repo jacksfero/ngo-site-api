@@ -197,6 +197,12 @@ export class ProductService {
     }if (updateProductDto.created_in !== undefined) {
       product.created_in = updateProductDto.created_in;
     }
+    if (updateProductDto.remark_to_indigalleria !== undefined) {
+      product.remark_to_indigalleria = updateProductDto.remark_to_indigalleria;
+    }
+    if (updateProductDto.remark_to_artist !== undefined) {
+      product.remark_to_artist = updateProductDto.remark_to_artist;
+    }
     product.category = { id: updateProductDto.category_id } as Productcategory;
     product.packingMode = { id: updateProductDto.packingModeId } as PackingModeEntity;
     product.commissionType = { id: updateProductDto.commissionTypeId } as CommissionType;
@@ -309,7 +315,7 @@ if (updateProductDto.medium_id !== undefined) {
       where: { id },
       relations: ['owner','category','artist','subjects','styles',
       'images', 'packingMode', 'commissionType', 'shippingTime', 'size',
-       'medium', 'surface' ,
+       'medium', 'surface' ,'orientation' ,
     ],
     });
    // console.log('----------',product);
