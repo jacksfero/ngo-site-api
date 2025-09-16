@@ -53,7 +53,7 @@ export class ProductDto {
   category_id: number;
 
   @Expose()
-  status: number;
+  is_active: number;
 
   @Expose()
   description: string;
