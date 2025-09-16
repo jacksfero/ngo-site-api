@@ -3,7 +3,15 @@ import { Transform,Type } from 'class-transformer';
 import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
 import { ProductStatus } from 'src/shared/entities/product.entity';
 
-
+export enum ProductSearchStatus {
+  NEW_ARRIVAL = 'new_arrival',
+  ELITE_CHOICE = 'eliteChoice',
+  FEATURED = 'featured',
+  IS_LOCK = 'is_lock',
+  NEGOTIABLE = 'negotiable',
+  PRICE_ON_DEMAND = 'price_on_demand',
+  AFFORDABLE_ART = 'affordable_art',
+}
 export class ProductPaginationDto extends PaginationBaseDto {
   // @IsOptional()
   // @IsBoolean()
@@ -24,6 +32,11 @@ export class ProductPaginationDto extends PaginationBaseDto {
   @IsInt()
   artistId: number;
 
+  @IsOptional()
+  @IsEnum(ProductSearchStatus, {
+    message: 'status must be one of new_arrival, eliteChoice, featured',
+  })
+  status?: ProductSearchStatus;
 
   @IsOptional()
   @IsEnum(ProductStatus)

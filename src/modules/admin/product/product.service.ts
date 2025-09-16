@@ -10,7 +10,7 @@ import { ProductDto } from './dto/product.dto';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { plainToInstance } from 'class-transformer';
 import { S3Service } from 'src/shared/s3/s3.service';
-import { ProductPaginationDto } from './dto/product-pagination.dto';
+import { ProductPaginationDto, ProductSearchStatus } from './dto/product-pagination.dto';
 import { sanitizeFileName } from 'src/shared/utils/sanitizefilename';
 import { ProductListDto } from './dto/product-list.dto';
 import { Subject } from 'src/shared/entities/subject.entity';
@@ -270,7 +270,7 @@ if (updateProductDto.medium_id !== undefined) {
   async paginate(
     paginationDto: ProductPaginationDto,
   ): Promise<PaginationResponseDto<ProductDto>> {
-    const { page, limit,is_active, search,artistId, /*status,*/ categoryId } = paginationDto;
+    const { page, limit,is_active, search,artistId,status,   categoryId } = paginationDto;
     const skip = (page - 1) * limit;
    
 
@@ -289,9 +289,19 @@ if (updateProductDto.medium_id !== undefined) {
       queryBuilder.andWhere('product.category_id LIKE :categoryId', { categoryId   });
     }
  
-    // if (status !== undefined) {
-    //   queryBuilder.andWhere('product.status = :status', { status });
-    // }
+    if (status) {
+      const fieldMap: Record<ProductSearchStatus, string> = {
+        [ProductSearchStatus.NEW_ARRIVAL]: 'product.new_arrival',
+        [ProductSearchStatus.ELITE_CHOICE]: 'product.eliteChoice',
+        [ProductSearchStatus.FEATURED]: 'product.featured',
+        [ProductSearchStatus.IS_LOCK]: 'product.is_lock',
+        [ProductSearchStatus.NEGOTIABLE]: 'product.negotiable',
+        [ProductSearchStatus.PRICE_ON_DEMAND]: 'product.price_on_demand',
+        [ProductSearchStatus.AFFORDABLE_ART]: 'product.affordable_art',
+      };
+    
+      queryBuilder.andWhere(`${fieldMap[status]} = :flag`, { flag: true });
+    }
 
     if (is_active !== undefined) {
       queryBuilder.andWhere('product.is_active = :is_active', { is_active });
@@ -349,6 +359,10 @@ if (updateProductDto.medium_id !== undefined) {
       throw new NotFoundException('Product not found');
     }
     if (file) {
+      console.log(`file.originalname --------- `,file.originalname)
+      console.log(`file.originalname --------- `,file.buffer)
+      console.log(`file.originalname --------- `,file.mimetype)
+      console.log(`allt taxt 1 --------- `,alt_text)
       const cleanName = sanitizeFileName(file.originalname);
       const key = `products/${Date.now()}-${cleanName}`;
       try {
@@ -361,8 +375,7 @@ if (updateProductDto.medium_id !== undefined) {
         throw new BadRequestException('Image upload failed');
       }
     }
-
-     
+    console.log(`allt taxt --------- `,alt_text)
     const image = this.imageRepo.create({
       //imagePath: `/product-images/${fileName}`, // just the relative path 
       imagePath: imageurl, // just the relative path
