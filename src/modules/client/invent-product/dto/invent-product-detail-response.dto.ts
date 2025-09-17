@@ -43,6 +43,20 @@ export class ImageDto {
     @Expose()
     name: string;
   }
+  export class SurfaceDto {
+    @Expose()
+    id: number;
+  
+    @Expose()
+    surfaceName: string;
+  }
+  export class MediumDto {
+    @Expose()
+    id: number;
+  
+    @Expose()
+    name: string;
+  }
 
   export class PackingModeDto {
     @Expose()
@@ -118,6 +132,14 @@ conditions: string;
   @Expose()
   @Type(() => SizeDto)
   size: SizeDto;
+
+  @Expose()
+  @Type(() => SurfaceDto)
+  surface: SurfaceDto;
+
+  @Expose()
+  @Type(() => MediumDto)
+  medium: MediumDto;
 
   @Expose()
   @Type(() => PackingModeDto)

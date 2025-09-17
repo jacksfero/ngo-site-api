@@ -1,5 +1,6 @@
 // src/products/dto/product.dto.ts
 import { Expose,Transform,Type } from 'class-transformer';
+import { ProductStatus } from 'src/shared/entities/product.entity';
 export class CategoryDto {
   @Expose()
   id: number;
@@ -53,7 +54,8 @@ export class ProductDto {
   category_id: number;
 
   @Expose()
-  is_active: number;
+  @Transform(({ value }) => value) // Returns the enum value (number)
+  is_active: ProductStatus;
 
   @Expose()
   description: string;

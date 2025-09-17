@@ -170,6 +170,8 @@ export class InventProductService {
   .createQueryBuilder('inventory')
     .innerJoinAndSelect('inventory.product', 'product') // Changed to innerJoinAndSelect
     .leftJoinAndSelect('product.artist', 'artist')
+    .leftJoinAndSelect('product.surface', 'surface')
+    .leftJoinAndSelect('product.medium', 'medium')
     .leftJoinAndSelect('product.category', 'category')
     .leftJoinAndSelect('product.images', 'images')
    // .leftJoinAndSelect('product.orientation', 'orientation') // Added orientation
@@ -207,6 +209,14 @@ export class InventProductService {
    // ✅ Size fields
       'size.id',
       'size.name',
+
+      // ✅ Surface fields
+      'surface.id',
+      'surface.surfaceName',
+
+      // ✅ Medium fields
+      'medium.id',
+      'medium.name',
       
       // ✅ Packing mode fields
       'packingMode.id',
