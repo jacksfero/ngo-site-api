@@ -42,6 +42,8 @@ export class InventProductService {
     .leftJoinAndSelect('inventory.product', 'product')
     .leftJoinAndSelect('product.artist', 'artist') // ✅ CRITICAL: Join the artist
     .leftJoinAndSelect('product.category', 'category')
+    .leftJoinAndSelect('product.surface', 'surface')
+    .leftJoinAndSelect('product.medium', 'medium')
     // .leftJoinAndSelect('product.subjects', 'subject') // manytomany
     // .leftJoinAndSelect('product.styles', 'style')
     .leftJoinAndSelect('inventory.shippingWeight', 'shipping')
@@ -111,6 +113,8 @@ export class InventProductService {
  const defaultProductFields = ['id', 'productTitle','price_on_demand','is_active','depth','height','width','weight','slug', 'defaultImage'];
  const defaultArtistFields = ['id', 'username'];
  const defaultCategoryFields = ['id', 'name'];
+ const defaultSurfaceFields = ['id', 'surfaceName'];
+ const defaultMediumFields = ['id', 'name'];
  const defaultShippingFields = ['weightSlot', 'costINR', 'CostOthers'];
 
  // ✅ Process requested fields
@@ -144,6 +148,12 @@ export class InventProductService {
 
       // Default artist fields (always included)
       ...defaultArtistFields.map(field => `artist.${field}`),
+
+       // Default artist fields (always included)
+       ...defaultSurfaceFields.map(field => `surface.${field}`),
+
+        // Default artist fields (always included)
+      ...defaultMediumFields.map(field => `medium.${field}`),
       
       // Default shipping fields (always included)
       ...defaultShippingFields.map(field => `shipping.${field}`),
@@ -225,7 +235,7 @@ export class InventProductService {
       // ✅ Inventory fields
       'inventory.id',
       'inventory.discount',
-      'inventory.price',
+      'inventory.price','inventory.terms_and_conditions',
       'inventory.gstSlot',
       'inventory.shippingSlot',
       

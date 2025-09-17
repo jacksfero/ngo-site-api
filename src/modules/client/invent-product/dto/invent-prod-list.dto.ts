@@ -1,6 +1,7 @@
 import { Expose, Exclude, Type } from 'class-transformer';
 import { IsEnum } from 'class-validator';
 import { ProductStatus } from 'src/shared/entities/product.entity';
+import { MediumDto, SurfaceDto } from './invent-product-detail-response.dto';
 //import { InventoryStatus } from 'src/shared/entities/inventory.entity';
 
 
@@ -31,6 +32,7 @@ export class CategoryDto {
   @Expose()
   name: string;
 }
+ 
 
 
 @Exclude()
@@ -41,6 +43,8 @@ export class ProductInvtDto {
 
   @Expose()
   productTitle: string;
+
+   
 
   @Expose()
   slug: string;
@@ -70,6 +74,14 @@ export class ProductInvtDto {
   @Expose()
   @Type(() => CategoryDto)
   category: CategoryDto;
+
+  @Expose()
+  @Type(() => SurfaceDto)
+  surface: SurfaceDto;
+
+  @Expose()
+  @Type(() => MediumDto)
+  medium: MediumDto;
 
   @Expose()
   @Type(() => ArtistDto)
