@@ -170,11 +170,7 @@ contact: ContactUs;
  
 @OneToOne(() => Inventory, (inventory) => inventory.product, { cascade: true })
 productInventory: Inventory;
-
-
-
-
-
+ 
 
 // ✅ Owner (Relation)
 @ManyToOne(() => User )

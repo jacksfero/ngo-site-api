@@ -18,3 +18,16 @@ import { Medium } from '../../../shared/entities/medium.entity';
   providers: [MediumService],
 })
 export class MediumModule {}
+
+
+/*
+CacheModule.registerAsync({
+  useFactory: async () => ({
+    store: await redisStore({
+      socket: { host: process.env.REDIS_HOST, port: +process.env.REDIS_PORT },
+      password: process.env.REDIS_PASSWORD,
+      ttl: 300,
+    }),
+  }),
+  isGlobal: true,
+})*/

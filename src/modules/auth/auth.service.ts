@@ -188,6 +188,7 @@ async getArtistsByUserId(id: number) {
       .innerJoin('user.roles', 'roles')
       .where('roles.id = :roleId', { roleId: 4 })
       .andWhere('user.artist_type_id = :artist_type_id', { artist_type_id: id })
+      .andWhere('user.artist_type_id = :artist_type_id', { artist_type_id: id })
       .select(['user.id', 'user.username', 'user.artist_type_id'])
       .orderBy('user.username', 'ASC')
       .getMany();

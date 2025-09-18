@@ -104,8 +104,8 @@ export class InventProductService {
     if (affordable_art) {
       qb.andWhere('product.affordable_art = :affordable_art', { affordable_art });
     }
-    if (discount) {
-      qb.andWhere('product.commission_type_id != 1 ');
+    if (discount === 1) {
+      qb.andWhere('inventory.discount > 0 ');       
     }
   
  // ✅ Define default fields (always selected)
@@ -235,7 +235,7 @@ export class InventProductService {
       // ✅ Inventory fields
       'inventory.id',
       'inventory.discount',
-      'inventory.price','inventory.terms_and_conditions',
+      'inventory.price','inventory.termsAndConditions',
       'inventory.gstSlot',
       'inventory.shippingSlot',
       

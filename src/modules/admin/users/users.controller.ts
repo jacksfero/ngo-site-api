@@ -45,16 +45,16 @@ import { FileValidationPipe } from 'src/shared/pipes/file-size-type-validation.p
 export class UsersController {
   constructor(private readonly usersService: UsersService) { }
 
-  //@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-  // @Permissions('create_user') // Custom decorator (optional)
-  // @RequirePermissions('create_user') // ✅ Good for RBAC, uncomment if needed
+ 
   @Post()
+  @RequirePermissions('create_user')
   create(@Body() createUserDto: CreateUserDto, @Req() req) {
     return this.usersService.create(createUserDto, req.user);
   }
 
 
   @Get()
+  @RequirePermissions('read_user')
   async findAll(
     @Query(new PaginationClinetPipe(USERS_LIMIT, USERS_MAX_LIMIT, USERS_PAGE))
     paginationDto: UserPaginationDto
@@ -62,14 +62,9 @@ export class UsersController {
     return this.usersService.findAll(paginationDto);
   }
  
-  /* @Get()
-   async findAll(
-     @Query() paginationDto: UserPaginationDto,
-   ): Promise<PaginationResponseDto<UsersListDto>> {
-     return this.usersService.findAll(paginationDto);
-   }
- */
+   
   @Get('by-role/:roleName')
+  @RequirePermissions('read_user')
   async getUsersByRole(
     @Param('roleName') roleName: string,
     @Query('featured_artist') featured_artist?: boolean,
@@ -84,11 +79,13 @@ export class UsersController {
   }
 
   @Get('artisttypelist')
+  @RequirePermissions('read_user')
   GetArtistTypeList() {
     return this.usersService.GetArtistTypeList();
   }
 
   @Post('upload/:userId')
+  @RequirePermissions('create_user')
   @UseInterceptors(FileInterceptor('profileimage'))
   uploadProfileImage(
     @Param('userId', ParseIntPipe) userId: number,
@@ -99,37 +96,44 @@ export class UsersController {
   }
 
   @Get('profileimage/:userId')
+  @RequirePermissions('read_user')
   geProfileImage( @Param('userId', ParseIntPipe) userId: number,) {
     return this.usersService.geProfileImage(userId);
   }
 
   /** Start User about us section */
   @Post('about/:userId')
+  @RequirePermissions('create_user')
   createUserAbout(@Param('userId', ParseIntPipe) userId: number, @Body() dto: CreateUsersAboutDto, @Req() req) {
     return this.usersService.createUserAbout(dto, userId, req.user);
   }
 
   @Get('about/:userId')
+  @RequirePermissions('read_user')
   findOneUserAbout(@Param('userId', ParseIntPipe) userId: number) {
     return this.usersService.findOneAboutByUserId(userId);
   }
 
   @Patch('about/:id')
+  @RequirePermissions('update_user')
   updateUserAbout(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUsersAboutDto) {
     return this.usersService.updateUserAbout(id, dto);
   }
 
   @Delete('about/:id')
+  @RequirePermissions('delete_user')
   removeUserAbout(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.deleteUserAbout(id);
   }
 
   @Post('user-address/:id')
+  @RequirePermissions('read_user')
   createAddress(@Param('id', ParseIntPipe) id: number, @Body() dto: CreateUserAddressDto, @Req() req) {
     return this.usersService.createAddress(dto, id, req.user);
   }
 
   @Get('user-address/:id/:addressType')
+  @RequirePermissions('read_user')
   findAllAddress(
     @Param('id', ParseIntPipe) id: number,
     @Param('addressType', new ParseEnumPipe(AddressType)) addressType: AddressType,
@@ -138,12 +142,14 @@ export class UsersController {
   }
 
   @Patch('user-address/:id')
+  @RequirePermissions('update_user')
   updateAddress(@Param('id') id: number, @Body() dto: UpdateUserAddressDto, @Req() req) {
     return this.usersService.updateAddress(id, dto, req.user);
   }
 
 
   @Post('user-bank/:id')
+  @RequirePermissions('create_user')
   createBankDetail(@Param('id', ParseIntPipe) id: number,
     @Body() dto: CreateBankDetailDto,
     @Req() req
@@ -152,11 +158,13 @@ export class UsersController {
   }
 
   @Get('user-bank/:id')
+  @RequirePermissions('read_user')
   findOneBankDetail(@Param('id') id: number) {
     return this.usersService.findOneBankDetail(+id);
   }
 
   @Patch('user-bank/:id')
+  @RequirePermissions('update_user')
   updateBankDetail(
     @Param('id') id: number,
     @Body() dto: UpdateBankDetailDto,
@@ -166,6 +174,7 @@ export class UsersController {
   }
 
   @Post('user-kyc/:id')
+  @RequirePermissions('create_user')
   createkycDetail(@Param('id', ParseIntPipe) id: number,
     @Body() dto: CreateKycDetailDto,
     @Req() req
@@ -174,11 +183,13 @@ export class UsersController {
   }
 
   @Get('user-kyc/:id')
+  @RequirePermissions('read_user')
   findOnekycDetail(@Param('id') id: number) {
     return this.usersService.findOnekycDetail(+id);
   }
 
   @Patch('user-kyc/:id')
+  @RequirePermissions('update_user')
   updatekycDetail(
     @Param('id') id: number,
     @Body() dto: UpdateKycDetailDto,
@@ -186,43 +197,34 @@ export class UsersController {
   ) {
     return this.usersService.updatekycDetail(+id, dto, req.user);
   }
-
-
-
-
-
-
-  /* @Delete('user-address/:id')
-   removeAddress( @Param('id') id: number) {
-     return this.usersService.removeAddress( id);
-   }*/
-
+ 
   /** End User about us section */
   @Get(':id')
-  //@RequirePermissions('read_user')
+  @RequirePermissions('read_user')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }
 
   @Patch(':id/toggle-status')
+  @RequirePermissions('update_user')
   async toggleStatus(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.toggleStatus(id);
   }
 
   @Post(':id/roles')
+  @RequirePermissions('assign_roles')
   assignRoles(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     return this.usersService.assignRolesToUser(+id, dto);
   }
-
-
-
-
+ 
   @Patch(':id')
+  @RequirePermissions('update_user')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto) {
     return this.usersService.update(id, dto);
   }
 
   @Delete(':id')
+  @RequirePermissions('delete_user')
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
   }

@@ -25,20 +25,28 @@ console.log(  '--1----Role  Guard   ',      requiredRoles   );*/
       ROLES_KEY,
       [context.getHandler(), context.getClass()],
     );
- console.log( context.getHandler(), '--1----Role  Guard   ',      requiredRoles   );
+ //console.log( context.getHandler(), '--1----Role  Guard   ',      requiredRoles   );
     if (!requiredRoles) {
       return true;
     }
 
     const request = context.switchToHttp().getRequest();
     const user: User = request.user;
-      console.log(  '----2--Role  Guard   ',      request.user   );
+    //  console.log(  '----2--Role  Guard   ',      request.user   );
     if (!user) {
       throw new ForbiddenException('User not authenticated');
     }
 
    // const userRoles = await user.getRoleNames();
     const userRoles = user.roles?.map((role) => role.name) || [];
+
+    const hasRole = requiredRoles.some((role) => userRoles.includes(role));
+
+    if (!hasRole) {
+      throw new ForbiddenException(
+        `Required roles: ${requiredRoles.join(', ')}`,
+      );
+    }
 
     return requiredRoles.some((role) => userRoles.includes(role));
   }

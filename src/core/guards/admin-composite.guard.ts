@@ -6,6 +6,8 @@ import {
   Injectable,
   Inject,
   forwardRef,
+  ForbiddenException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/modules/auth/guards/roles.guard';
@@ -25,12 +27,20 @@ export class AdminCompositeGuard implements CanActivate {
     // Apply only to /api/admin routes
     if (req.url.startsWith('/api/admin')) {
       const jwtOk = await this.jwtAuthGuard.canActivate(context);
-      if (!jwtOk) return false;
+      if (!jwtOk) throw new UnauthorizedException('Invalid or missing token');
 
       const rolesOk = await this.rolesGuard.canActivate(context);
-      if (!rolesOk) return false;
+      if (!rolesOk) throw new ForbiddenException('Insufficient role');
+
+      // Step 2a: Enforce base admin roles for ALL /admin routes
+    /*  const user = req.user;
+      const roleNames = user.roles?.map((r) => r.name) || [];
+      if (!roleNames.includes('Admin') && !roleNames.includes('Super Admin')) {
+        throw new ForbiddenException('Admin or Super Admin role required');
+      }*/
 
       const permissionsOk = await this.permissionsGuard.canActivate(context);
+      if (!permissionsOk) throw new ForbiddenException('Missing required permission');
       return permissionsOk;
     }
 

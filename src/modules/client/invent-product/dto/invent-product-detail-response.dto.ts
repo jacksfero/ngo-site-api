@@ -16,7 +16,7 @@ export class InventoryDto {
     gstSlot: number;
     
     @Expose()
-    terms_and_conditions: string;
+    termsAndConditions: string;
 
     @Expose()
     shippingSlot: number;
