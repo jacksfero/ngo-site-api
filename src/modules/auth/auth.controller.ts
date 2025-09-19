@@ -87,6 +87,14 @@ export class AuthController {
   ) {
     return this.authService.getArtistList(id);
   }
+
+  @Public()
+  @Get('artistslistfeatured/:id')
+  async getArtistListFeatured(
+    @Param('id') id: number,
+  ) {
+    return this.authService.getArtistListFeatured(id);
+  }
   
   @Public()
   @Post('start-email-verification')
