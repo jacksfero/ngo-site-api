@@ -16,7 +16,7 @@ import { RequirePermissions } from 'src/modules/auth/decorators/permissions.deco
 import { Roles } from 'src/modules/auth/decorators/roles.decorator';
 
 @Controller()
-@Roles('Admin','Super Admin')
+ @Roles('Admin','Super Admin')
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 

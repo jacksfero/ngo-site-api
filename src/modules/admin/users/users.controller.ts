@@ -21,13 +21,13 @@ import { RequirePermissions } from 'src/modules/auth/decorators/permissions.deco
 import { AssignRolesDto } from './dto/assign-roles.dto';
 import { CreateUsersAboutDto } from './dto/create-users-about.dto';
 import { UpdateUsersAboutDto } from './dto/update-users-about.dto';
-import path from 'path';
+ 
 
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 
 import { UsersListDto } from './dto/users-list.dto';
 import { UserPaginationDto } from './dto/user-pagination.dto';
-import { PaginationPipe } from 'src/shared/pipes/pagination.pipe';
+ 
 
 import { USERS_LIMIT, USERS_MAX_LIMIT, USERS_PAGE } from 'src/shared/config/pagination.config';
 import { CreateUserAddressDto } from 'src/modules/auth/dto/create-user-address.dto';
@@ -200,7 +200,7 @@ export class UsersController {
  
   /** End User about us section */
   @Get(':id')
-  @RequirePermissions('read_user')
+ // @RequirePermissions('read_user')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }

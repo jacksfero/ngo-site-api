@@ -32,19 +32,20 @@ console.log(  '--1----Role  Guard   ',      requiredRoles   );*/
 
     const request = context.switchToHttp().getRequest();
     const user: User = request.user;
-    //  console.log(  '----2--Role  Guard   ',      request.user   );
+      console.log(  '----2--Role  Guard   ',      request.user   );
     if (!user) {
       throw new ForbiddenException('User not authenticated');
     }
 
    // const userRoles = await user.getRoleNames();
-    const userRoles = user.roles?.map((role) => role.name) || [];
+   const rawRoles = user.roles || [];
+   const userRoles = rawRoles.map((r: any) => (typeof r === 'string' ? r : r.name));
 
     const hasRole = requiredRoles.some((role) => userRoles.includes(role));
 
     if (!hasRole) {
       throw new ForbiddenException(
-        `Required roles: ${requiredRoles.join(', ')}`,
+        `Required roles iiiiiiiii---: ${requiredRoles.join(', ')} -- ${userRoles}`,
       );
     }
 

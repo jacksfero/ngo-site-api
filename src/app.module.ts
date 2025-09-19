@@ -18,6 +18,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 //import { MailModule } from './shared/mail/mail.module';
  
 import { SharedModule } from './shared/shared.module';
+import { AppCacheModule } from './core/cache/cache.module';
  
 @Module({
   imports: [
@@ -31,7 +32,7 @@ import { SharedModule } from './shared/shared.module';
       // },
    //   envFilePath: ['.env', '.env.development', '.env.production'],
     }),
-    
+    AppCacheModule, // ✅ global cache
     AuthModule,  
     AdminModule,
     ClientModule,
