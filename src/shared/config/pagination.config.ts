@@ -11,6 +11,7 @@ export const BLOG_PAGE = parseInt(process.env.BLOG_PAGE ?? '1');
 export const FRONT_BLOG_LIMIT = parseInt(process.env.FRONT_BLOG_LIMIT ?? '18');
 export const FRONT_BLOG_MAX_LIMIT = parseInt(process.env.FRONT_BLOG_MAX_LIMIT ?? '500');
 export const FRONT_BLOG_PAGE = parseInt(process.env.FRONT_BLOG_PAGE ?? '1');
+ 
 
 export const USERS_LIMIT = parseInt(process.env.USERS_LIMIT ?? '10');
 export const USERS_MAX_LIMIT = parseInt(process.env.USERS_MAX_LIMIT ?? '500');
@@ -23,6 +24,10 @@ export const PRODUCTS_PAGE = parseInt(process.env.PRODUCTS_PAGE ?? '1');
 export const FRONT_INVENT_PRODUCTS_LIMIT = parseInt(process.env.FRONT_INVENT_PRODUCTS_LIMIT ?? '21');
 export const FRONT_INVENT_PRODUCTS_MAX_LIMIT = parseInt(process.env.FRONT_INVENT_PRODUCTS_MAX_LIMIT ?? '500');
 export const FRONT_INVENT_PRODUCTS_PAGE = parseInt(process.env.FRONT_INVENT_PRODUCTS_PAGE ?? '1');
+
+export const FRONT_WISHLIST_INVENT_PRODUCTS_LIMIT = parseInt(process.env.FRONT_WISHLIST_INVENT_PRODUCTS_LIMIT ?? '21');
+export const FRONT_WISHLIST_INVENT_PRODUCTS_MAX_LIMIT = parseInt(process.env.FRONT_WISHLIST_INVENT_PRODUCTS_MAX_LIMIT ?? '500');
+export const FRONT_WISHLIST_INVENT_PRODUCTS_PAGE = parseInt(process.env.FRONT_WISHLIST_INVENT_PRODUCTS_PAGE ?? '1');
 
 
  

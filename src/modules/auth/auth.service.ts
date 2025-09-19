@@ -39,7 +39,7 @@ import { UpdateUserAddressDto } from './dto/update-user-address.dto';
 import { UserAddressResponseDto } from './dto/user-address-response.dto';
 import { CreateProductDto } from '../admin/product/dto/create-product.dto';
 import { S3Service } from 'src/shared/s3/s3.service';
-import { Product } from 'src/shared/entities/product.entity';
+import { Product, ProductStatus } from 'src/shared/entities/product.entity';
 import { ProductImage } from 'src/shared/entities/product-image.entity';
 import { ProductPaginationDto } from '../admin/product/dto/product-pagination.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
@@ -62,6 +62,9 @@ import { CommissionType } from 'src/shared/entities/commission-type.entity';
 import { ShippingTime } from 'src/shared/entities/shipping-time.entity';
 import { Size } from 'src/shared/entities/size.entity';
 import { Orientation } from 'src/shared/entities/orientation.entity';
+import { InventProdListDto } from '../client/invent-product/dto/invent-prod-list.dto';
+import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
+import { WishlistInventProdDto } from './dto/wishlist-invent-prod-list.dto';
 
 
 
@@ -177,11 +180,7 @@ async getArtistsByUserId(id: number) {
   
   return artists;
 }
-
-
-
-
-
+  
   async getArtistList(id: number) {
     const artists = await this.userRepository
       .createQueryBuilder('user')
@@ -965,13 +964,98 @@ async getArtistsByUserId(id: number) {
 
   return this.wishlistRepository.save(wishlist);
   }
-  async getUserWishlist(userId: number): Promise<Wishlist[]> {
+  async getUserWishlistsssssss(userId: number): Promise<Wishlist[]> {
     return this.wishlistRepository.find({
       where: { user: { id: userId } },
       relations: ['product'],
       order: { createdAt: 'DESC' },
     });
   }
+  async getUserWishlist(
+    paginationDto: PaginationBaseDto,
+    userId: number,
+  ): Promise<PaginationResponseDto<WishlistInventProdDto>> {
+    const { page = 1, limit = 10 } = paginationDto;
+  
+    const qb = this.wishlistRepository.createQueryBuilder('wishlist')
+      // product must exist (use inner join)
+      .innerJoinAndSelect('wishlist.product', 'product')
+      // inventory must exist and be available -> inner join is OK because 1:1
+      .innerJoinAndSelect('product.productInventory', 'inventory')
+      // other product relations (optional)
+      .leftJoinAndSelect('product.artist', 'artist')
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.surface', 'surface')
+      .leftJoinAndSelect('product.medium', 'medium')
+      .leftJoinAndSelect('inventory.shippingWeight', 'shipping')
+  
+      // filters
+      .where('wishlist.user_id = :userId', { userId })
+      .andWhere('product.is_active = :isActive', { isActive: ProductStatus.ACTIVE })
+      .andWhere('inventory.status = :invStatus', { invStatus: true })
+  
+      // pagination
+      .skip((page - 1) * limit)
+      .take(limit);
+  
+    // Explicit select (helps reduce payload)
+    qb.select([
+      // wishlist
+      'wishlist.id',
+      'wishlist.createdAt',
+      'product.id',
+      'product.productTitle',
+      'product.slug',
+      'product.defaultImage',
+      'product.price_on_demand',
+      'product.weight',
+      'product.width',
+      'product.height',
+      'product.depth',
+      'product.is_active',
+  
+      // category/artist/surface/medium minimal fields
+      'category.id',
+      'category.name',
+      'artist.id',
+      'artist.username',
+      'surface.id',
+      'surface.surfaceName',
+      'medium.id',
+      'medium.name',
+  
+      // inventory fields
+      'inventory.id',
+      //'inventory.product_id', // if your inventory column name is product_id; use correct name
+      'inventory.price',
+      'inventory.discount',
+      'inventory.gstSlot',
+      'inventory.shippingSlot',
+      'inventory.status',
+      'inventory.updatedAt',
+  
+      // shipping
+      'shipping.weightSlot',
+      'shipping.costINR',
+      'shipping.CostOthers',
+    ]);
+  
+    const [result, total] = await qb.getManyAndCount();
+  
+    // transform to DTOs
+    const data = plainToInstance(WishlistInventProdDto, result, {
+      excludeExtraneousValues: true,
+    });
+  
+    return new PaginationResponseDto<WishlistInventProdDto>(data, {
+      total,
+      page,
+      limit,
+    });
+  }
+  
+  
+  
   async removeWishList(id: number): Promise<void> {
     const wishlist = await this.wishlistRepository.findOne({ where: { id } });
     if (!wishlist) throw new NotFoundException(`wishlist ${id} not found`);

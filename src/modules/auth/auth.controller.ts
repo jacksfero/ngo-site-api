@@ -44,7 +44,7 @@ import { PaginationPipe } from 'src/shared/pipes/pagination.pipe';
 import { ProductPaginationDto } from '../admin/product/dto/product-pagination.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ProductDto } from '../admin/product/dto/product.dto';
-import { PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE } from 'src/shared/config/pagination.config';
+import { FRONT_WISHLIST_INVENT_PRODUCTS_LIMIT, FRONT_WISHLIST_INVENT_PRODUCTS_MAX_LIMIT, FRONT_WISHLIST_INVENT_PRODUCTS_PAGE, PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE } from 'src/shared/config/pagination.config';
 import { UpdateProductDto } from '../admin/product/dto/update-product.dto';
 import { CreateWishlistDto } from '../admin/wishlist/dto/create-wishlist.dto';
 import { CreateKycDetailDto,UpdateKycDetailDto } from '../admin/users/dto/create-user-kyc-detail.dto';
@@ -52,6 +52,9 @@ import { CreateBankDetailDto } from '../admin/users/dto/create-user-bank-detail.
 import { UpdateBankDetailDto } from '../admin/users/dto/update-user-bank-detail.dto';
 import { FileValidationPipe } from 'src/shared/pipes/file-size-type-validation.pipe';
 import { AddressType } from 'src/shared/entities/users-address.entity';
+import { PaginationClinetPipe } from 'src/shared/pipes/pagination-client.pipe';
+import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
+import { WishlistInventProdDto } from './dto/wishlist-invent-prod-list.dto';
  
 @Controller('auth')
 export class AuthController {
@@ -391,12 +394,26 @@ create(
     return this.authService.addToWishlist(req.user, createWishlistDto);
   }
 
+  // @UseGuards(JwtAuthGuard)
+  // @Get('wishlist')
+  // findAllWishList( @Req() req) {
+  //   //  return this.globalVar;
+  //   //console.log('---glooooo------' + this.globalVar);
+  //   return this.authService.getUserWishlist(req.user.sub.toString());
+  // }
+
   @UseGuards(JwtAuthGuard)
   @Get('wishlist')
-  findAllWishList( @Req() req) {
-    //  return this.globalVar;
-    //console.log('---glooooo------' + this.globalVar);
-    return this.authService.getUserWishlist(req.user.sub.toString());
+  async findAllWishList(
+    @Query(new PaginationClinetPipe(
+      FRONT_WISHLIST_INVENT_PRODUCTS_LIMIT,
+      FRONT_WISHLIST_INVENT_PRODUCTS_MAX_LIMIT,
+      FRONT_WISHLIST_INVENT_PRODUCTS_PAGE,
+    ))
+    @Query() paginationDto: PaginationBaseDto,
+    @Req() req,
+  ): Promise<PaginationResponseDto<WishlistInventProdDto>> {
+    return this.authService.getUserWishlist(paginationDto, Number(req.user.sub));
   }
 
   @Delete('wishlist/:id')
