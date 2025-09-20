@@ -8,6 +8,8 @@ import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { Public } from 'src/core/decorators/public.decorator';
 import { LocalAuthGuard } from 'src/modules/auth/guards/local-auth.guard';
 import { OptionalJwtAuthGuard } from 'src/modules/auth/guards/optional-jwt-auth.guard';
+import { CartItemListDto } from './dto/cat-item-list.dto';
+import { plainToInstance } from 'class-transformer';
  
 
 @Controller()
@@ -34,7 +36,9 @@ export class CartController {
         this.setGuestCookie(res, guestId);
       }
 
-      return await  this.cartService.getOrCreateCart(userId, guestId);
+     // return await  this.cartService.getOrCreateCart(userId, guestId);
+      const cart = await this.cartService.getOrCreateCart(userId, guestId);
+      return plainToInstance(CartItemListDto, cart, { excludeExtraneousValues: true });
     } catch (error) {
       throw new HttpException(
         `Failed to get cart: ${error.message}`,

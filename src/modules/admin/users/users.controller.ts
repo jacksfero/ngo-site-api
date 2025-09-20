@@ -27,8 +27,7 @@ import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 
 import { UsersListDto } from './dto/users-list.dto';
 import { UserPaginationDto } from './dto/user-pagination.dto';
- 
-
+  
 import { USERS_LIMIT, USERS_MAX_LIMIT, USERS_PAGE } from 'src/shared/config/pagination.config';
 import { CreateUserAddressDto } from 'src/modules/auth/dto/create-user-address.dto';
 import { UpdateUserAddressDto } from 'src/modules/auth/dto/update-user-address.dto';
@@ -44,15 +43,13 @@ import { FileValidationPipe } from 'src/shared/pipes/file-size-type-validation.p
 //@UseGuards(PermissionsGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) { }
-
  
   @Post()
   @RequirePermissions('create_user')
   create(@Body() createUserDto: CreateUserDto, @Req() req) {
     return this.usersService.create(createUserDto, req.user);
   }
-
-
+ 
   @Get()
   @RequirePermissions('read_user')
   async findAll(
@@ -60,8 +57,7 @@ export class UsersController {
     paginationDto: UserPaginationDto
   ): Promise<PaginationResponseDto<UsersListDto>> {
     return this.usersService.findAll(paginationDto);
-  }
- 
+  } 
    
   @Get('by-role/:roleName')
   @RequirePermissions('read_user')
@@ -146,8 +142,7 @@ export class UsersController {
   updateAddress(@Param('id') id: number, @Body() dto: UpdateUserAddressDto, @Req() req) {
     return this.usersService.updateAddress(id, dto, req.user);
   }
-
-
+ 
   @Post('user-bank/:id')
   @RequirePermissions('create_user')
   createBankDetail(@Param('id', ParseIntPipe) id: number,

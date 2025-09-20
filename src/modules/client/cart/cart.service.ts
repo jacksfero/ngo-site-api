@@ -8,6 +8,7 @@ import { User } from 'src/shared/entities/user.entity';
 import { Product } from 'src/shared/entities/product.entity';
 import { AddToCartDto, UpdateCartItemDto } from './dto/cart.dto';
 import { Inventory } from 'src/shared/entities/inventory.entity';
+ 
 
 @Injectable()
 export class CartService {
@@ -42,7 +43,7 @@ export class CartService {
     throw new NotFoundException('User or guest ID required');
   }
   // ✅ NEW: Get user cart (handles both string and number IDs)
-  public async getUserCart(userId: string | number): Promise<Cart> {
+  public async getUserCart(userId: string | number): Promise<Cart>  {
     // Convert to number if needed (assuming your DB uses numeric IDs)
     const numericUserId = typeof userId === 'string' ? parseInt(userId, 10) : userId;
     
@@ -50,10 +51,39 @@ export class CartService {
       throw new BadRequestException('Invalid user ID');
     }
 
-    let cart = await this.cartRepo.findOne({
-      where: { user: { id: numericUserId }, isCheckedOut: false },
-      relations: ['items', 'items.product', 'user']
-    });
+    // let cart = await this.cartRepo.findOne({
+    //   where: { user: { id: numericUserId }, isCheckedOut: false },
+    //   relations: ['items', 'items.product', 'user']
+    // });
+
+ 
+    let cart = await this.cartRepo
+  .createQueryBuilder('cart')
+  .innerJoinAndSelect('cart.user', 'user')                // must exist
+  .leftJoinAndSelect('cart.items', 'items')               // cart may be empty
+  .innerJoinAndSelect('items.product', 'product')         // must exist if item exists
+  .innerJoinAndSelect('product.productInventory', 'inventory')   // must exist (1:1)
+  .where('cart.user_id = :userId', { userId: numericUserId })
+  .andWhere('cart.isCheckedOut = false')
+    .select([
+      'cart.id',
+      'cart.isCheckedOut',
+      'items.id',
+      'items.product_id',
+      'items.quantity',      
+      'product.id',
+      'product.productTitle',
+      'product.slug',
+      'product.defaultImage',
+      'inventory.id',
+      'inventory.price',
+      'inventory.discount',
+      'inventory.gstSlot',
+      'inventory.shippingSlot',
+      'user.id',
+      'user.username',
+    ])
+    .getOne();
     
     if (!cart) {
       const user = await this.userRepo.findOneBy({ id: numericUserId });
@@ -63,22 +93,47 @@ export class CartService {
       cart = this.cartRepo.create({ user, items: [] });
       cart = await this.cartRepo.save(cart);
     }
-    return cart;
+   // ✅ Convert entity to DTO
+   return cart;
   }
 
   // ✅ NEW: Get guest cart
-  private async getGuestCart(guestId: string): Promise<Cart> {
-    let cart = await this.cartRepo.findOne({
-      where: { guestId, isCheckedOut: false },
-      relations: ['items', 'items.product']
-    });
+    private async getGuestCart(guestId: string): Promise<Cart> {
+      let cart = await this.cartRepo
+    .createQueryBuilder('cart')
+    .innerJoinAndSelect('cart.user', 'user')                // must exist
+    .leftJoinAndSelect('cart.items', 'items')               // cart may be empty
+    .innerJoinAndSelect('items.product', 'product')         // must exist if item exists
+    .innerJoinAndSelect('product.productInventory', 'inventory')   // must exist (1:1)
+    .where('cart.guestId = :guestId', { guestId: guestId })
+    .andWhere('cart.isCheckedOut = false')
+      .select([
+        'cart.id',
+        'cart.isCheckedOut',
+        'items.id',
+        'items.product_id',
+        'items.quantity',      
+        'product.id',
+        'product.productTitle',
+        'product.slug',
+        'product.defaultImage',
+        'inventory.id',
+        'inventory.price',
+        'inventory.discount',
+        'inventory.gstSlot',
+        'inventory.shippingSlot',
+        'user.id',
+        'user.username',
+      ])
+      .getOne();
 
-    if (!cart) {
-      cart = this.cartRepo.create({ guestId, items: [] });
-      cart = await this.cartRepo.save(cart);
+      if (!cart) {
+        cart = this.cartRepo.create({ guestId, items: [] });
+        cart = await this.cartRepo.save(cart);
+      }
+     // ✅ Convert entity to DTO
+     return cart;
     }
-    return cart;
-  }
 
   async addToCart(
     dto: AddToCartDto,
