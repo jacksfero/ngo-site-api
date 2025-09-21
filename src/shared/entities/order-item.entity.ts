@@ -17,28 +17,48 @@ export class OrderItem {
   quantity: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
-  price: number; // ✅ Price at time of purchase
+  price: number; // ✅ Final unit price at time of purchase
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  originalPrice: number; // ✅ Original price before discount
+  originalPrice: number; // ✅ Original price (before discount)
 
   @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
-  discount: number; // ✅ Discount percentage
+  discount: number; // ✅ Discount %
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
-  total: number; // ✅ price * quantity
+  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
+  gstPct: number; // ✅ GST percentage at time of order
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  gstAmount: number; // ✅ GST value
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  total: number; // ✅ (price - discount + gst) * quantity
 
   @Column({ nullable: true })
   inventoryId: number; // ✅ Which inventory was used
-
-  @Column({ nullable: true })
-  sku: string; // ✅ Product SKU at time of purchase
-
+ 
   @Column({ type: 'text', nullable: true })
   productName: string; // ✅ Product name at time of purchase
 
   // ✅ Calculate total before saving
   calculateTotal(): void {
-    this.total = this.price * this.quantity;
+    const qty = Number(this.quantity) || 0;
+    const unitPrice = Number(this.price) || 0;
+    const discountPct = Number(this.discount) || 0;
+    const gstPct = Number(this.gstPct) || 0;
+  
+    let total = qty * unitPrice;
+  
+    if (discountPct > 0) {
+      total -= (total * discountPct) / 100;
+    }
+  
+    let gst = 0;
+    if (gstPct > 0) {
+      gst = (total * gstPct) / 100;
+    }
+  
+    this.gstAmount = gst;
+    this.total = total + gst;
   }
 }

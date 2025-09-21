@@ -11,10 +11,14 @@ export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post('checkout')
-  async checkout(@Req() req) {
+  async checkout(
+    @Req() req,
+    @Body('shippingAddressId') shippingAddressId?: number,
+    @Body('billingAddressId') billingAddressId?: number
+  ) {
     try {
       const userId = req.user.sub.toString();
-      return await this.orderService.createFromCart(userId);
+      return await this.orderService.createFromCart(userId, shippingAddressId, billingAddressId);
     } catch (error) {
       throw new HttpException(
         `Checkout failed: ${error.message}`,

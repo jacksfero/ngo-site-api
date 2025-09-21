@@ -338,8 +338,9 @@ create(
   async findAll(
     @Query(new PaginationPipe(PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE))
     @Query() paginationDto: ProductPaginationDto,
+    @Req() req,
   ): Promise<PaginationResponseDto<ProductDto>> {
-    return this.authService.findAllProducts(paginationDto);
+    return this.authService.findAllProducts(paginationDto, req.user);
   }
 
   @UseGuards(JwtAuthGuard)

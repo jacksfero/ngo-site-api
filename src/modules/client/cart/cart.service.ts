@@ -8,6 +8,7 @@ import { User } from 'src/shared/entities/user.entity';
 import { Product } from 'src/shared/entities/product.entity';
 import { AddToCartDto, UpdateCartItemDto } from './dto/cart.dto';
 import { Inventory } from 'src/shared/entities/inventory.entity';
+import { Currency } from 'src/shared/entities/currency.entity';
  
 
 @Injectable()
@@ -28,6 +29,9 @@ export class CartService {
 
     @InjectRepository(Inventory) 
     private inventRepo: Repository<Inventory>,
+
+    @InjectRepository(Currency) 
+    private currencyRepo: Repository<Currency>,
   ) {}
 
  
@@ -68,9 +72,12 @@ export class CartService {
     .select([
       'cart.id',
       'cart.isCheckedOut',
+      'cart.currency','cart.exchangeRate',
       'items.id',
       'items.product_id',
-      'items.quantity',      
+      'items.quantity', 'items.inventoryId', 'items.price',
+      'items.originalPrice', 'items.discountAmount', 'items.gstAmount',   
+      'items.shipInr', 'items.shipOther', 'items.total',    
       'product.id',
       'product.productTitle',
       'product.slug',
@@ -141,6 +148,23 @@ export class CartService {
     guestId?: string,
   ): Promise<Cart> {  
     const cart = await this.getOrCreateCart(userId, guestId);
+
+    if (dto.currency ) {
+      if (typeof dto.currency !== 'string' || dto.currency.length !== 3) {
+        throw new BadRequestException('Invalid currency format. Use 3-letter currency code (e.g., USD, EUR)');
+      }
+      const currencyrate = await this.currencyRepo.findOne({
+        where: { currency: dto.currency, status: true }
+      });
+      
+      if (!currencyrate) {
+        throw new BadRequestException(`Currency rate not available for: ${cart.currency}`);
+      }
+      cart.currency = dto.currency;
+      cart.exchangeRate = currencyrate.value;
+       
+      await this.cartRepo.save(cart);
+    }
       
     // ✅ Get product with inventory pricing and stock check
     const inventory = await this.inventRepo.findOne({
@@ -149,7 +173,7 @@ export class CartService {
         status: true,
          quantity: MoreThan(0) // ✅ Only available inventory
       },
-      relations: ['product']
+      relations: ['product','shippingWeight']
     });
 
     if (!inventory) {
@@ -162,6 +186,8 @@ export class CartService {
         `Only ${inventory.quantity} items available in stock`
       );
     } 
+     // ✅ Detect domestic or overseas (later: use shippingAddress.country)
+  const isDomestic = dto.shippingCountry === 'IN'; 
 
     let item = cart.items.find((i) => i.product.id === dto.productId);
     
@@ -177,7 +203,15 @@ export class CartService {
       } 
 
       item.quantity = newQuantity;
-      item.updatePrices(inventory.price, inventory.discount);
+      item.updatePrices( inventory.price,
+      inventory.gstSlot,
+      inventory.shippingWeight.costINR,
+      inventory.shippingWeight.CostOthers,
+      inventory.shippingSlot,
+      inventory.discount,
+      //cart.currency,
+      cart.exchangeRate,
+      isDomestic);
       await this.cartItemRepo.save(item);
     } else {
       // Create new item
@@ -187,7 +221,15 @@ export class CartService {
         quantity: dto.quantity,
         inventoryId: inventory.id
       });
-      item.updatePrices(inventory.price, inventory.discount);
+      item.updatePrices(inventory.price,
+        inventory.gstSlot,
+        inventory.shippingWeight.costINR,
+        inventory.shippingWeight.CostOthers,
+        inventory.shippingSlot,
+        inventory.discount,
+       // cart.currency,
+        cart.exchangeRate,
+        isDomestic);
       await this.cartItemRepo.save(item);
       cart.items.push(item);
     }
@@ -210,17 +252,17 @@ export class CartService {
     guestId?: string,
   ): Promise<Cart> {
     const cart = await this.getOrCreateCart(userId, guestId);
-    
+    console.log('--------cart-------',cart)
     const item = cart.items.find((i) => i.id === dto.itemId);
     if (!item) {
       throw new NotFoundException('Cart item not found');
     }
-
+console.log('--------item--------',item)
     // ✅ Get current inventory for validation
     const inventory = await this.inventRepo.findOne({
       where: { id: item.inventoryId }
     });
-
+    console.log('--------inventory------',inventory)
     if (inventory && dto.quantity > inventory.quantity) {
       throw new BadRequestException(
         `Only ${inventory.quantity} items available in stock`
@@ -228,6 +270,21 @@ export class CartService {
     } 
 
     item.quantity = dto.quantity;
+    // ✅ Recalculate with cart-level currency + exchangeRate
+  const isDomestic = dto.shippingCountry === 'IN'; 
+  if (inventory) {
+    item.updatePrices(
+      inventory.price,
+      inventory.gstSlot,
+      inventory.shippingWeight.costINR,
+      inventory.shippingWeight.CostOthers,
+      inventory.shippingSlot,
+      inventory.discount,
+    //  cart.currency,
+      cart.exchangeRate,
+      isDomestic
+    );
+  }
     await this.cartItemRepo.save(item);
 
     const upcatecart = await this.cartRepo.findOne({

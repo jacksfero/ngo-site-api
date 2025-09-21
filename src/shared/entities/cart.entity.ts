@@ -23,6 +23,13 @@ export class Cart {
   @Column({ default: false })
   isCheckedOut: boolean;
 
+    // 🆕 Currency fields
+    @Column({ default: 'INR' })
+    currency: string;
+  
+    @Column('decimal', { precision: 10, scale: 4, default: 1 })
+    exchangeRate: number; // INR → selected currency
+
   @CreateDateColumn()
   createdAt: Date;
 

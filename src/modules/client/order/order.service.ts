@@ -10,6 +10,7 @@ import { CartItem } from 'src/shared/entities/cart-item.entity';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { User } from 'src/shared/entities/user.entity';
 import { Inventory } from 'src/shared/entities/inventory.entity';
+import { UsersAddress } from 'src/shared/entities/users-address.entity';
 
 @Injectable()
 export class OrderService {
@@ -36,114 +37,176 @@ export class OrderService {
   ) {}
 
 
-  async createFromCart(userId: string): Promise<Order> {
+  async createFromCart(
+    userId: string,
+    shippingAddressId?: number,
+    billingAddressId?: number,
+  ): Promise<Order> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-
+  
     try {
-      // ✅ Convert string userId to number if needed
+      console.log('🟢 Starting checkout process for user:', userId);
+      // 1️⃣ Convert userId to number
       const numericUserId = parseInt(userId, 10);
+      console.log('🔢 Parsed user ID:', numericUserId);
       if (isNaN(numericUserId)) {
         throw new BadRequestException('Invalid user ID');
       }
-
-      const cart = await this.cartRepo.findOne({
+  
+      // 2️⃣ Get cart
+    console.log('🛒 Fetching cart for user:', numericUserId);
+      const cart = await queryRunner.manager.findOne(Cart, {
         where: { user: { id: numericUserId }, isCheckedOut: false },
-        relations: ['user', 'items', 'items.product', 'items.product.inventory'],
+        relations: ['user', 'items', 'items.product'], // Removed 'items.product.inventory'
       });
-
+      console.log('📦 Cart found:', cart ? {
+        id: cart.id,
+        itemCount: cart.items?.length,
+        isCheckedOut: cart.isCheckedOut
+      } : 'No cart found');
+  
       if (!cart || cart.items.length === 0) {
         throw new BadRequestException('Cart is empty');
       }
-       // ✅ FIX: Define the type for inventoryUpdates array
-       interface InventoryUpdate {
-        inventoryId: number;
-        newQuantity: number;
+     // 3️⃣ Fetch addresses
+     console.log('🏠 Fetching addresses...');
+     console.log('📬 Shipping Address ID:', shippingAddressId);
+     console.log('📭 Billing Address ID:', billingAddressId);
+      // 3️⃣ Fetch addresses (FIXED)
+      let shippingAddress: UsersAddress | null = null;
+      let billingAddress: UsersAddress | null = null;
+  
+      if (shippingAddressId) {
+        shippingAddress = await queryRunner.manager.findOne(UsersAddress, {
+          where: { id: shippingAddressId },
+          relations: ['user'],
+        });
+        console.log('📬 Shipping address found:', shippingAddress,
+         'Not found');
+        if (!shippingAddress) {
+          throw new BadRequestException('Shipping address not found');
+        }
       }
-      // ✅ Validate inventory and calculate total
+  
+      if (billingAddressId) {
+        billingAddress = await queryRunner.manager.findOne(UsersAddress, {
+          where: { id: billingAddressId , user: { id: numericUserId } },
+          relations: ['user'],
+        });
+        if (!billingAddress) {
+          throw new BadRequestException('Billing address not found');
+        }
+      }
+  
+      // 4️⃣ Validate inventory & calculate totals
       let total = 0;
-      const inventoryUpdates: InventoryUpdate[] = []; // ✅ Explicit type
-      
+      const inventoryUpdates: { inventoryId: number; newQuantity: number }[] = [];
+  
       for (const cartItem of cart.items) {
         if (!cartItem.inventoryId) {
-          throw new BadRequestException(`Inventory not found for product: ${cartItem.product.productTitle}`);
-        }
-
-        const inventory = await this.inventoryRepo.findOne({
-          where: { id: cartItem.inventoryId }
-        });
-
-        if (!inventory) {
-          throw new BadRequestException(`Inventory not found for product: ${cartItem.product.productTitle}`);
-        }
-
-      if (inventory.quantity < cartItem.quantity) {
           throw new BadRequestException(
-            `Insufficient stock for ${cartItem.product.productTitle}. Available: ${inventory.quantity}`
+            `Inventory not found for product: ${cartItem.product.productTitle}`,
           );
-        }  
-
-        // ✅ Use cart item price (inventory price) not product.artist_price
-        const itemTotal = cartItem.quantity * cartItem.price;
+        }
+  
+        const inventory = await queryRunner.manager.findOne(Inventory, {
+          where: { id: cartItem.inventoryId },
+        });
+  
+        if (!inventory) {
+          throw new BadRequestException(
+            `Inventory not found for product: ${cartItem.product.productTitle}`,
+          );
+        }
+  
+        if (inventory.quantity < cartItem.quantity) {
+          throw new BadRequestException(
+            `Insufficient stock for ${cartItem.product.productTitle}. Available: ${inventory.quantity}`,
+          );
+        }
+  
+        const itemTotal = cartItem.quantity * Number(cartItem.price);
         total += itemTotal;
-
-       
-
-        // Track inventory updates
+  
         inventoryUpdates.push({
           inventoryId: inventory.id,
-          newQuantity: inventory.quantity - cartItem.quantity
+          newQuantity: inventory.quantity - cartItem.quantity,
         });
       }
-
-      // ✅ Create order
-      const order = this.orderRepo.create({
-        user: cart.user,
+      console.log('📬 Shipping address found:', inventoryUpdates       );
+      // 5️⃣ Create order (FIXED ADDRESSES)
+      const order = queryRunner.manager.create(Order, {
+        user: { id: numericUserId } as User,
         items: [],
+        subtotal: total,
         totalAmount: total,
+       shippingAddress: {id:shippingAddressId} as UsersAddress,  // Use actual entity
+        billingAddress:{ id: billingAddressId} as UsersAddress,    // Use actual entity
         status: OrderStatus.PENDING,
-       // shippingAddress: cart.user.shippingAddress, // Add if available
       });
-
-      // ✅ Create order items
+  
+      order.generateOrderNumber();
+        const savedOrders = await queryRunner.manager.save(order);
+      // 6️⃣ Create order items
       for (const cartItem of cart.items) {
-        const orderItem = this.orderItemRepo.create({
+        const orderItem = queryRunner.manager.create(OrderItem, {
           order,
           product: cartItem.product,
-          quantity: cartItem.quantity,
-          price: cartItem.price, // ✅ Use cart price (inventory price)
-          originalPrice: cartItem.originalPrice, // Store original price
-          discount: cartItem.discount, // Store discount
+          quantity: Number(cartItem.quantity) || 0,
+          price: Number(cartItem.price) || 0,
+          originalPrice: Number(cartItem.originalPrice) || 0,
+          discount: Number(cartItem.discountAmount) || 0,
+          gstPct: Number((cartItem as any).gstPct) || 0, // fallback if not set
+          total: (Number(cartItem.quantity) || 0) * (Number(cartItem.price) || 0),
+          inventoryId: cartItem.inventoryId,
+          productName: cartItem.product.productTitle || '',
         });
         order.items.push(orderItem);
       }
-
-      // ✅ Update inventory quantities
+  
+      order.calculateTotals();
+  
+      // 7️⃣ Apply inventory updates
       for (const update of inventoryUpdates) {
-        await this.inventoryRepo.update(
+        console.log(`📦 Updating inventory ID: ${update.inventoryId} to quantity: ${update.newQuantity}`);
+        await queryRunner.manager.update(
+          Inventory,
           { id: update.inventoryId },
-          { quantity: update.newQuantity }
+          { quantity: update.newQuantity },
         );
+         
       }
-
-      // ✅ Mark cart as checked out
+  
+      // 8️⃣ Mark cart as checked out
       cart.isCheckedOut = true;
-      await this.cartRepo.save(cart);
-
-      // ✅ Save order
-      const savedOrder = await this.orderRepo.save(order);
-      
+      await queryRunner.manager.save(cart);
+  
+      // 9️⃣ Save order & order items in one go
+      const savedOrder = await queryRunner.manager.save(order);
+  
+      // 🔟 Commit
       await queryRunner.commitTransaction();
+  
       return savedOrder;
-
     } catch (error) {
+      console.error('❌ Checkout failed with error:', error);
       await queryRunner.rollbackTransaction();
-      throw error;
+      console.error('🔍 Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      console.error('Checkout error:', error); // Add logging for debugging
+      throw new BadRequestException(`Checkout failed: ${error.message}`);
     } finally {
       await queryRunner.release();
+      console.log('🔚 Query runner released');
     }
   }
+  
+  
 
 
    async findAll(userId: string): Promise<Order[]> {
@@ -196,10 +259,6 @@ export class OrderService {
     return this.orderRepo.save(order);
   }
 
-  // // ✅ Optional: Add method to handle guest checkout
-  // async createFromGuestCart(guestId: string, userData: any): Promise<Order> {
-  //   // Similar to createFromCart but for guest users who just registered
-  //   // You'll need to handle guest cart merging first
-  // }
+ 
 }
  

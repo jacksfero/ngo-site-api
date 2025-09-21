@@ -7,9 +7,10 @@ import { CartItem } from 'src/shared/entities/cart-item.entity';
 import { User } from 'src/shared/entities/user.entity';
 import { Product } from 'src/shared/entities/product.entity';
 import { Inventory } from 'src/shared/entities/inventory.entity';
+import { Currency } from 'src/shared/entities/currency.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Cart,CartItem,User,Product,Inventory])],
+  imports: [TypeOrmModule.forFeature([Cart,CartItem,User,Product,Inventory,Currency])],
   controllers: [CartController],
   providers: [CartService],
   exports: [CartService],

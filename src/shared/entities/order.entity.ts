@@ -1,5 +1,15 @@
-import {PrimaryGeneratedColumn,Index,Column,JoinColumn,OneToMany,CreateDateColumn,UpdateDateColumn, ManyToOne,Entity } from "typeorm";
- 
+import {
+  PrimaryGeneratedColumn,
+  Index,
+  Column,
+  JoinColumn,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  Entity
+} from "typeorm";
+
 import { User } from "./user.entity";
 import { OrderItem } from "./order-item.entity";
 import { UsersAddress } from "./users-address.entity";
@@ -15,72 +25,75 @@ export enum OrderStatus {
   CANCELLED = 'cancelled',
   REFUNDED = 'refunded',
 }
-  
+
 @Entity('orders')
-@Index(['user', 'status']) // Composite index for better query performance
-@Index(['createdAt']) // Index for date-based queries
-  export class Order {
-    @PrimaryGeneratedColumn()
-    id: number;
-  
-    @ManyToOne(() => User, { eager: true })
-    @JoinColumn({ name: 'user_id' })
-    user: User;
-  
-    @Column({ nullable: true })
-    @Index()
-    orderNumber: string; // ✅ Unique order identifier for customers
+export class Order {
+  @PrimaryGeneratedColumn()
+  id: number;
 
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 
-     @OneToMany(() => OrderItem, (item) => item.order, {
+  @Column({ nullable: true })
+  @Index()
+  orderNumber: string;
+
+  @OneToMany(() => OrderItem, (item) => item.order, {
     cascade: true,
-    eager: true // Auto-load items with order
+    eager: true
   })
   items: OrderItem[];
-  
+
   @ManyToOne(() => UsersAddress, { eager: true, nullable: true })
   @JoinColumn({ name: 'shipping_address_id' })
   shippingAddress: UsersAddress;
 
   @ManyToOne(() => UsersAddress, { eager: true, nullable: true })
   @JoinColumn({ name: 'billing_address_id' })
-  billingAddress: UsersAddress; // ✅ Separate billing address
-   
+  billingAddress: UsersAddress;
+
   @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.PENDING })
   status: OrderStatus;
-  
-  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
-  subtotal: number; // ✅ Items total before shipping and tax
- 
-  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
-  shippingCost: number; // ✅ Shipping cost
 
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
-  taxAmount: number; // ✅ Tax amount
-
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
-  totalAmount: number; // ✅ Final total (subtotal + shipping + tax)
+  subtotal: number;
 
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
-  discountAmount: number; // ✅ Total discount applied
+  shippingCost: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
+  taxAmount: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
+  shippingGstPct: number; // ✅ Added to mirror cart shipping GST
+
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
+  shippingGstAmount: number; // ✅ GST value for shipping
+
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
+  discountAmount: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
+  totalAmount: number;
 
   @Column({ nullable: true })
-  trackingNumber: string; // ✅ Shipping tracking number
-  
+  trackingNumber: string;
+
   @Column({ nullable: true })
-  carrier: string; // ✅ Shipping carrier (FedEx, UPS, etc.)
+  carrier: string;
 
   @Column({ type: 'text', nullable: true })
-  notes: string; // ✅ Order notes/comments
+  notes: string;
 
   @Column({ type: 'timestamp', nullable: true })
-  shippedAt: Date; // ✅ When order was shipped
+  shippedAt: Date;
 
   @Column({ type: 'timestamp', nullable: true })
-  deliveredAt: Date; // ✅ When order was delivered
+  deliveredAt: Date;
 
   @Column({ type: 'timestamp', nullable: true })
-  cancelledAt: Date; // ✅ When order was cancelled
+  cancelledAt: Date;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -91,12 +104,10 @@ export enum OrderStatus {
   @OneToMany(() => Payment, (payment) => payment.order, { eager: true })
   payments: Payment[];
 
-   // ✅ Add these payment-related fields
-   @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING })
-   paymentStatus: PaymentStatus;
+  @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING })
+  paymentStatus: PaymentStatus;
 
-
-   @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   paidAt: Date;
 
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
@@ -105,40 +116,44 @@ export enum OrderStatus {
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   refundAmount: number;
 
-   // ✅ Virtual property for order status history (optional)
-   @Column({ type: 'json', nullable: true })
-   statusHistory: Array<{
-     status: OrderStatus;
-     timestamp: Date;
-     note?: string;
-   }>;
- 
-   // ✅ Helper method to generate order number
-   generateOrderNumber(): void {
-     if (!this.orderNumber) {
-       const timestamp = new Date().getTime();
-       const random = Math.floor(Math.random() * 1000);
-       this.orderNumber = `ORD-${timestamp}-${random}`;
-     }
-   }
- 
-   // ✅ Calculate totals before saving
-   calculateTotals(): void {
-     this.subtotal = this.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-     this.totalAmount = this.subtotal + this.shippingCost + this.taxAmount - this.discountAmount;
-   }
+  @Column({ type: 'json', nullable: true })
+  statusHistory: Array<{
+    status: OrderStatus;
+    timestamp: Date;
+    note?: string;
+  }>;
 
- // ✅ Helper method to update payment status
- updatePaymentStatus(payment: Payment): void {
-  if (payment.status === PaymentStatus.SUCCESS) {
-    this.paymentStatus = PaymentStatus.SUCCESS;
-    this.paidAt = new Date();
-    this.amountPaid = payment.amount;
-  } else if (payment.status === PaymentStatus.FAILED) {
-    this.paymentStatus = PaymentStatus.FAILED;
-  } else if ([PaymentStatus.REFUNDED, PaymentStatus.PARTIALLY_REFUNDED].includes(payment.status)) {
-    this.refundAmount = payment.refundAmount;
+  generateOrderNumber(): void {
+    if (!this.orderNumber) {
+      const timestamp = new Date().getTime();
+      const random = Math.floor(Math.random() * 1000);
+      this.orderNumber = `IGORD-${timestamp}-${random}`;
+    }
+  }
+
+  calculateTotals(): void {
+    const subtotal = this.items.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
+    const taxAmount = this.items.reduce((sum, item) => sum + (Number(item.gstAmount) || 0), 0);
+  
+    const shipping = Number(this.shippingGstPct) || 0;
+    const shippingGst = Number(this.shippingGstAmount) || 0;
+  
+    this.subtotal = subtotal;
+    this.taxAmount = taxAmount;
+    this.shippingGstPct = shipping;
+    this.shippingGstAmount = shippingGst;
+    this.totalAmount = subtotal + taxAmount + shipping + shippingGst;
+  }
+
+  updatePaymentStatus(payment: Payment): void {
+    if (payment.status === PaymentStatus.SUCCESS) {
+      this.paymentStatus = PaymentStatus.SUCCESS;
+      this.paidAt = new Date();
+      this.amountPaid = payment.amount;
+    } else if (payment.status === PaymentStatus.FAILED) {
+      this.paymentStatus = PaymentStatus.FAILED;
+    } else if ([PaymentStatus.REFUNDED, PaymentStatus.PARTIALLY_REFUNDED].includes(payment.status)) {
+      this.refundAmount = payment.refundAmount;
+    }
   }
 }
-  }
-  

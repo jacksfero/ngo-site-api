@@ -789,20 +789,21 @@ async getArtistsByUserId(id: number) {
     return this.productRepository.save(product);
   }
   async findAllProducts(
-    paginationDto: ProductPaginationDto,
+    paginationDto: ProductPaginationDto, user:any
   ): Promise<PaginationResponseDto<ProductDto>> {
+    const userId = user.sub.toString();
     const { page, limit, search,
       is_active
-      //status
-
-
+      //status 
     } = paginationDto;
     const skip = (page - 1) * limit;
 
-    const queryBuilder = this.productRepository.createQueryBuilder('product');
-
+    const queryBuilder = this.productRepository.createQueryBuilder('product')
+                       .leftJoinAndSelect('product.artist', 'artist')
+                       .leftJoinAndSelect('product.category', 'category')
+                       .andWhere('product.createdBy = :createdBy', { createdBy: userId });
     if (search) {
-      queryBuilder.where('product.name LIKE :search', { search: `%${search}%` });
+      queryBuilder.andWhere('product.name LIKE :search', { search: `%${search}%` });
     }
 
     const [products, total] = await queryBuilder

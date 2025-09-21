@@ -38,7 +38,31 @@ export class CartItemDto {
 
     @Expose()
     product_id: number;
- 
+
+    @Expose()
+    inventoryId: number;
+
+    @Expose()
+    price: number;
+
+    @Expose()
+    originalPrice: number;
+
+    @Expose()
+    discountAmount: number;
+
+    @Expose()
+    gstAmount: number;
+
+    @Expose()
+    shipInr: number;
+
+    @Expose()
+    shipOther: number;
+    
+    @Expose()
+    total: number;
+
     @Expose()
     @Type(() => ProductDto)
     product: ProductDto;
@@ -54,6 +78,12 @@ export class UserDto {
 export class CartItemListDto {
     @Expose() id: number;
     @Expose() isCheckedOut: boolean;
+
+    @Expose()
+     currency: string;
+
+    @Expose() 
+    exchangeRate: number;
 
     @Expose()
     @Type(() => CartItemDto)
