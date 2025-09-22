@@ -25,10 +25,16 @@ import { Wishlist } from 'src/shared/entities/wishlist.entity';
 import { BankDetail } from 'src/shared/entities/user-bank-detail.entity';
 import { KycDetails } from 'src/shared/entities/user-kyc.entity';
 import { UserProfileImage } from 'src/shared/entities/user-profile-image.entity';
+import { Surface } from 'src/shared/entities/surface.entity';
+import { Medium } from 'src/shared/entities/medium.entity';
+import { Productcategory } from 'src/shared/entities/productcategory.entity';
+import { Subject } from 'src/shared/entities/subject.entity';
+import { Style } from 'src/shared/entities/style.entity';
  
 @Module({
   imports: [TypeOrmModule.forFeature([User,Role,OtpVerification,PasswordResetToken,
-    UsersAbout,UsersAddress,BankDetail,KycDetails,Product,ProductImage,Wishlist,UserProfileImage
+    UsersAbout,UsersAddress,BankDetail,KycDetails,Product,ProductImage,Surface,Medium,
+    Subject,Style,Productcategory,Wishlist,UserProfileImage
   ]),
     UsersModule,
     OtpModule,

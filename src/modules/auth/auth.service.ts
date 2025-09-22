@@ -17,7 +17,7 @@ import { UserListByRoleNameDto } from '../admin/users/dto/user-list-byrole.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { User } from 'src/shared/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository,In } from 'typeorm';
 import { OtpVerification } from 'src/shared/entities/OtpVerification.entity';
 
 import { Role } from 'src/shared/entities/role.entity';
@@ -65,6 +65,11 @@ import { Orientation } from 'src/shared/entities/orientation.entity';
 import { InventProdListDto } from '../client/invent-product/dto/invent-prod-list.dto';
 import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
 import { WishlistInventProdDto } from './dto/wishlist-invent-prod-list.dto';
+import { Surface } from 'src/shared/entities/surface.entity';
+import { Medium } from 'src/shared/entities/medium.entity';
+import { Subject } from 'src/shared/entities/subject.entity';
+import { Style } from 'src/shared/entities/style.entity';
+import { slugify } from 'src/shared/utils/slugify';
 
 
 
@@ -78,6 +83,12 @@ export class AuthService {
 
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
+
+    @InjectRepository(Subject)
+    private subjectRepo: Repository<Subject>,
+
+    @InjectRepository(Style)
+    private styleRepo: Repository<Style>,
 
     @InjectRepository(ProductImage)
     private imageRepo: Repository<ProductImage>,
@@ -594,9 +605,7 @@ async getArtistsByUserId(id: number) {
     return withUser;
 
   }
-
-
-
+ 
 
   async createAddress(dto: CreateUserAddressDto, user: any) {
     const userId = user.sub.toString();
@@ -763,9 +772,7 @@ async getArtistsByUserId(id: number) {
     return withUser;
     //  return toUserAddressResponse(withUser);
   }
-
-
-
+ 
   async createProduct(dto: CreateProductDto, user: any, imageFilename?: Express.Multer.File): Promise<Product> {
     const userId = user.sub.toString();
     let titleImage: string | null = null;
@@ -781,13 +788,37 @@ async getArtistsByUserId(id: number) {
       ...dto,
       // defaultImage: imageFilename ? `/product-images/${imageFilename}` : null,
       defaultImage: titleImage,
-
+      slug: await this.generateUniqueSlug(dto.slug),
       createdBy: userId,
+      category: { id: dto.category_id } as Productcategory,
+      ...(dto.surface_id && { surface: { id: dto.surface_id } as Surface }),
+    ...(dto.medium_id && { medium: { id: dto.medium_id } as Medium }),
     });
     product.owner = userId;
     product.artist = userId;
+    if (dto.subjectsIds?.length) {
+      product.subjects = await this.subjectRepo.findBy({ id: In(dto.subjectsIds) });
+    }
+    if (dto.stylesIds?.length) {
+      product.styles = await this.styleRepo.findBy({ id: In(dto.stylesIds) });
+    }
+    
     return this.productRepository.save(product);
   }
+
+  async generateUniqueSlug(title: string): Promise<string> {
+    const baseSlug = slugify(title);
+    let slug = baseSlug;
+    let count = 1;
+
+    while (await this.productRepository.findOne({ where: { slug } })) {
+      slug = `${baseSlug}-${count}`;
+      count++;
+    }
+    return slug;
+  }
+
+  
   async findAllProducts(
     paginationDto: ProductPaginationDto, user:any
   ): Promise<PaginationResponseDto<ProductDto>> {
