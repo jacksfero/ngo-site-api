@@ -855,7 +855,7 @@ async getArtistsByUserId(id: number) {
   async findOneProduct(id: number): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: ['owner', 'wishlists', 'displayMappings'],
+      relations: ['artist', 'packingMode', 'shippingTime','styles', 'subjects','commissionType', 'images','surface','medium','category'],
     });
     if (!product) {
       throw new NotFoundException(`Product with id ${id} not found`);
