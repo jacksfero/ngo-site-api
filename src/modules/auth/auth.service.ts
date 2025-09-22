@@ -942,10 +942,24 @@ async getArtistsByUserId(id: number) {
       imagePath: imageurl, // just the relative path
       product,
     });
-
+ 
     return this.imageRepo.save(image);
+  } 
+  async updateImageAltText(imageId: number, altText: string) {
+    const image = await this.imageRepo.findOne({ where: { id: imageId } });
+  
+    if (!image) {
+      throw new NotFoundException('Image not found');
+    }
+  
+    image.alt_text = altText;
+    await this.imageRepo.save(image);
+  
+    return {
+      message: 'Alt text updated successfully',
+      image,
+    };
   }
-
 
   async deleteProductImage(imageId: number) {
     const image = await this.imageRepo.findOne({ where: { id: imageId }, relations: ['product'] });

@@ -37,15 +37,42 @@ export class CartService {
  
   
    // ✅ FIXED: Accept both string and number user IDs
-   public async getOrCreateCart(userId?: string | number, guestId?: string): Promise<Cart> {
-    if (userId) {
-      return this.getUserCart(userId);
-    }
-    if (guestId) {
-      return this.getGuestCart(guestId);
-    }
-    throw new NotFoundException('User or guest ID required');
+  async getOrCreateCart(userId?: string | number, guestId?: string): Promise<Cart> {
+  let cart: Cart | null = null;
+
+  if (userId) {
+    cart = await this.cartRepo.findOne({
+      where: { user: { id: Number(userId) }, isCheckedOut: false },
+      relations: ['items', 'items.product'],
+    });
+  } else if (guestId) {
+    cart = await this.cartRepo.findOne({
+      where: { guestId, isCheckedOut: false },
+      relations: ['items', 'items.product'],
+    });
   }
+
+  // ✅ Only create if no open cart exists
+  if (!cart) {
+    cart = this.cartRepo.create({
+
+  isCheckedOut: false,
+  items: [],
+  currency: 'INR',
+  exchangeRate: 1,
+    });
+
+  if (userId) {
+    cart.user = { id: Number(userId) } as User;
+  }else{
+ cart.guestId= guestId ;
+  }
+  
+    await this.cartRepo.save(cart);
+  }
+
+  return cart;
+}
   // ✅ NEW: Get user cart (handles both string and number IDs)
   public async getUserCart(userId: string | number): Promise<Cart>  {
     // Convert to number if needed (assuming your DB uses numeric IDs)
@@ -257,12 +284,12 @@ export class CartService {
     if (!item) {
       throw new NotFoundException('Cart item not found');
     }
-console.log('--------item--------',item)
+//console.log('--------item--------',item)
     // ✅ Get current inventory for validation
     const inventory = await this.inventRepo.findOne({
       where: { id: item.inventoryId }
     });
-    console.log('--------inventory------',inventory)
+    //console.log('--------inventory------',inventory)
     if (inventory && dto.quantity > inventory.quantity) {
       throw new BadRequestException(
         `Only ${inventory.quantity} items available in stock`

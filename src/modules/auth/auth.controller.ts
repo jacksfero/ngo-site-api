@@ -374,6 +374,17 @@ create(
     }
     return this.authService.addImageProduct(productId, file);
   }
+
+  @Patch('products/image/:image_id/alt-text')
+  async updateImageAltText(
+    @Param('image_id', ParseIntPipe) imageId: number,
+    @Body('alt_text') altText: string,
+  ) {
+    if (!altText) {
+      throw new BadRequestException('alt_text is required');
+    }
+    return this.authService.updateImageAltText(imageId, altText);
+  }
   
   @Delete('products/delete-image/:imageId')
   async deleteImage(@Param('imageId') imageId: number) {
