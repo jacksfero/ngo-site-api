@@ -49,14 +49,14 @@ export class CartItem {
 
   // 🚀 Updated price calculation
   updatePrices(
-  inventoryPrice: number,
-  artgst: number,
-  costInr: number,
-  costOther: number,
-  shipgst: number,
+  inventoryPrice: number,   // Base price in INR
+  artgst: number,           // GST %
+  costInr: number,          // Shipping INR
+  costOther: number,        // Shipping outside
+  shipgst: number,          // Shipping GST %
   inventoryDiscount: number = 0,
-  exchangeRate: number = 1,
-  isDomestic: boolean
+  exchangeRate: number = 1, // Cart-level exchangeRate
+  isDomestic: boolean       // true = India
 ) {
   const priceSafe = inventoryPrice ?? 0;
   const gstSafe = artgst ?? 0;
@@ -65,39 +65,40 @@ export class CartItem {
   const shippingGstSafe = shipgst ?? 0;
   const rateSafe = exchangeRate > 0 ? exchangeRate : 1;
 
-  // 1️⃣ Discount per unit
-  const discountPerUnit = Number(((priceSafe * inventoryDiscount) / 100).toFixed(2));
-  const discountedPricePerUnit = priceSafe - discountPerUnit;
+  // 1️⃣ Discount per unit (INR)
+  const discountPerUnitINR = Number(((priceSafe * inventoryDiscount) / 100).toFixed(2));
+  const discountedPricePerUnitINR = priceSafe - discountPerUnitINR;
 
-  // 2️⃣ GST per unit
-  const gstPerUnit = Number(((discountedPricePerUnit * gstSafe) / 100).toFixed(2));
+  // 2️⃣ GST per unit (INR)
+  const gstPerUnitINR = Number(((discountedPricePerUnitINR * gstSafe) / 100).toFixed(2));
 
-  // 3️⃣ Shipping per unit
-  const baseShipping = Number(isDomestic ? shippingINRSafe : shippingOtherSafe);
-  const shippingGstNum = Number(((baseShipping * shippingGstSafe) / 100).toFixed(2));
-  const shippingPerUnit = baseShipping + shippingGstNum;
+  // 3️⃣ Shipping per unit (INR)
+  const baseShippingINR = Number(isDomestic ? shippingINRSafe : shippingOtherSafe);
+  const shippingGstNumINR = Number(((baseShippingINR * shippingGstSafe) / 100).toFixed(2));
+  const shippingPerUnitINR = baseShippingINR + shippingGstNumINR;
 
-  // 4️⃣ Totals for given quantity
-  const discountedPrice = discountedPricePerUnit * this.quantity;
-  const gstAmount = gstPerUnit * this.quantity;
-  const shippingTotal = shippingPerUnit * this.quantity;
+  // 4️⃣ Totals in INR
+  const discountedPriceINR = discountedPricePerUnitINR * this.quantity;
+  const gstAmountINR = gstPerUnitINR * this.quantity;
+  const shippingTotalINR = shippingPerUnitINR * this.quantity;
+  const discountAmountINR = discountPerUnitINR * this.quantity;
 
-  // 5️⃣ Total in INR
-  const totalInINR = discountedPrice + gstAmount + shippingTotal;
+  const totalINR = discountedPriceINR + gstAmountINR + shippingTotalINR;
 
-  // 6️⃣ Convert to cart currency
-  const convertedPrice = Number((discountedPrice / rateSafe).toFixed(2));
-  const convertedGst = Number((gstAmount / rateSafe).toFixed(2));
-  const convertedShipping = Number((shippingTotal / rateSafe).toFixed(2));
-  const convertedTotal = Number((totalInINR / rateSafe).toFixed(2));
+  // 5️⃣ Convert to cart currency
+  const convertedPrice = Number((discountedPriceINR / rateSafe).toFixed(2));
+  const convertedGst = Number((gstAmountINR / rateSafe).toFixed(2));
+  const convertedShipping = Number((shippingTotalINR / rateSafe).toFixed(2));
+  const convertedDiscount = Number((discountAmountINR / rateSafe).toFixed(2));
+  const convertedTotal = Number((totalINR / rateSafe).toFixed(2));
 
   if ([convertedPrice, convertedGst, convertedShipping, convertedTotal].some(v => isNaN(v))) {
     throw new Error('Price calculation failed: some values are NaN');
   }
 
-  // 7️⃣ Save values
-  this.originalPrice = priceSafe;
-  this.discountAmount = discountPerUnit * this.quantity;
+  // 6️⃣ Save values (all in cart currency now)
+  this.originalPrice = Number((priceSafe / rateSafe).toFixed(2)); // original unit price in cart currency
+  this.discountAmount = convertedDiscount;
   this.price = convertedPrice;
   this.gstAmount = convertedGst;
   this.shipInr = isDomestic ? convertedShipping : 0;

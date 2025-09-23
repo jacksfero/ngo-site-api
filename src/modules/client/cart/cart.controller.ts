@@ -10,6 +10,7 @@ import { LocalAuthGuard } from 'src/modules/auth/guards/local-auth.guard';
 import { OptionalJwtAuthGuard } from 'src/modules/auth/guards/optional-jwt-auth.guard';
 import { CartItemListDto } from './dto/cat-item-list.dto';
 import { plainToInstance } from 'class-transformer';
+import { UpdateCartCurrencyDto } from './dto/update-cart-currency.dto';
  
 
 @Controller()
@@ -122,6 +123,25 @@ export class CartController {
       );
     }
   }
+
+ @UseGuards(OptionalJwtAuthGuard)
+  @Patch(':id/currency')
+  async updateCurrency(
+    @Param('id') cartId: number,
+    @Body() dto: UpdateCartCurrencyDto,
+  ) {
+    return this.cartService.updateCurrency(cartId, dto.currency);
+  }
+
+   @UseGuards(OptionalJwtAuthGuard)
+  @Patch(':id/shipping')
+async updateShipping(
+  @Param('id') cartId: number,
+  @Body() body: { country: string },
+) {
+  return this.cartService.updateShipping(cartId, body.country);
+}
+
 
   @UseGuards(OptionalJwtAuthGuard)
   @Delete('remove/:id')

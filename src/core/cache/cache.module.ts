@@ -1,18 +1,127 @@
+// cache.module.ts
+import { Module, Global, DynamicModule } from '@nestjs/common';
+import { CacheModule, CacheModuleOptions } from '@nestjs/cache-manager';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CacheService } from './cache.service';
 
-import { Module, Global } from '@nestjs/common';
-import { CacheModule } from '@nestjs/cache-manager';
+export enum CacheType {
+  MEMORY = 'memory',
+  REDIS = 'redis',
+  AWS_REDIS = 'aws_redis',
+}
+
+interface CacheConfig {
+  type: CacheType;
+  host?: string;
+  port?: number;
+  password?: string;
+  ttl?: number;
+  max?: number;
+  tls?: boolean;
+}
 
 @Global()
-@Module({
-  imports: [
-    CacheModule.register({
-      ttl: 300, // default 5 minutes
-      max: 100, // max number of items in cache (only for in-memory)
-    }),
-  ],
-  exports: [CacheModule],
-})
-export class AppCacheModule {}
+@Module({})
+export class UnifiedCacheModule {
+  static registerAsync(options?: {
+    useFactory?: (...args: any[]) => Promise<CacheConfig> | CacheConfig;
+    inject?: any[];
+  }): DynamicModule {
+    return {
+      module: UnifiedCacheModule,
+      imports: [
+        CacheModule.registerAsync({
+          imports: [ConfigModule],
+          useFactory: async (configService: ConfigService): Promise<CacheModuleOptions> => {
+            // Get cache configuration from environment or use defaults
+            const cacheConfig: CacheConfig = {
+              type: (configService.get<CacheType>('CACHE_TYPE') as CacheType) || CacheType.MEMORY,
+              host: configService.get('REDIS_HOST'),
+              port: configService.get<number>('REDIS_PORT'),
+              password: configService.get('REDIS_PASSWORD'),
+              ttl: configService.get<number>('CACHE_TTL') || 300, // 5 minutes
+              max: configService.get<number>('CACHE_MAX_ITEMS') || 100,
+              tls: configService.get('REDIS_TLS_ENABLED') === 'true',
+            };
+
+            return UnifiedCacheModule.createCacheOptions(cacheConfig);
+          },
+          inject: [ConfigService],
+        }),
+      ],
+       providers: [CacheService],
+      exports: [CacheModule,CacheService],
+    };
+  }
+
+  private static async createCacheOptions(config: CacheConfig): Promise<CacheModuleOptions> {
+    switch (config.type) {
+      case CacheType.REDIS:
+      case CacheType.AWS_REDIS:
+        return await UnifiedCacheModule.createRedisOptions(config);
+      case CacheType.MEMORY:
+      default:
+        return UnifiedCacheModule.createMemoryOptions(config);
+    }
+  }
+
+  private static createMemoryOptions(config: CacheConfig): CacheModuleOptions {
+    // ✅ Fix: Handle undefined ttl with default value
+    const ttl = (config.ttl || 300) * 1000; // Convert to milliseconds
+    
+    return {
+      ttl: ttl,
+      max: config.max || 100,
+      isCacheableValue: (value: any) => value !== undefined && value !== null,
+    };
+  }
+
+  private static async createRedisOptions(config: CacheConfig): Promise<CacheModuleOptions> {
+    try {
+      // Use dynamic import for better compatibility
+      const { redisStore } = await import('cache-manager-redis-store');
+
+      // ✅ Fix: Handle undefined values with defaults
+      const redisConfig: any = {
+        socket: {
+          host: config.host || 'localhost',
+          port: config.port || 6379,
+          ...(config.tls && { tls: config.tls }),
+        },
+        password: config.password,
+        ttl: config.ttl || 300, // Default 5 minutes
+      };
+
+      // AWS ElastiCache specific optimizations
+      if (config.type === CacheType.AWS_REDIS) {
+        redisConfig.socket = {
+          ...redisConfig.socket,
+          tls: config.tls !== false, // Default to true for AWS
+          connectTimeout: 10000,
+          lazyConnect: true,
+          keepAlive: 5000,
+        };
+        redisConfig.maxRetriesPerRequest = 3;
+        redisConfig.enableReadyCheck = true;
+      }
+
+      const store = await redisStore(redisConfig);
+
+      // ✅ Fix: Handle undefined ttl with default value
+      const ttl = (config.ttl || 300) * 1000; // Convert to milliseconds
+
+      return {
+        store: () => store,
+        ttl: ttl,
+        max: config.max || 100,
+        isCacheableValue: (value: any) => value !== undefined && value !== null,
+      };
+    } catch (error) {
+      console.warn('Redis not available, falling back to memory cache');
+      return UnifiedCacheModule.createMemoryOptions(config);
+    }
+  }
+}
 /*
 
 import { Module, CacheModule } from '@nestjs/common';

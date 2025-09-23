@@ -18,12 +18,14 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 //import { MailModule } from './shared/mail/mail.module';
  
 import { SharedModule } from './shared/shared.module';
-import { AppCacheModule } from './core/cache/cache.module';
+import { UnifiedCacheModule } from './core/cache/cache.module';
+ import { configurationCache } from './shared/config/configuration.cache';
  
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+       load: [configurationCache],
       // validate: (config) => {
       //   if (!config.JWT_SECRET) {
       //     throw new Error('JWT_SECRET is required');
@@ -32,7 +34,7 @@ import { AppCacheModule } from './core/cache/cache.module';
       // },
    //   envFilePath: ['.env', '.env.development', '.env.production'],
     }),
-    AppCacheModule, // ✅ global cache
+    UnifiedCacheModule.registerAsync(), // ✅ global cache
     AuthModule,  
     AdminModule,
     ClientModule,
@@ -60,29 +62,13 @@ import { AppCacheModule } from './core/cache/cache.module';
       provide: APP_GUARD,
       useClass: PublicGuard,
     },*/
-
+    ConfigService,
     AppService,
   ],
 })
-export class AppModule {
- /* constructor(private configService: ConfigService) {
-    // Access and print the environment variables here
-    console.log(
-      '=================================' +
-        __dirname +
-        '/admin/subject/entities/*.entity{.ts,.js}',
-    );
-
-    console.log('Database Host:', this.configService.get<string>('DB_HOST'));
-    console.log('API Key:', this.configService.get<string>('DB_USERNAME'));
-    console.log(
-      'Database Port (as number):',
-      this.configService.get<number>('DB_PORT'),
-    );
-  }*/
-}
-
-/*
+export class AppModule {}
+  
+  /*
 export class AppModule   {
    
 

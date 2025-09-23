@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
- 
+import { BadRequestException, Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { CacheService } from 'src/core/cache/cache.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Repository } from 'typeorm';
 import { Cart } from 'src/shared/entities/cart.entity';
@@ -9,75 +9,79 @@ import { Product } from 'src/shared/entities/product.entity';
 import { AddToCartDto, UpdateCartItemDto } from './dto/cart.dto';
 import { Inventory } from 'src/shared/entities/inventory.entity';
 import { Currency } from 'src/shared/entities/currency.entity';
- 
+
 
 @Injectable()
 export class CartService {
- 
+  private readonly CACHE_NAMESPACE = 'exchange_rate';
+  private readonly logger = new Logger(CartService.name);
   constructor(
-    @InjectRepository(Cart) 
+    private cacheService: CacheService,
+
+    @InjectRepository(Cart)
     private cartRepo: Repository<Cart>,
 
-    @InjectRepository(CartItem) 
+    @InjectRepository(CartItem)
     private cartItemRepo: Repository<CartItem>,
 
-    @InjectRepository(User) 
+    @InjectRepository(User)
     private userRepo: Repository<User>,
 
-    @InjectRepository(Product) 
+    @InjectRepository(Product)
     private productRepo: Repository<Product>,
 
-    @InjectRepository(Inventory) 
+    @InjectRepository(Inventory)
     private inventRepo: Repository<Inventory>,
 
-    @InjectRepository(Currency) 
+    @InjectRepository(Currency)
     private currencyRepo: Repository<Currency>,
-  ) {}
+  ) { }
 
- 
-  
-   // ✅ FIXED: Accept both string and number user IDs
+
+
+  // ✅ FIXED: Accept both string and number user IDs
   async getOrCreateCart(userId?: string | number, guestId?: string): Promise<Cart> {
-  let cart: Cart | null = null;
+    let cart: Cart | null = null;
 
-  if (userId) {
-    cart = await this.cartRepo.findOne({
-      where: { user: { id: Number(userId) }, isCheckedOut: false },
-      relations: ['items', 'items.product'],
-    });
-  } else if (guestId) {
-    cart = await this.cartRepo.findOne({
-      where: { guestId, isCheckedOut: false },
-      relations: ['items', 'items.product'],
-    });
+    if (userId) {
+      cart = await this.cartRepo.findOne({
+        where: { user: { id: Number(userId) }, isCheckedOut: false },
+        relations: ['items', 'items.product'],
+      });
+    } else if (guestId) {
+      cart = await this.cartRepo.findOne({
+        where: { guestId, isCheckedOut: false },
+        relations: ['items', 'items.product'],
+      });
+    }
+
+    // ✅ Only create if no open cart exists
+    if (!cart) {
+      cart = this.cartRepo.create({
+
+        isCheckedOut: false,
+        items: [],
+        currency: 'INR',
+         
+        exchangeRate: 1,
+      });
+
+      if (userId) {
+        cart.user = { id: Number(userId) } as User;
+      } else {
+        cart.guestId = guestId;
+      }
+
+      await this.cartRepo.save(cart);
+    }
+
+    return cart;
   }
-
-  // ✅ Only create if no open cart exists
-  if (!cart) {
-    cart = this.cartRepo.create({
-
-  isCheckedOut: false,
-  items: [],
-  currency: 'INR',
-  exchangeRate: 1,
-    });
-
-  if (userId) {
-    cart.user = { id: Number(userId) } as User;
-  }else{
- cart.guestId= guestId ;
-  }
-  
-    await this.cartRepo.save(cart);
-  }
-
-  return cart;
-}
   // ✅ NEW: Get user cart (handles both string and number IDs)
-  public async getUserCart(userId: string | number): Promise<Cart>  {
+  public async getUserCart(userId: string | number): Promise<Cart> {
     // Convert to number if needed (assuming your DB uses numeric IDs)
     const numericUserId = typeof userId === 'string' ? parseInt(userId, 10) : userId;
-    
+
     if (isNaN(numericUserId)) {
       throw new BadRequestException('Invalid user ID');
     }
@@ -87,66 +91,24 @@ export class CartService {
     //   relations: ['items', 'items.product', 'user']
     // });
 
- 
-    let cart = await this.cartRepo
-  .createQueryBuilder('cart')
-  .innerJoinAndSelect('cart.user', 'user')                // must exist
-  .leftJoinAndSelect('cart.items', 'items')               // cart may be empty
-  .innerJoinAndSelect('items.product', 'product')         // must exist if item exists
-  .innerJoinAndSelect('product.productInventory', 'inventory')   // must exist (1:1)
-  .where('cart.user_id = :userId', { userId: numericUserId })
-  .andWhere('cart.isCheckedOut = false')
-    .select([
-      'cart.id',
-      'cart.isCheckedOut',
-      'cart.currency','cart.exchangeRate',
-      'items.id',
-      'items.product_id',
-      'items.quantity', 'items.inventoryId', 'items.price',
-      'items.originalPrice', 'items.discountAmount', 'items.gstAmount',   
-      'items.shipInr', 'items.shipOther', 'items.total',    
-      'product.id',
-      'product.productTitle',
-      'product.slug',
-      'product.defaultImage',
-      'inventory.id',
-      'inventory.price',
-      'inventory.discount',
-      'inventory.gstSlot',
-      'inventory.shippingSlot',
-      'user.id',
-      'user.username',
-    ])
-    .getOne();
-    
-    if (!cart) {
-      const user = await this.userRepo.findOneBy({ id: numericUserId });
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
-      cart = this.cartRepo.create({ user, items: [] });
-      cart = await this.cartRepo.save(cart);
-    }
-   // ✅ Convert entity to DTO
-   return cart;
-  }
 
-  // ✅ NEW: Get guest cart
-    private async getGuestCart(guestId: string): Promise<Cart> {
-      let cart = await this.cartRepo
-    .createQueryBuilder('cart')
-    .innerJoinAndSelect('cart.user', 'user')                // must exist
-    .leftJoinAndSelect('cart.items', 'items')               // cart may be empty
-    .innerJoinAndSelect('items.product', 'product')         // must exist if item exists
-    .innerJoinAndSelect('product.productInventory', 'inventory')   // must exist (1:1)
-    .where('cart.guestId = :guestId', { guestId: guestId })
-    .andWhere('cart.isCheckedOut = false')
+    let cart = await this.cartRepo
+      .createQueryBuilder('cart')
+      .innerJoinAndSelect('cart.user', 'user')                // must exist
+      .leftJoinAndSelect('cart.items', 'items')               // cart may be empty
+      .innerJoinAndSelect('items.product', 'product')         // must exist if item exists
+      .innerJoinAndSelect('product.productInventory', 'inventory')   // must exist (1:1)
+      .where('cart.user_id = :userId', { userId: numericUserId })
+      .andWhere('cart.isCheckedOut = false')
       .select([
         'cart.id',
         'cart.isCheckedOut',
+        'cart.currency', 'cart.exchangeRate',
         'items.id',
         'items.product_id',
-        'items.quantity',      
+        'items.quantity', 'items.inventoryId', 'items.price',
+        'items.originalPrice', 'items.discountAmount', 'items.gstAmount',
+        'items.shipInr', 'items.shipOther', 'items.total',
         'product.id',
         'product.productTitle',
         'product.slug',
@@ -161,46 +123,88 @@ export class CartService {
       ])
       .getOne();
 
-      if (!cart) {
-        cart = this.cartRepo.create({ guestId, items: [] });
-        cart = await this.cartRepo.save(cart);
+    if (!cart) {
+      const user = await this.userRepo.findOneBy({ id: numericUserId });
+      if (!user) {
+        throw new NotFoundException('User not found');
       }
-     // ✅ Convert entity to DTO
-     return cart;
+      cart = this.cartRepo.create({ user, items: [] });
+      cart = await this.cartRepo.save(cart);
     }
+    // ✅ Convert entity to DTO
+    return cart;
+  }
+
+  // ✅ NEW: Get guest cart
+  private async getGuestCart(guestId: string): Promise<Cart> {
+    let cart = await this.cartRepo
+      .createQueryBuilder('cart')
+      .innerJoinAndSelect('cart.user', 'user')                // must exist
+      .leftJoinAndSelect('cart.items', 'items')               // cart may be empty
+      .innerJoinAndSelect('items.product', 'product')         // must exist if item exists
+      .innerJoinAndSelect('product.productInventory', 'inventory')   // must exist (1:1)
+      .where('cart.guestId = :guestId', { guestId: guestId })
+      .andWhere('cart.isCheckedOut = false')
+      .select([
+        'cart.id',
+        'cart.isCheckedOut',
+        'items.id',
+        'items.product_id',
+        'items.quantity',
+        'product.id',
+        'product.productTitle',
+        'product.slug',
+        'product.defaultImage',
+        'inventory.id',
+        'inventory.price',
+        'inventory.discount',
+        'inventory.gstSlot',
+        'inventory.shippingSlot',
+        'user.id',
+        'user.username',
+      ])
+      .getOne();
+
+    if (!cart) {
+      cart = this.cartRepo.create({ guestId, items: [] });
+      cart = await this.cartRepo.save(cart);
+    }
+    // ✅ Convert entity to DTO
+    return cart;
+  }
 
   async addToCart(
     dto: AddToCartDto,
     userId?: string | number, // ✅ Accept both string and number
     guestId?: string,
-  ): Promise<Cart> {  
+  ): Promise<Cart> {
     const cart = await this.getOrCreateCart(userId, guestId);
 
-    if (dto.currency ) {
+    if (dto.currency) {
       if (typeof dto.currency !== 'string' || dto.currency.length !== 3) {
         throw new BadRequestException('Invalid currency format. Use 3-letter currency code (e.g., USD, EUR)');
       }
       const currencyrate = await this.currencyRepo.findOne({
         where: { currency: dto.currency, status: true }
       });
-      
+
       if (!currencyrate) {
         throw new BadRequestException(`Currency rate not available for: ${cart.currency}`);
       }
       cart.currency = dto.currency;
       cart.exchangeRate = currencyrate.value;
-       
+ 
       await this.cartRepo.save(cart);
     }
-      
+
     // ✅ Get product with inventory pricing and stock check
     const inventory = await this.inventRepo.findOne({
-      where: { 
+      where: {
         product: { id: dto.productId },
         status: true,
-         quantity: MoreThan(0) // ✅ Only available inventory
+        quantity: MoreThan(0) // ✅ Only available inventory
       },
-      relations: ['product','shippingWeight']
+      relations: ['product', 'shippingWeight']
     });
 
     if (!inventory) {
@@ -208,37 +212,37 @@ export class CartService {
     }
 
     // ✅ Check stock availability
-   if (inventory.quantity < dto.quantity) {
+    if (inventory.quantity < dto.quantity) {
       throw new BadRequestException(
         `Only ${inventory.quantity} items available in stock`
       );
-    } 
-     // ✅ Detect domestic or overseas (later: use shippingAddress.country)
-  const isDomestic = dto.shippingCountry === 'IN'; 
+    }
+    // ✅ Detect domestic or overseas (later: use shippingAddress.country)
+    const isDomestic = dto.shippingCountry === 'IN';
 
     let item = cart.items.find((i) => i.product.id === dto.productId);
-    
+
     if (item) {
       // Update existing item
       const newQuantity = item.quantity + dto.quantity;
-      
+
       // ✅ Check if updated quantity exceeds stock
-     if (newQuantity > inventory.quantity) {
+      if (newQuantity > inventory.quantity) {
         throw new BadRequestException(
           `Cannot add ${dto.quantity} items. Only ${inventory.quantity - item.quantity} more available`
         );
-      } 
+      }
 
       item.quantity = newQuantity;
-      item.updatePrices( inventory.price,
-      inventory.gstSlot,
-      inventory.shippingWeight.costINR,
-      inventory.shippingWeight.CostOthers,
-      inventory.shippingSlot,
-      inventory.discount,
-      //cart.currency,
-      cart.exchangeRate,
-      isDomestic);
+      item.updatePrices(inventory.price,
+        inventory.gstSlot,
+        inventory.shippingWeight.costINR,
+        inventory.shippingWeight.CostOthers,
+        inventory.shippingSlot,
+        inventory.discount,
+        //cart.currency,
+        cart.exchangeRate,
+        isDomestic);
       await this.cartItemRepo.save(item);
     } else {
       // Create new item
@@ -254,7 +258,7 @@ export class CartService {
         inventory.shippingWeight.CostOthers,
         inventory.shippingSlot,
         inventory.discount,
-       // cart.currency,
+        // cart.currency,
         cart.exchangeRate,
         isDomestic);
       await this.cartItemRepo.save(item);
@@ -268,23 +272,23 @@ export class CartService {
       where: { id: cart.id },
       relations: ['items', 'items.product'],
     });
-    if(!updatecart){ throw new NotFoundException('cart not found')}
+    if (!updatecart) { throw new NotFoundException('cart not found') }
     return updatecart;
   }
 
-   // ✅ FIXED: Update parameter types
-   async updateItem(
+  // ✅ FIXED: Update parameter types
+  async updateItem(
     dto: UpdateCartItemDto,
     userId?: string | number,
     guestId?: string,
   ): Promise<Cart> {
     const cart = await this.getOrCreateCart(userId, guestId);
-    console.log('--------cart-------',cart)
+    console.log('--------cart-------', cart)
     const item = cart.items.find((i) => i.id === dto.itemId);
     if (!item) {
       throw new NotFoundException('Cart item not found');
     }
-//console.log('--------item--------',item)
+    //console.log('--------item--------',item)
     // ✅ Get current inventory for validation
     const inventory = await this.inventRepo.findOne({
       where: { id: item.inventoryId }
@@ -294,31 +298,31 @@ export class CartService {
       throw new BadRequestException(
         `Only ${inventory.quantity} items available in stock`
       );
-    } 
+    }
 
     item.quantity = dto.quantity;
     // ✅ Recalculate with cart-level currency + exchangeRate
-  const isDomestic = dto.shippingCountry === 'IN'; 
-  if (inventory) {
-    item.updatePrices(
-      inventory.price,
-      inventory.gstSlot,
-      inventory.shippingWeight.costINR,
-      inventory.shippingWeight.CostOthers,
-      inventory.shippingSlot,
-      inventory.discount,
-    //  cart.currency,
-      cart.exchangeRate,
-      isDomestic
-    );
-  }
+    const isDomestic = dto.shippingCountry === 'IN';
+    if (inventory) {
+      item.updatePrices(
+        inventory.price,
+        inventory.gstSlot,
+        inventory.shippingWeight.costINR,
+        inventory.shippingWeight.CostOthers,
+        inventory.shippingSlot,
+        inventory.discount,
+        //  cart.currency,
+        cart.exchangeRate,
+        isDomestic
+      );
+    }
     await this.cartItemRepo.save(item);
 
     const upcatecart = await this.cartRepo.findOne({
       where: { id: cart.id },
       relations: ['items', 'items.product'],
     });
-if(!upcatecart){ throw new BadRequestException('Cart Not Updated!')}
+    if (!upcatecart) { throw new BadRequestException('Cart Not Updated!') }
     return upcatecart;
   }
 
@@ -334,7 +338,7 @@ if(!upcatecart){ throw new BadRequestException('Cart Not Updated!')}
     if (!item) throw new NotFoundException('Cart item not found');
 
     await this.cartItemRepo.remove(item);
-    
+
     const carts = await this.cartRepo.findOne({
       where: { id: cart.id },
       relations: ['items', 'items.product'],
@@ -342,8 +346,8 @@ if(!upcatecart){ throw new BadRequestException('Cart Not Updated!')}
     if (!carts) throw new NotFoundException('Carts not  item not found');
     return carts;
   }
-   // ✅ FIXED: Update parameter types
-   async checkout(userId: string | number): Promise<Cart> {
+  // ✅ FIXED: Update parameter types
+  async checkout(userId: string | number): Promise<Cart> {
     const cart = await this.getOrCreateCart(userId);
 
     if (cart.items.length === 0) {
@@ -356,12 +360,12 @@ if(!upcatecart){ throw new BadRequestException('Cart Not Updated!')}
         const inventory = await this.inventRepo.findOne({
           where: { id: item.inventoryId }
         });
-        
-       if (!inventory || inventory.quantity < item.quantity) {
+
+        if (!inventory || inventory.quantity < item.quantity) {
           throw new BadRequestException(
             `Insufficient stock for product: ${item.product.productTitle}`
           );
-        } 
+        }
       }
     }
 
@@ -369,13 +373,13 @@ if(!upcatecart){ throw new BadRequestException('Cart Not Updated!')}
     return this.cartRepo.save(cart);
   }
 
-   // ✅ FIXED: Update parameter types
-   async mergeCarts(userId: string | number, guestId: string): Promise<Cart> {
+  // ✅ FIXED: Update parameter types
+  async mergeCarts(userId: string | number, guestId: string): Promise<Cart> {
     const userCart = await this.getUserCart(userId);
     const guestCart = await this.getGuestCart(guestId);
 
     for (const guestItem of guestCart.items) {
-      const existingItem = userCart.items.find(item => 
+      const existingItem = userCart.items.find(item =>
         item.product.id === guestItem.product.id
       );
 
@@ -393,12 +397,11 @@ if(!upcatecart){ throw new BadRequestException('Cart Not Updated!')}
           } else {
             existingItem.quantity = newQuantity;
           }
-            
-          
+
         } else {
           existingItem.quantity += guestItem.quantity;
         }
-        
+
         await this.cartItemRepo.save(existingItem);
       } else {
         guestItem.cart = userCart;
@@ -411,6 +414,130 @@ if(!upcatecart){ throw new BadRequestException('Cart Not Updated!')}
 
     return userCart;
   }
+
+  async updateCurrency(cartId: number, newCurrency: string) {
+    const cart = await this.cartRepo.findOne({
+      where: { id: cartId },
+      relations: ['items'],
+    });
+
+    if (!cart) {
+      throw new NotFoundException('Cart not found');
+    }
+
+    // 1️⃣ Lookup exchange rate
+    const exchangeRate = await this.getExchangeRate(newCurrency);
+
+    // 2️⃣ Update cart currency + rate
+    cart.currency = newCurrency;
+    cart.exchangeRate = exchangeRate;
+
+    // 3️⃣ Recalculate prices of items
+    await Promise.all(
+      cart.items.map(async (item) => {
+        const inventory = await this.inventRepo.findOne({
+          where: { id: item.inventoryId },
+          relations: ['shippingWeight']
+        });
+
+        if (!inventory) {
+          throw new NotFoundException(`Inventory not found for item ${item.id}`);
+        }
+        item.updatePrices(
+          inventory.price,           // ✅ fresh inventory price
+          inventory.gstSlot,
+          inventory.shippingWeight.costINR,
+          inventory.shippingWeight.CostOthers,
+          inventory.shippingSlot,
+          inventory.discount, // or inventory.discount
+          exchangeRate,
+          this.isDomestic(cart),
+          // ✅ also pass quantity
+        );
+      })
+    );
+    await this.cartRepo.save(cart);
+    return cart;
+  }
+  async updateShipping(cartId: number, country: string): Promise<Cart> {
+    const cart = await this.cartRepo.findOne({
+      where: { id: cartId },
+      relations: ['items'],
+    });
+
+    if (!cart) {
+      throw new NotFoundException('Cart not found');
+    }
+
+    // ✅ Save shipping country on cart
+    cart.shippingCountry = country;
+    await this.cartRepo.save(cart);
+
+    const isDomestic = country === 'IN';
+
+    // ✅ Recalculate shipping for all items
+    await Promise.all(
+      cart.items.map(async (item) => {
+        const inventory = await this.inventRepo.findOne({
+          where: { id: item.inventoryId },
+        });
+
+        if (!inventory) {
+          throw new NotFoundException(
+            `Inventory not found for item ${item.id}`,
+          );
+        }
+
+        item.updatePrices(
+          inventory.price,           // ✅ fresh inventory price
+          inventory.gstSlot,
+          inventory.shippingWeight.costINR,
+          inventory.shippingWeight.CostOthers,
+          inventory.shippingSlot,
+          inventory.discount, // or inventory.discount
+          cart.exchangeRate,
+          this.isDomestic(cart),
+        );
+        await this.cartItemRepo.save(item);
+      }),
+    );
+
+    return cart;
+  }
+
+
+  private async getExchangeRate(currency: string): Promise<number> {
+    const normalizedCurrency = currency.toUpperCase();
+    const cacheKey = this.cacheService.generateKey(this.CACHE_NAMESPACE, normalizedCurrency);
+    // ✅ Check cache first
+    // Try cache first
+    const cachedRate = await this.cacheService.get<number>(cacheKey);
+    if (cachedRate !== null) {
+      return cachedRate;
+    }
+
+    // ✅ Fetch from database
+    const currencyrate = await this.currencyRepo.findOne({
+      where: { currency: normalizedCurrency, status: true }
+    });
+
+    if (!currencyrate) {
+      throw new BadRequestException(`Currency rate not found for: ${normalizedCurrency}`);
+    }
+
+    // Cache the result
+     await this.cacheService.set(cacheKey, currencyrate.value, { ttl: 300 }); // 5 minutes
+
+    this.logger.log(`Fetched and cached exchange rate for ${normalizedCurrency}: ${currencyrate.value}`);
+    return currencyrate.value;
+    // return rate;
+  }
+
+  private isDomestic(cart: Cart): boolean {
+    // 👉 Example: if shipping country is India
+    return cart.shippingCountry === 'IN';
+  }
+
 
 }
 
