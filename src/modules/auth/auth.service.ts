@@ -280,7 +280,7 @@ async getArtistsByUserId(id: number) {
     return profileImage;
   }
   /************ Start registration Process */
-
+  
 
   async sendEmailOtp(identifier: string, type: OtpType, userType: UserType, ipAddress?: string) {
     return this.otpService.sendOtp(identifier, type, userType as UserType, ipAddress); // Only identifier and type passed
@@ -320,9 +320,7 @@ async getArtistsByUserId(id: number) {
     if (existingByMobile) {
       throw new ConflictException('Mobile already registered');
     }
-
-
-
+ 
     // Check OTP verifications
     const [emailOtp, mobileOtp] = await Promise.all([
       this.otpService.getLatestVerifiedOtp(email, 'email'),
@@ -358,7 +356,115 @@ async getArtistsByUserId(id: number) {
 
     return { success: true, message: 'Registration complete', userId: user.id };
   }
+  
+  async registerCartUserAndLogin(
+  dto: { email?: string; mobile?: string; userType?: UserType },
+): Promise<{ success: true; message: string; data: { token: string; user: any } }> {
+  const { email, mobile, userType = UserType.CUSTOMER } = dto;
 
+  if (!email && !mobile) {
+    throw new BadRequestException('Email or mobile must be provided');
+  }
+
+  // 1️⃣ Check if user already exists
+  let user: User | null = null;   // ✅ Explicit type
+  if (email) user = await this.findByEmail(email);
+  if (!user && mobile) user = await this.findByMobile(mobile);
+
+  if (user) {
+    throw new ConflictException('User already exists, please login');
+  }
+
+  // 2️⃣ Check OTP verification
+  const [emailOtp, mobileOtp] = await Promise.all([
+    email ? this.otpService.getLatestVerifiedOtp(email, OtpType.EMAIL) : null,
+    mobile ? this.otpService.getLatestVerifiedOtp(mobile, OtpType.MOBILE) : null,
+  ]);
+
+  if (email && (!emailOtp || !emailOtp.isVerified)) {
+    throw new BadRequestException('Email is not verified');
+  }
+
+  if (mobile && (!mobileOtp || !mobileOtp.isVerified)) {
+    throw new BadRequestException('Mobile is not verified');
+  }
+
+  // 3️⃣ Fetch role
+  const role = await this.roleRepository
+    .createQueryBuilder('role')
+    .where('LOWER(role.name) = LOWER(:name)', { name: userType })
+    .getOne();
+  if (!role) throw new BadRequestException(`Role '${userType}' not found`);
+
+  // 4️⃣ Create user
+  const username = email ?? mobile;
+  user = this.userRepository.create({
+    username,
+    email,
+    mobile,
+    status: true,
+    is_verified: true,
+    password: null,   // ✅ allowed now
+    roles: [role],
+  });
+
+  user = await this.userRepository.save(user); // ✅ reassign so `user` is not possibly null
+
+  // 5️⃣ Generate token via existing login()
+  const tokenResponse = await this.login(user);
+
+  return {
+    success: true,
+    message: 'Registration successful',
+    data: {
+      token: tokenResponse.access_token,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        mobile: user.mobile,
+      },
+    },
+  };
+}
+
+async cartLogin(identifier: string, ipAddress?: string) {
+  if (!identifier) {
+    throw new BadRequestException('Email or mobile must be provided.');
+  }
+
+  try {
+    let user: User | null = null;
+   let type: OtpType; 
+    let userType: UserType;
+
+    // Detect identifier type
+    if (this.isValidEmail(identifier)) {
+      type = OtpType.EMAIL;     // ✅ enum value
+      user = await this.findByEmail(identifier);
+    } else if (this.isValidMobile(identifier)) {
+      type = OtpType.MOBILE;    // ✅ enum value
+      user = await this.findByMobile(identifier);
+    } else {
+      throw new BadRequestException('Invalid identifier format');
+    }
+// ✅ Set userType depending on existence
+    if (user) {
+      userType = UserType.LOGIN;       // Existing user
+    } else {
+      userType = UserType.BUYER;    // New cart user
+    }
+    // Send OTP
+  return  await this.otpService.sendOtp(identifier, type, userType, ipAddress);
+
+     
+  } catch (error) {
+    if (error instanceof NotFoundException || error instanceof UnauthorizedException) {
+      throw new UnauthorizedException('Invalid credentials for cart login');
+    }
+    throw new BadRequestException('Authentication failed for cart login');
+  }
+}
 
   async validateUser(loginId: string, password: string): Promise<any> {
     // const { loginId, password } = dto;
@@ -504,17 +610,28 @@ async getArtistsByUserId(id: number) {
       throw new NotFoundException('User not found');
     }
 
-    // 2. Verify old password
+     // 2. Ensure the user has a password set
+  /* if (!user.password) {
+    throw new BadRequestException(
+      'This account does not have a password set. Please use OTP login or set a password first.',
+    );
+  }
+
+   // 2. Verify old password
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
       throw new BadRequestException('Old password is incorrect');
     }
-
+*/
     // 3. Prevent reusing the same password
+   if (user.password) {
     const isSamePassword = await bcrypt.compare(newPassword, user.password);
     if (isSamePassword) {
-      throw new BadRequestException('New password cannot be the same as old password');
+      throw new BadRequestException(
+        'New password cannot be the same as old password',
+      );
     }
+  }
 
     // 4. Hash new password
     user.password = await bcrypt.hash(newPassword, 10);

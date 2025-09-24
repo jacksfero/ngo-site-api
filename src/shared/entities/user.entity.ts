@@ -5,7 +5,7 @@ import {
   PrimaryGeneratedColumn,
   ManyToMany,
   OneToMany,
-  JoinTable,OneToOne,
+  JoinTable, OneToOne,
   ManyToOne,
   JoinColumn
 } from 'typeorm';
@@ -24,28 +24,28 @@ import { ArtistType } from './artist-type.entity';
 import { Product } from './product.entity';
 import { UsersAbout } from './users-about.entity';
 
- 
+
 @Entity('user')
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 150, nullable: true  })
+  @Column({ type: 'varchar', length: 150, nullable: true })
   username: string;
 
-  @Column({ type: 'varchar', length: 150, unique: true, nullable: true})
+  @Column({ type: 'varchar', length: 150, unique: true, nullable: true })
   email: string;
 
- @Column({ type: 'varchar', length: 50,   nullable: true })
+  @Column({ type: 'varchar', length: 50, nullable: true })
   phonecode: string;
 
   @Column({ type: 'varchar', length: 150, unique: true, nullable: true })
   mobile: string;
 
-  @Column({ nullable: false, select: false})
-  password: string;
+@Column({ type: 'varchar', length: 255, nullable: true, select: false })
+password: string | null;
 
-  @ManyToMany(() => Role, (role) => role.users ,{ eager: true })
+  @ManyToMany(() => Role, (role) => role.users, { eager: true })
   @JoinTable({
     name: 'user_roles',
     joinColumn: { name: 'user_id', referencedColumnName: 'id' },
@@ -57,15 +57,15 @@ export class User {
   wishlists: Wishlist[];
 
   @OneToMany(() => Video, (video) => video.user)
-videos: Video[];
+  videos: Video[];
 
-@OneToMany(() => Blog, (blog) => blog.author)
-blogs: Blog[];
+  @OneToMany(() => Blog, (blog) => blog.author)
+  blogs: Blog[];
 
-@OneToMany(() => Product, (product) => product.artist)
-products: Blog[];
+  @OneToMany(() => Product, (product) => product.artist)
+  products: Blog[];
 
- @OneToMany(() => ExhibitionProduct, (map) => map.user)
+  @OneToMany(() => ExhibitionProduct, (map) => map.user)
   displayMappings: ExhibitionProduct[];
 
   @Column({ type: 'boolean', nullable: true })
@@ -77,23 +77,23 @@ products: Blog[];
   @Column({ type: 'boolean', default: false })
   featured_artist: boolean;
 
- @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', default: false })
   homePageDisplay: boolean;
 
   @Column({ type: 'boolean', default: false })
   profileEdit: boolean;
-  
-   
-  @Column({ type: 'varchar', length: 255,   nullable: true })
+
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
   adminRemark: string;
 
- // 🟢 Add relation to Artist test Type
- @ManyToOne(() => ArtistType,  { nullable: true, onDelete: 'SET NULL'  })
- @JoinColumn({ name: 'artist_type_id' })
- artistType: ArtistType|null;
-  
-//  @Column({ name: 'artist_type_id', nullable: true })
-//  artist_type_id: number;
+  // 🟢 Add relation to Artist test Type
+  @ManyToOne(() => ArtistType, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'artist_type_id' })
+  artistType: ArtistType | null;
+
+  //  @Column({ name: 'artist_type_id', nullable: true })
+  //  artist_type_id: number;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
   createdBy: string;
@@ -111,19 +111,19 @@ products: Blog[];
 
 
   @OneToMany(() => UsersAddress, (address) => address.user, { cascade: true })
-addresses: UsersAddress[];
+  addresses: UsersAddress[];
 
-@OneToMany(() => BankDetail, (bank) => bank.user)
-bankDetails: BankDetail[];
+  @OneToMany(() => BankDetail, (bank) => bank.user)
+  bankDetails: BankDetail[];
 
-@OneToMany(() => UsersAbout, (about) => about.user)
-aboutDetails: UsersAbout;
+  @OneToMany(() => UsersAbout, (about) => about.user)
+  aboutDetails: UsersAbout;
 
-@OneToMany(() => KycDetails, (kyc) => kyc.user)
-kycDetails: KycDetails[];
+  @OneToMany(() => KycDetails, (kyc) => kyc.user)
+  kycDetails: KycDetails[];
 
-@OneToOne(() => UserProfileImage, (profileImage) => profileImage.user)
-profileImage: UserProfileImage;
+  @OneToOne(() => UserProfileImage, (profileImage) => profileImage.user)
+  profileImage: UserProfileImage;
 
 }
 

@@ -27,7 +27,7 @@ import { PublicGuard } from 'src/core/guards/public.guard';
 
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
-import { OtpType, StartEmailVerificationDto, StartMobileVerificationDto } from './dto/start-verification.dto';
+import { OtpType, StartEmailVerificationDto, UserType, StartMobileVerificationDto } from './dto/start-verification.dto';
 import { ResendOtpDto } from './dto/resend-verification.dto';
 import { LoginDto } from './dto/login.dto';
 //import { OtpLoginDto } from './dto/otp-login.dto';
@@ -40,8 +40,7 @@ import { CreateUserAddressDto } from './dto/create-user-address.dto';
 import { UpdateUserAddressDto } from './dto/update-user-address.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateProductDto } from '../admin/product/dto/create-product.dto';
-import { PaginationPipe } from 'src/shared/pipes/pagination.pipe';
-import { ProductPaginationDto } from '../admin/product/dto/product-pagination.dto';
+ import { ProductPaginationDto } from '../admin/product/dto/product-pagination.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ProductDto } from '../admin/product/dto/product.dto';
 import { FRONT_WISHLIST_INVENT_PRODUCTS_LIMIT, FRONT_WISHLIST_INVENT_PRODUCTS_MAX_LIMIT, FRONT_WISHLIST_INVENT_PRODUCTS_PAGE, PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE } from 'src/shared/config/pagination.config';
@@ -166,6 +165,33 @@ async changePassword(@Req() req, @Body() dto: ChangePasswordDto) {
  // navigate('/login');
    return { message: 'Logged out successfully.  ' };
  }
+
+@Public()
+@Post('send-otp-cart')
+async sendOtpCart(@Body('identifier') identifier: string, @Req() req: ExpressRequest) {
+  // Extract IP if you want to track OTP abuse attempts
+  const ipAddress = req.ip || (req.headers['x-forwarded-for'] as string) || undefined;
+  return await this.authService.cartLogin(identifier, ipAddress);
+}
+
+@Public()
+@Post('cart-register')
+  async cartRegister(
+    @Body() body: { email?: string; mobile?: string;  userType?: UserType },
+  ) {
+    const { email, mobile,  userType } = body;
+
+    if (!email && !mobile) {
+      throw new BadRequestException('Either email or mobile must be provided');
+    }
+
+    return this.authService.registerCartUserAndLogin({
+      email,
+      mobile,    
+      userType: userType ?? UserType.BUYER,
+    });
+  }
+ 
 
 
   @Public()
@@ -346,7 +372,7 @@ create(
 @UseGuards(JwtAuthGuard)
 @Get('products')
   async findAll(
-    @Query(new PaginationPipe(PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE))
+    @Query(new PaginationClinetPipe(PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE))
     @Query() paginationDto: ProductPaginationDto,
     @Req() req,
   ): Promise<PaginationResponseDto<ProductDto>> {

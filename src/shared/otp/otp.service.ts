@@ -9,6 +9,7 @@ import { VerifyOtpDto } from 'src/modules/auth/dto/verify-otp.dto';
 import { ResendOtpDto } from 'src/modules/auth/dto/resend-verification.dto';
 import { User } from '../entities/user.entity';
 import { OtpType,UserType } from 'src/modules/auth/dto/start-verification.dto';
+import { ApiResponse } from '../dto/api-response.dto';
 
 export type OtpVerificationResult =
   | { success: true; message: string; user?: undefined }
@@ -117,7 +118,7 @@ export class OtpService {
     type: OtpType,
     userType?: UserType, // default to 'Login' to separate from registration
     ipAddress?: string,
-  ): Promise<{ success: true; message: string }>  {
+  ): Promise<ApiResponse<{ identifier: string; type: OtpType; userType?: UserType }>>   {
     if (!ipAddress) {
       throw new BadRequestException('IP address is required.');
     }
@@ -198,7 +199,11 @@ export class OtpService {
   
     console.log(`OTP sent to ${type}: ${identifier} => ${otp}`);
   //  return { success: true, message: `OTP sent to your ${type}` };
-    return { success: true, message: `OTP sent to your ${otp}` };
+    return { success: true, message: `OTP sent to your ${otp}`, data: {
+        identifier,
+        type,
+        userType,
+      }, };
    // return { otp };
   }
 
