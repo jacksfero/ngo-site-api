@@ -25,7 +25,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { Public } from 'src/core/decorators/public.decorator';
 import { PublicGuard } from 'src/core/guards/public.guard';
 
-import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { RegisterCartUserDto, VerifyOtpDto } from './dto/verify-otp.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { OtpType, StartEmailVerificationDto, UserType, StartMobileVerificationDto } from './dto/start-verification.dto';
 import { ResendOtpDto } from './dto/resend-verification.dto';
@@ -175,21 +175,10 @@ async sendOtpCart(@Body('identifier') identifier: string, @Req() req: ExpressReq
 }
 
 @Public()
-@Post('cart-register')
-  async cartRegister(
-    @Body() body: { email?: string; mobile?: string;  userType?: UserType },
-  ) {
-    const { email, mobile,  userType } = body;
-
-    if (!email && !mobile) {
-      throw new BadRequestException('Either email or mobile must be provided');
-    }
-
-    return this.authService.registerCartUserAndLogin({
-      email,
-      mobile,    
-      userType: userType ?? UserType.BUYER,
-    });
+ @Public()
+  @Post('register-cart-login')
+  async registerCartUserAndLogin(@Body() dto: RegisterCartUserDto) {
+    return this.authService.registerCartUserAndLogin(dto);
   }
  
 

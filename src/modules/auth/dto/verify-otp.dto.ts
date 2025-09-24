@@ -19,6 +19,27 @@ export class VerifyOtpDto {
   @IsEnum(UserType)
   userType?: UserType; // e.g., 'Login', 'Registration'
 }
+
+
+
+
+
+
+export class RegisterCartUserDto {
+  identifier: string; // email or mobile
+  type: OtpType;
+  otp: string;
+  userType?: UserType;
+  guestCartId?: string;
+}
+
+
+
+
+
+
+
+
 /*
 {
   "identifier": "someone@example.com",

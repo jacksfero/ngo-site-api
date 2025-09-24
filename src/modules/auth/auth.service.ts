@@ -11,13 +11,13 @@ import * as bcrypt from 'bcrypt';
 
 import { UsersService } from 'src/modules/admin/users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { JwtPayload, RegisterCartUserResponse } from './interfaces/jwt-payload.interface';
 import { UserListByRoleNameDto } from '../admin/users/dto/user-list-byrole.dto';
 
-import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { RegisterCartUserDto, VerifyOtpDto } from './dto/verify-otp.dto';
 import { User } from 'src/shared/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository,In } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { OtpVerification } from 'src/shared/entities/OtpVerification.entity';
 
 import { Role } from 'src/shared/entities/role.entity';
@@ -70,6 +70,7 @@ import { Medium } from 'src/shared/entities/medium.entity';
 import { Subject } from 'src/shared/entities/subject.entity';
 import { Style } from 'src/shared/entities/style.entity';
 import { slugify } from 'src/shared/utils/slugify';
+import { Cart } from 'src/shared/entities/cart.entity';
 
 
 
@@ -125,73 +126,75 @@ export class AuthService {
     @InjectRepository(Wishlist)
     private wishlistRepository: Repository<Wishlist>,
 
-  ) {}
+    @InjectRepository(Cart)
+    private cartRepo: Repository<Cart>,
+  ) { }
 
   // artist.service.ts
-async getArtistsWithArtworkCount(id: number) {
-  const roleId = 4; // ✅ Artist role ID (keep configurable at top)
+  async getArtistsWithArtworkCount(id: number) {
+    const roleId = 4; // ✅ Artist role ID (keep configurable at top)
 
-  const artists = await this.userRepository
-  .createQueryBuilder('user')
-  .innerJoin('user.roles', 'roles')
-  .innerJoin('user.products', 'product') // user must have product
-  .innerJoin('product.productInventory', 'inventory') // product must have inventory
-  .where('roles.id = :roleId', { roleId })
-  .andWhere('user.artist_type_id = :artistTypeId', { artistTypeId:id })
-  .andWhere('user.status = :userstatus', { userstatus: true })
-  .andWhere('product.is_active = :productStatus', { productStatus: 'Active' })
-  .andWhere('inventory.status = :inventoryStatus', { inventoryStatus: true })
-  .select('user.id', 'id')
-  .addSelect('user.username', 'username')
-  .addSelect('ANY_VALUE(product.defaultImage)', 'defaultImage')
-  .addSelect('user.artist_type_id', 'artist_type_id')
-  .addSelect('COUNT(product.id)', 'artworkCount') // ✅ count of valid products
-  .groupBy('user.id')
-  .addGroupBy('user.artist_type_id')
-  .addGroupBy('user.username')
-  .getRawMany();
- 
-   if (artists.length === 0) {
-     throw new NotFoundException('No artists found with artworks');
+    const artists = await this.userRepository
+      .createQueryBuilder('user')
+      .innerJoin('user.roles', 'roles')
+      .innerJoin('user.products', 'product') // user must have product
+      .innerJoin('product.productInventory', 'inventory') // product must have inventory
+      .where('roles.id = :roleId', { roleId })
+      .andWhere('user.artist_type_id = :artistTypeId', { artistTypeId: id })
+      .andWhere('user.status = :userstatus', { userstatus: true })
+      .andWhere('product.is_active = :productStatus', { productStatus: 'Active' })
+      .andWhere('inventory.status = :inventoryStatus', { inventoryStatus: true })
+      .select('user.id', 'id')
+      .addSelect('user.username', 'username')
+      .addSelect('ANY_VALUE(product.defaultImage)', 'defaultImage')
+      .addSelect('user.artist_type_id', 'artist_type_id')
+      .addSelect('COUNT(product.id)', 'artworkCount') // ✅ count of valid products
+      .groupBy('user.id')
+      .addGroupBy('user.artist_type_id')
+      .addGroupBy('user.username')
+      .getRawMany();
+
+    if (artists.length === 0) {
+      throw new NotFoundException('No artists found with artworks');
     }
 
-  return artists; 
-}
+    return artists;
+  }
 
- 
-async getArtistsByUserId(id: number) {
-  const roleId = 4; // ✅ Artist role ID (keep configurable at top)
-  const artists = await this.userRepository
-    .createQueryBuilder('user')
-    .innerJoinAndSelect('user.roles', 'roles')
-    .innerJoinAndSelect('user.profileImage', 'profileImage')
+
+  async getArtistsByUserId(id: number) {
+    const roleId = 4; // ✅ Artist role ID (keep configurable at top)
+    const artists = await this.userRepository
+      .createQueryBuilder('user')
+      .innerJoinAndSelect('user.roles', 'roles')
+      .innerJoinAndSelect('user.profileImage', 'profileImage')
       .innerJoinAndSelect('user.aboutDetails', 'aboutDetails')
       .innerJoinAndSelect('user.addresses', 'address')
-    .where('user.id = :id', { id })
-    .andWhere('roles.id = :roleId', { roleId}) // ✅ restrict only artists
-      .andWhere('address.type = :type', { type:AddressType.PERSONAL})
-   // .where('roles.id = :roleId', { roleId: 4 })
-   // .andWhere('user.artist_type_id = :artist_type_id', { artist_type_id: id })
-    //.select(['user.id', 'user.username', 'user.artist_type_id'])
-   // .orderBy('user.username', 'ASC')
-    .getOne();
+      .where('user.id = :id', { id })
+      .andWhere('roles.id = :roleId', { roleId }) // ✅ restrict only artists
+      .andWhere('address.type = :type', { type: AddressType.PERSONAL })
+      // .where('roles.id = :roleId', { roleId: 4 })
+      // .andWhere('user.artist_type_id = :artist_type_id', { artist_type_id: id })
+      //.select(['user.id', 'user.username', 'user.artist_type_id'])
+      // .orderBy('user.username', 'ASC')
+      .getOne();
 
     if (!artists) {
       throw new NotFoundException('Artists not found');
-    }  
+    }
 
 
-  // ✅ If roles is an array (common in RBAC systems)
-  const isArtist = artists.roles.some((role) => role.id === roleId);
+    // ✅ If roles is an array (common in RBAC systems)
+    const isArtist = artists.roles.some((role) => role.id === roleId);
 
-  if (!isArtist) {
-    throw new NotFoundException('Artist not found');
+    if (!isArtist) {
+      throw new NotFoundException('Artist not found');
+    }
+
+
+    return artists;
   }
 
-  
-  return artists;
-}
-  
   async getArtistList(id: number) {
     const artists = await this.userRepository
       .createQueryBuilder('user')
@@ -203,10 +206,10 @@ async getArtistsByUserId(id: number) {
       .select(['user.id', 'user.username', 'user.artist_type_id'])
       .orderBy('user.username', 'ASC')
       .getMany();
-  
+
     if (artists.length === 0) {
       throw new NotFoundException('Artists not found');
-    }  
+    }
     return artists;
   }
 
@@ -222,14 +225,14 @@ async getArtistsByUserId(id: number) {
       .andWhere('user.artist_type_id = :artist_type_id', { artist_type_id: id })
       .andWhere('user.featured_artist = :featured_artist', { featured_artist: true })
       .andWhere('user.homePageDisplay = :homePageDisplay', { homePageDisplay: true })
-      .andWhere('address.type = :type', { type:   AddressType.PERSONAL })
-      .select(['user.id', 'user.username','address.city','about.awards','about.shows','about.about','address.state','address.country','profileimg.imageUrl', 'user.artist_type_id'])
+      .andWhere('address.type = :type', { type: AddressType.PERSONAL })
+      .select(['user.id', 'user.username', 'address.city', 'about.awards', 'about.shows', 'about.about', 'address.state', 'address.country', 'profileimg.imageUrl', 'user.artist_type_id'])
       .orderBy('user.username', 'ASC')
       .getMany();
-  
+
     if (artists.length === 0) {
       throw new NotFoundException('Artists not found');
-    }  
+    }
     return artists;
   }
 
@@ -280,7 +283,7 @@ async getArtistsByUserId(id: number) {
     return profileImage;
   }
   /************ Start registration Process */
-  
+
 
   async sendEmailOtp(identifier: string, type: OtpType, userType: UserType, ipAddress?: string) {
     return this.otpService.sendOtp(identifier, type, userType as UserType, ipAddress); // Only identifier and type passed
@@ -320,7 +323,7 @@ async getArtistsByUserId(id: number) {
     if (existingByMobile) {
       throw new ConflictException('Mobile already registered');
     }
- 
+
     // Check OTP verifications
     const [emailOtp, mobileOtp] = await Promise.all([
       this.otpService.getLatestVerifiedOtp(email, 'email'),
@@ -356,115 +359,109 @@ async getArtistsByUserId(id: number) {
 
     return { success: true, message: 'Registration complete', userId: user.id };
   }
-  
+
   async registerCartUserAndLogin(
-  dto: { email?: string; mobile?: string; userType?: UserType },
-): Promise<{ success: true; message: string; data: { token: string; user: any } }> {
-  const { email, mobile, userType = UserType.CUSTOMER } = dto;
+    dto: RegisterCartUserDto
+  ): Promise<RegisterCartUserResponse> {
+    const { identifier, type, otp, userType = UserType.CUSTOMER, guestCartId } = dto;
 
-  if (!email && !mobile) {
-    throw new BadRequestException('Email or mobile must be provided');
-  }
+    // 1️⃣ Verify OTP
+    const otpResult = await this.verifyOtp({ identifier, type, otp, userType });
+    let user: User | null = otpResult.user ?? null;
 
-  // 1️⃣ Check if user already exists
-  let user: User | null = null;   // ✅ Explicit type
-  if (email) user = await this.findByEmail(email);
-  if (!user && mobile) user = await this.findByMobile(mobile);
+    // 2️⃣ Register user if not exist
+    if (!user) {
+      const role = await this.roleRepository
+        .createQueryBuilder('role')
+        .where('LOWER(role.name) = LOWER(:name)', { name: userType })
+        .getOne();
+      if (!role) throw new BadRequestException(`Role '${userType}' not found`);
 
-  if (user) {
-    throw new ConflictException('User already exists, please login');
-  }
+      const username = identifier; // email or mobile
+      user = this.userRepository.create({
+        username,
+        email: type === OtpType.EMAIL ? identifier : null,
+        mobile: type === OtpType.MOBILE ? identifier : null,
+        status: true,
+        is_verified: true,
+        password: null,
+        roles: [role],
+      } as Partial<User>);
+      await this.userRepository.save(user);
+    }
 
-  // 2️⃣ Check OTP verification
-  const [emailOtp, mobileOtp] = await Promise.all([
-    email ? this.otpService.getLatestVerifiedOtp(email, OtpType.EMAIL) : null,
-    mobile ? this.otpService.getLatestVerifiedOtp(mobile, OtpType.MOBILE) : null,
-  ]);
-
-  if (email && (!emailOtp || !emailOtp.isVerified)) {
-    throw new BadRequestException('Email is not verified');
-  }
-
-  if (mobile && (!mobileOtp || !mobileOtp.isVerified)) {
-    throw new BadRequestException('Mobile is not verified');
-  }
-
-  // 3️⃣ Fetch role
-  const role = await this.roleRepository
-    .createQueryBuilder('role')
-    .where('LOWER(role.name) = LOWER(:name)', { name: userType })
-    .getOne();
-  if (!role) throw new BadRequestException(`Role '${userType}' not found`);
-
-  // 4️⃣ Create user
-  const username = email ?? mobile;
-  user = this.userRepository.create({
-    username,
-    email,
-    mobile,
-    status: true,
-    is_verified: true,
-    password: null,   // ✅ allowed now
-    roles: [role],
+    // 3️⃣ Merge guest cart
+  let mergedCart: Cart | undefined;
+if (guestCartId) {
+  const guestCart = await this.cartRepo.findOne({
+    where: { guestId: guestCartId },
+    relations: ['items'], // optional
   });
 
-  user = await this.userRepository.save(user); // ✅ reassign so `user` is not possibly null
+  if (guestCart) {
+    guestCart.user = user;
+   // guestCart.guestId = null; // remove guest reference
+    mergedCart = await this.cartRepo.save(guestCart); // assign to outer variable
+  }
+}
 
-  // 5️⃣ Generate token via existing login()
-  const tokenResponse = await this.login(user);
+    // 4️⃣ Generate JWT
+    const tokenResponse = await this.login(user);
 
-  return {
-    success: true,
-    message: 'Registration successful',
-    data: {
-      token: tokenResponse.access_token,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        mobile: user.mobile,
+    return {
+      success: true,
+      message: 'User logged in successfully',
+      data: {
+        token: tokenResponse.access_token,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email ?? undefined,
+          mobile: user.mobile ?? undefined,
+        },
+        cart: mergedCart,
       },
-    },
-  };
-}
-
-async cartLogin(identifier: string, ipAddress?: string) {
-  if (!identifier) {
-    throw new BadRequestException('Email or mobile must be provided.');
+    };
   }
 
-  try {
-    let user: User | null = null;
-   let type: OtpType; 
-    let userType: UserType;
 
-    // Detect identifier type
-    if (this.isValidEmail(identifier)) {
-      type = OtpType.EMAIL;     // ✅ enum value
-      user = await this.findByEmail(identifier);
-    } else if (this.isValidMobile(identifier)) {
-      type = OtpType.MOBILE;    // ✅ enum value
-      user = await this.findByMobile(identifier);
-    } else {
-      throw new BadRequestException('Invalid identifier format');
+  async cartLogin(identifier: string, ipAddress?: string) {
+    if (!identifier) {
+      throw new BadRequestException('Email or mobile must be provided.');
     }
-// ✅ Set userType depending on existence
-    if (user) {
-      userType = UserType.LOGIN;       // Existing user
-    } else {
-      userType = UserType.BUYER;    // New cart user
-    }
-    // Send OTP
-  return  await this.otpService.sendOtp(identifier, type, userType, ipAddress);
 
-     
-  } catch (error) {
-    if (error instanceof NotFoundException || error instanceof UnauthorizedException) {
-      throw new UnauthorizedException('Invalid credentials for cart login');
+    try {
+      let user: User | null = null;
+      let type: OtpType;
+      let userType: UserType;
+
+      // Detect identifier type
+      if (this.isValidEmail(identifier)) {
+        type = OtpType.EMAIL;     // ✅ enum value
+        user = await this.findByEmail(identifier);
+      } else if (this.isValidMobile(identifier)) {
+        type = OtpType.MOBILE;    // ✅ enum value
+        user = await this.findByMobile(identifier);
+      } else {
+        throw new BadRequestException('Invalid identifier format');
+      }
+      // ✅ Set userType depending on existence
+      if (user) {
+        userType = UserType.LOGIN;       // Existing user
+      } else {
+        userType = UserType.BUYER;    // New cart user
+      }
+      // Send OTP
+      return await this.otpService.sendOtp(identifier, type, userType, ipAddress);
+
+
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof UnauthorizedException) {
+        throw new UnauthorizedException('Invalid credentials for cart login');
+      }
+      throw new BadRequestException('Authentication failed for cart login');
     }
-    throw new BadRequestException('Authentication failed for cart login');
   }
-}
 
   async validateUser(loginId: string, password: string): Promise<any> {
     // const { loginId, password } = dto;
@@ -610,28 +607,28 @@ async cartLogin(identifier: string, ipAddress?: string) {
       throw new NotFoundException('User not found');
     }
 
-     // 2. Ensure the user has a password set
-  /* if (!user.password) {
-    throw new BadRequestException(
-      'This account does not have a password set. Please use OTP login or set a password first.',
-    );
-  }
-
-   // 2. Verify old password
-    const isMatch = await bcrypt.compare(oldPassword, user.password);
-    if (!isMatch) {
-      throw new BadRequestException('Old password is incorrect');
-    }
-*/
-    // 3. Prevent reusing the same password
-   if (user.password) {
-    const isSamePassword = await bcrypt.compare(newPassword, user.password);
-    if (isSamePassword) {
+    // 2. Ensure the user has a password set
+    /* if (!user.password) {
       throw new BadRequestException(
-        'New password cannot be the same as old password',
+        'This account does not have a password set. Please use OTP login or set a password first.',
       );
     }
-  }
+  
+     // 2. Verify old password
+      const isMatch = await bcrypt.compare(oldPassword, user.password);
+      if (!isMatch) {
+        throw new BadRequestException('Old password is incorrect');
+      }
+  */
+    // 3. Prevent reusing the same password
+    if (user.password) {
+      const isSamePassword = await bcrypt.compare(newPassword, user.password);
+      if (isSamePassword) {
+        throw new BadRequestException(
+          'New password cannot be the same as old password',
+        );
+      }
+    }
 
     // 4. Hash new password
     user.password = await bcrypt.hash(newPassword, 10);
@@ -722,7 +719,7 @@ async cartLogin(identifier: string, ipAddress?: string) {
     return withUser;
 
   }
- 
+
 
   async createAddress(dto: CreateUserAddressDto, user: any) {
     const userId = user.sub.toString();
@@ -795,12 +792,12 @@ async cartLogin(identifier: string, ipAddress?: string) {
     return toUserAddressResponse(withUser);
   }
 
-   async removeAddress(id: number, user: any): Promise<void> {
-     const userId = user.sub.toString();
+  async removeAddress(id: number, user: any): Promise<void> {
+    const userId = user.sub.toString();
     const address = await this.addressRepo.findOne({
-      where:{id:id, user: { id: userId },}
+      where: { id: id, user: { id: userId }, }
     });
-    if(!address){
+    if (!address) {
       throw new NotFoundException('Address not found');
     }
     await this.addressRepo.remove(address);
@@ -855,7 +852,7 @@ async cartLogin(identifier: string, ipAddress?: string) {
     //  return toUserAddressResponse(withUser);
   }
 
-   
+
 
 
   async createBankDetail(dto: CreateBankDetailDto, users: any) {
@@ -902,7 +899,7 @@ async cartLogin(identifier: string, ipAddress?: string) {
     return withUser;
     //  return toUserAddressResponse(withUser);
   }
- 
+
   async createProduct(dto: CreateProductDto, user: any, imageFilename?: Express.Multer.File): Promise<Product> {
     const userId = user.sub.toString();
     let titleImage: string | null = null;
@@ -922,7 +919,7 @@ async cartLogin(identifier: string, ipAddress?: string) {
       createdBy: userId,
       category: { id: dto.category_id } as Productcategory,
       ...(dto.surface_id && { surface: { id: dto.surface_id } as Surface }),
-    ...(dto.medium_id && { medium: { id: dto.medium_id } as Medium }),
+      ...(dto.medium_id && { medium: { id: dto.medium_id } as Medium }),
     });
     product.owner = userId;
     product.artist = userId;
@@ -932,7 +929,7 @@ async cartLogin(identifier: string, ipAddress?: string) {
     if (dto.stylesIds?.length) {
       product.styles = await this.styleRepo.findBy({ id: In(dto.stylesIds) });
     }
-    
+
     return this.productRepository.save(product);
   }
 
@@ -948,9 +945,9 @@ async cartLogin(identifier: string, ipAddress?: string) {
     return slug;
   }
 
-  
+
   async findAllProducts(
-    paginationDto: ProductPaginationDto, user:any
+    paginationDto: ProductPaginationDto, user: any
   ): Promise<PaginationResponseDto<ProductDto>> {
     const userId = user.sub.toString();
     const { page, limit, search,
@@ -960,9 +957,9 @@ async cartLogin(identifier: string, ipAddress?: string) {
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.productRepository.createQueryBuilder('product')
-                       .leftJoinAndSelect('product.artist', 'artist')
-                       .leftJoinAndSelect('product.category', 'category')
-                       .andWhere('product.createdBy = :createdBy', { createdBy: userId });
+      .leftJoinAndSelect('product.artist', 'artist')
+      .leftJoinAndSelect('product.category', 'category')
+      .andWhere('product.createdBy = :createdBy', { createdBy: userId });
     if (search) {
       queryBuilder.andWhere('product.name LIKE :search', { search: `%${search}%` });
     }
@@ -985,7 +982,7 @@ async cartLogin(identifier: string, ipAddress?: string) {
   async findOneProduct(id: number): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: ['artist', 'packingMode', 'shippingTime','styles', 'subjects','commissionType', 'images','surface','medium','category'],
+      relations: ['artist', 'packingMode', 'shippingTime', 'styles', 'subjects', 'commissionType', 'images', 'surface', 'medium', 'category'],
     });
     if (!product) {
       throw new NotFoundException(`Product with id ${id} not found`);
@@ -1072,19 +1069,19 @@ async cartLogin(identifier: string, ipAddress?: string) {
       imagePath: imageurl, // just the relative path
       product,
     });
- 
+
     return this.imageRepo.save(image);
-  } 
+  }
   async updateImageAltText(imageId: number, altText: string) {
     const image = await this.imageRepo.findOne({ where: { id: imageId } });
-  
+
     if (!image) {
       throw new NotFoundException('Image not found');
     }
-  
+
     image.alt_text = altText;
     await this.imageRepo.save(image);
-  
+
     return {
       message: 'Alt text updated successfully',
       image,
@@ -1113,32 +1110,32 @@ async cartLogin(identifier: string, ipAddress?: string) {
     dto: CreateWishlistDto,
   ): Promise<Wishlist> {
     const userId = user.sub.toString()
-  //  console.log('user id ----------', userId)
+    //  console.log('user id ----------', userId)
     const product = await this.productRepository.findOneBy({
       id: dto.productId,
     });
 
     if (!product) throw new NotFoundException('Product not found');
 
-     // ✅ Check if product already in wishlist
-  const existing = await this.wishlistRepository.findOne({
-    where: {
-      user: { id: userId },
-      product: { id: dto.productId },
-    },
-  });
+    // ✅ Check if product already in wishlist
+    const existing = await this.wishlistRepository.findOne({
+      where: {
+        user: { id: userId },
+        product: { id: dto.productId },
+      },
+    });
 
     if (existing) {
       throw new ConflictException('Product already in wishlist');
     }
 
     // ✅ Create wishlist with user ID and product ID (not full objects)
-  const wishlist = this.wishlistRepository.create({
-    user: { id: userId }, // ✅ Pass only user ID
-    product: { id: dto.productId } // ✅ Pass only product ID
-  });
+    const wishlist = this.wishlistRepository.create({
+      user: { id: userId }, // ✅ Pass only user ID
+      product: { id: dto.productId } // ✅ Pass only product ID
+    });
 
-  return this.wishlistRepository.save(wishlist);
+    return this.wishlistRepository.save(wishlist);
   }
   async getUserWishlistsssssss(userId: number): Promise<Wishlist[]> {
     return this.wishlistRepository.find({
@@ -1152,7 +1149,7 @@ async cartLogin(identifier: string, ipAddress?: string) {
     userId: number,
   ): Promise<PaginationResponseDto<WishlistInventProdDto>> {
     const { page = 1, limit = 10 } = paginationDto;
-  
+
     const qb = this.wishlistRepository.createQueryBuilder('wishlist')
       // product must exist (use inner join)
       .innerJoinAndSelect('wishlist.product', 'product')
@@ -1164,16 +1161,16 @@ async cartLogin(identifier: string, ipAddress?: string) {
       .leftJoinAndSelect('product.surface', 'surface')
       .leftJoinAndSelect('product.medium', 'medium')
       .leftJoinAndSelect('inventory.shippingWeight', 'shipping')
-  
+
       // filters
       .where('wishlist.user_id = :userId', { userId })
       .andWhere('product.is_active = :isActive', { isActive: ProductStatus.ACTIVE })
       .andWhere('inventory.status = :invStatus', { invStatus: true })
-  
+
       // pagination
       .skip((page - 1) * limit)
       .take(limit);
-  
+
     // Explicit select (helps reduce payload)
     qb.select([
       // wishlist
@@ -1189,7 +1186,7 @@ async cartLogin(identifier: string, ipAddress?: string) {
       'product.height',
       'product.depth',
       'product.is_active',
-  
+
       // category/artist/surface/medium minimal fields
       'category.id',
       'category.name',
@@ -1199,7 +1196,7 @@ async cartLogin(identifier: string, ipAddress?: string) {
       'surface.surfaceName',
       'medium.id',
       'medium.name',
-  
+
       // inventory fields
       'inventory.id',
       //'inventory.product_id', // if your inventory column name is product_id; use correct name
@@ -1209,29 +1206,29 @@ async cartLogin(identifier: string, ipAddress?: string) {
       'inventory.shippingSlot',
       'inventory.status',
       'inventory.updatedAt',
-  
+
       // shipping
       'shipping.weightSlot',
       'shipping.costINR',
       'shipping.CostOthers',
     ]);
-  
+
     const [result, total] = await qb.getManyAndCount();
-  
+
     // transform to DTOs
     const data = plainToInstance(WishlistInventProdDto, result, {
       excludeExtraneousValues: true,
     });
-  
+
     return new PaginationResponseDto<WishlistInventProdDto>(data, {
       total,
       page,
       limit,
     });
   }
-  
-  
-  
+
+
+
   async removeWishList(id: number): Promise<void> {
     const wishlist = await this.wishlistRepository.findOne({ where: { id } });
     if (!wishlist) throw new NotFoundException(`wishlist ${id} not found`);
@@ -1249,7 +1246,7 @@ export function toUserAddressResponse(address: UsersAddress): UserAddressRespons
     state: address.state,
     country: address.country,
     pin: address.pin,
-     isDefault: address.isDefault,
+    isDefault: address.isDefault,
     // aadhar: address.aadhar,
     contact: address.contact,
     // GSTIN: address.GSTIN,

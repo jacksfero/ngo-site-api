@@ -30,11 +30,12 @@ import { Medium } from 'src/shared/entities/medium.entity';
 import { Productcategory } from 'src/shared/entities/productcategory.entity';
 import { Subject } from 'src/shared/entities/subject.entity';
 import { Style } from 'src/shared/entities/style.entity';
+import { Cart } from 'src/shared/entities/cart.entity';
  
 @Module({
   imports: [TypeOrmModule.forFeature([User,Role,OtpVerification,PasswordResetToken,
     UsersAbout,UsersAddress,BankDetail,KycDetails,Product,ProductImage,Surface,Medium,
-    Subject,Style,Productcategory,Wishlist,UserProfileImage
+    Subject,Style,Productcategory,Wishlist,UserProfileImage,Cart
   ]),
     UsersModule,
     OtpModule,
