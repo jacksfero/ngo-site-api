@@ -9,6 +9,7 @@ export class UserAddressResponseDto {
   state: string;
   country: string;
   pin: string;
+  isDefault: boolean;
  // aadhar: string;
   contact: string;
   //GSTIN: string;

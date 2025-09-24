@@ -300,23 +300,32 @@ createAddress(@Body() dto: CreateUserAddressDto,@Req() req) {
   return this.authService.createAddress(dto, req.user);
 }
 
-@UseGuards(JwtAuthGuard)
-@Get('user-address/:addressType')
-findAllAddress( @Param('addressType', new ParseEnumPipe(AddressType)) addressType: AddressType,@Req() req) {
-  return this.authService.findAllForUserAddress( addressType,req.user);
-}
-
+  @UseGuards(JwtAuthGuard)
+  @Get('user-address/:addressType')
+  findAllAddress(
+    @Param('addressType', new ParseEnumPipe(AddressType)) addressType: AddressType,
+    @Req() req
+  ) {
+   // console.log('✅ Controller reached');
+  //  console.log('AddressType:', addressType);
+  //  console.log('JWT User:', req.user);
+    
+    return this.authService.findAllForUserAddress(addressType, req.user);
+  }
+ 
 @UseGuards(JwtAuthGuard)
 @Patch('user-address/:id')
 updateAddress(@Param('id') id: number,  @Body() dto: UpdateUserAddressDto, @Req() req) {
-  console.log('update JWT User:', req.user);  // <--- check if user is set
-  console.log('update Body:', dto);
+ // console.log('update JWT User:', req.user);  // <--- check if user is set
+ // console.log('update Body:', dto);
   return this.authService.updateAddress(id,dto,req.user);
 }
-/*@Delete('user-address/:id')
-remove(@Req() req, @Param('id') id: number) {
-  return this.authService.removeAddress(req.user.id, id);
-}*/
+
+@UseGuards(JwtAuthGuard)
+@Delete('user-address/:id')
+remove( @Param('id') id: number, @Req() req) {
+  return this.authService.removeAddress(id,req.user);
+}
 /*************End    User address Section */
 
 

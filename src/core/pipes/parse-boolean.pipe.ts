@@ -80,13 +80,16 @@ import 'reflect-metadata';
 
 @Injectable()
 export class ParsePrimitivesPipe implements PipeTransform {
-  transform(value: any, metadata: ArgumentMetadata) {
+   transform(value: any, metadata: ArgumentMetadata) {
+    // ✅ FIX: Add proper checks for empty bodies and invalid metadata
     if (
       metadata.type === 'body' &&
       typeof value === 'object' &&
       value !== null &&
+      Object.keys(value).length > 0 && // ✅ Check if body is not empty
       metadata.metatype &&
-      metadata.metatype !== Object
+      metadata.metatype !== Object &&
+      metadata.metatype.prototype // ✅ Ensure prototype exists
     ) {
       try {
         this.convertPrimitives(value, metadata.metatype);

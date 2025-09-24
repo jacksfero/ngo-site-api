@@ -678,6 +678,17 @@ async getArtistsByUserId(id: number) {
     return toUserAddressResponse(withUser);
   }
 
+   async removeAddress(id: number, user: any): Promise<void> {
+     const userId = user.sub.toString();
+    const address = await this.addressRepo.findOne({
+      where:{id:id, user: { id: userId },}
+    });
+    if(!address){
+      throw new NotFoundException('Address not found');
+    }
+    await this.addressRepo.remove(address);
+  }
+
 
   async createkycDetail(dto: CreateKycDetailDto, users: any) {
     const userId = users.sub.toString();
@@ -726,6 +737,8 @@ async getArtistsByUserId(id: number) {
     return withUser;
     //  return toUserAddressResponse(withUser);
   }
+
+   
 
 
   async createBankDetail(dto: CreateBankDetailDto, users: any) {
@@ -1119,6 +1132,7 @@ export function toUserAddressResponse(address: UsersAddress): UserAddressRespons
     state: address.state,
     country: address.country,
     pin: address.pin,
+     isDefault: address.isDefault,
     // aadhar: address.aadhar,
     contact: address.contact,
     // GSTIN: address.GSTIN,
