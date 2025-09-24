@@ -66,38 +66,6 @@ export class AuthController {
      */
 
 
-  @Public()
-  @Get('artistsartwork/:id')
-  async getArtistsByUserId(
-    @Param('id') id: number,
-  ) {
-    return this.authService.getArtistsByUserId(id);
-  }
-
-
-  @Public()
-  @Get('artistslistartwork/:id')
-  async getArtistsWithArtworkCount(
-    @Param('id') id: number,
-  ) {
-    return this.authService.getArtistsWithArtworkCount(id);
-  }
-
-  @Public()
-  @Get('artistslist/:id')
-  async getArtistList(
-    @Param('id') id: number,
-  ) {
-    return this.authService.getArtistList(id);
-  }
-
-  @Public()
-  @Get('artistslistfeatured/:id')
-  async getArtistListFeatured(
-    @Param('id') id: number,
-  ) {
-    return this.authService.getArtistListFeatured(id);
-  }
   
   @Public()
   @Post('start-email-verification')
@@ -199,6 +167,39 @@ async changePassword(@Req() req, @Body() dto: ChangePasswordDto) {
    return { message: 'Logged out successfully.  ' };
  }
 
+
+  @Public()
+  @Get('artistsartwork/:id')
+  async getArtistsByUserId(
+    @Param('id') id: number,
+  ) {
+    return this.authService.getArtistsByUserId(id);
+  }
+
+
+  @Public()
+  @Get('artistslistartwork/:id')
+  async getArtistsWithArtworkCount(
+    @Param('id') id: number,
+  ) {
+    return this.authService.getArtistsWithArtworkCount(id);
+  }
+
+  @Public()
+  @Get('artistslist/:id')
+  async getArtistList(
+    @Param('id') id: number,
+  ) {
+    return this.authService.getArtistList(id);
+  }
+
+  @Public()
+  @Get('artistslistfeatured/:id')
+  async getArtistListFeatured(
+    @Param('id') id: number,
+  ) {
+    return this.authService.getArtistListFeatured(id);
+  }
  
   @Public()
   @Get('by-role/:roleName')

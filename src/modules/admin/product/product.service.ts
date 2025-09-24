@@ -86,7 +86,6 @@ export class ProductService {
       slug = `${baseSlug}-${count}`;
       count++;
     }
-
     return slug;
   }
 
