@@ -361,9 +361,9 @@ export class AuthService {
   }
 
   async registerCartUserAndLogin(
-    dto: RegisterCartUserDto
+    dto: RegisterCartUserDto, guestCartId
   ): Promise<RegisterCartUserResponse> {
-    const { identifier, type, otp, userType = UserType.CUSTOMER, guestCartId } = dto;
+    const { identifier, type, otp, userType = UserType.CUSTOMER } = dto;
 
     // 1️⃣ Verify OTP
     const otpResult = await this.verifyOtp({ identifier, type, otp, userType });

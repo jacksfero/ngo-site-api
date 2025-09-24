@@ -26,11 +26,18 @@ export class VerifyOtpDto {
 
 
 export class RegisterCartUserDto {
-  identifier: string; // email or mobile
-  type: OtpType;
+  @IsString()
+  identifier: string;  // email or mobile
+
+  @IsEnum(OtpType)
+  type: OtpType;  // email | mobile
+
+  @IsString()
   otp: string;
+
+  @IsEnum(UserType)
+  @IsOptional()
   userType?: UserType;
-  guestCartId?: string;
 }
 
 

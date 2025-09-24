@@ -3,7 +3,7 @@ import {
   Controller,
   Get,
   Request as Req,
-  UseGuards,
+  UseGuards, Res,
   Post,
   Body,
   Patch,
@@ -40,13 +40,13 @@ import { CreateUserAddressDto } from './dto/create-user-address.dto';
 import { UpdateUserAddressDto } from './dto/update-user-address.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateProductDto } from '../admin/product/dto/create-product.dto';
- import { ProductPaginationDto } from '../admin/product/dto/product-pagination.dto';
+import { ProductPaginationDto } from '../admin/product/dto/product-pagination.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ProductDto } from '../admin/product/dto/product.dto';
 import { FRONT_WISHLIST_INVENT_PRODUCTS_LIMIT, FRONT_WISHLIST_INVENT_PRODUCTS_MAX_LIMIT, FRONT_WISHLIST_INVENT_PRODUCTS_PAGE, PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE } from 'src/shared/config/pagination.config';
 import { UpdateProductDto } from '../admin/product/dto/update-product.dto';
 import { CreateWishlistDto } from '../admin/wishlist/dto/create-wishlist.dto';
-import { CreateKycDetailDto,UpdateKycDetailDto } from '../admin/users/dto/create-user-kyc-detail.dto';
+import { CreateKycDetailDto, UpdateKycDetailDto } from '../admin/users/dto/create-user-kyc-detail.dto';
 import { CreateBankDetailDto } from '../admin/users/dto/create-user-bank-detail.dto';
 import { UpdateBankDetailDto } from '../admin/users/dto/update-user-bank-detail.dto';
 import { FileValidationPipe } from 'src/shared/pipes/file-size-type-validation.pipe';
@@ -54,7 +54,7 @@ import { AddressType } from 'src/shared/entities/users-address.entity';
 import { PaginationClinetPipe } from 'src/shared/pipes/pagination-client.pipe';
 import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
 import { WishlistInventProdDto } from './dto/wishlist-invent-prod-list.dto';
- 
+
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) { }
@@ -65,14 +65,14 @@ export class AuthController {
      */
 
 
-  
+
   @Public()
   @Post('start-email-verification')
   startEmail(@Body() dto: StartEmailVerificationDto, @Req() req: ExpressRequest) {
     const ipAddress = req.ip;
     return this.authService.sendEmailOtp(dto.email, OtpType.EMAIL, dto.userType, ipAddress);
   }
- 
+
   @Public()
   @Post('start-mobile-verification')
   startMobile(@Body() dto: StartMobileVerificationDto, @Req() req: ExpressRequest) {
@@ -109,7 +109,7 @@ export class AuthController {
   }
 
 
-   // @UseGuards(AuthGuard('local'))  
+  // @UseGuards(AuthGuard('local'))  
   @Public()
   @UseGuards(LocalAuthGuard) // ✅ This is KEY
   @Post('login')
@@ -123,13 +123,13 @@ export class AuthController {
     return this.authService.sendLoginOtp(dto, ipAddress);
   }
 
- 
+
   @Public()
   @Post('login-with-otp')
   async otpLogin(@Body() dto: VerifyOtpDto) {
     return this.authService.loginWithOtp(dto);
   }
-                                                                                                            
+
   @Public()
   @Post('forgot-password')
   async forgotPassword(@Body() dto: SendOtpDto, @Ip() ipAddress?: string) {
@@ -142,45 +142,55 @@ export class AuthController {
     return this.authService.verifyForgotPasswordOtp(dto, ipAddress);
   }
 
-  
-  
+
+
   @Public()
-   @Post('reset-password')
-async resetPassword(@Body() dto: ResetPasswordDto) {
-  return this.authService.resetPassword(dto);
-}
-
- @UseGuards(JwtAuthGuard)
-@Post('change-password')
-async changePassword(@Req() req, @Body() dto: ChangePasswordDto) {
-  return this.authService.changePassword(req.user.sub.toString(), dto);
-}
-
-
- @UseGuards(JwtAuthGuard)
- @Post('logout')
- async logout(@Req() req) {
-  localStorage.removeItem('token'); // clear JWT
-//  res.clearCookie('access_token');
- // navigate('/login');
-   return { message: 'Logged out successfully.  ' };
- }
-
-@Public()
-@Post('send-otp-cart')
-async sendOtpCart(@Body('identifier') identifier: string, @Req() req: ExpressRequest) {
-  // Extract IP if you want to track OTP abuse attempts
-  const ipAddress = req.ip || (req.headers['x-forwarded-for'] as string) || undefined;
-  return await this.authService.cartLogin(identifier, ipAddress);
-}
-
-@Public()
- @Public()
-  @Post('register-cart-login')
-  async registerCartUserAndLogin(@Body() dto: RegisterCartUserDto) {
-    return this.authService.registerCartUserAndLogin(dto);
+  @Post('reset-password')
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
   }
- 
+
+  @UseGuards(JwtAuthGuard)
+  @Post('change-password')
+  async changePassword(@Req() req, @Body() dto: ChangePasswordDto) {
+    return this.authService.changePassword(req.user.sub.toString(), dto);
+  }
+
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout(@Req() req) {
+    localStorage.removeItem('token'); // clear JWT
+    //  res.clearCookie('access_token');
+    // navigate('/login');
+    return { message: 'Logged out successfully.  ' };
+  }
+
+  @Public()
+  @Post('send-otp-cart')
+  async sendOtpCart(@Body('identifier') identifier: string, @Req() req: ExpressRequest) {
+    // Extract IP if you want to track OTP abuse attempts
+    const ipAddress = req.ip || (req.headers['x-forwarded-for'] as string) || undefined;
+    return await this.authService.cartLogin(identifier, ipAddress);
+  }
+
+
+
+
+  @Public()
+  @Post('register-cart-login')
+  async registerCartUserAndLogin(
+    @Body() dto: RegisterCartUserDto,
+    @Req() req,
+    @Res({ passthrough: true }) res: Response,
+
+  ) {
+    let guestId = req.cookies?.['guestCartId'];
+
+    console.log('guestId---------', guestId);
+    return this.authService.registerCartUserAndLogin(dto, guestId);
+  }
+
 
 
   @Public()
@@ -215,7 +225,7 @@ async sendOtpCart(@Body('identifier') identifier: string, @Req() req: ExpressReq
   ) {
     return this.authService.getArtistListFeatured(id);
   }
- 
+
   @Public()
   @Get('by-role/:roleName')
   async getUsersByRole(@Param('roleName') roleName: string) {
@@ -228,93 +238,93 @@ async sendOtpCart(@Body('identifier') identifier: string, @Req() req: ExpressReq
     return this.authService.getLoggedInUser(req.user);
   }
 
-/** Start User about us section */
-@UseGuards(AuthGuard('jwt'))
-@Post('about')
-createUserAbout( @Body() dto: CreateUsersAboutDto, @Req() req) {
-  return this.authService.createUserAbout(dto, req.user);
-}
-@UseGuards(JwtAuthGuard)
-@Get('about')
-findOneUserAbout(@Req() req) {
-  return this.authService.findOneAboutByUserId(req.user);
-}
-@UseGuards(JwtAuthGuard)
-@Patch('about')
-updateAbout(@Body() dto: UpdateUsersAboutDto, @Req() req) {
- // console.log('update JWT User:', req.user);  // <--- check if user is set
-  //console.log('update Body:', dto);
-  return this.authService.updateAbout(dto,req.user);
-}
+  /** Start User about us section */
+  @UseGuards(AuthGuard('jwt'))
+  @Post('about')
+  createUserAbout(@Body() dto: CreateUsersAboutDto, @Req() req) {
+    return this.authService.createUserAbout(dto, req.user);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('about')
+  findOneUserAbout(@Req() req) {
+    return this.authService.findOneAboutByUserId(req.user);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Patch('about')
+  updateAbout(@Body() dto: UpdateUsersAboutDto, @Req() req) {
+    // console.log('update JWT User:', req.user);  // <--- check if user is set
+    //console.log('update Body:', dto);
+    return this.authService.updateAbout(dto, req.user);
+  }
 
-@UseGuards(JwtAuthGuard)
-@Post('upload')
-@UseInterceptors(FileInterceptor('profileimage'))
-uploadProfileImage(
-  @UploadedFile(new FileValidationPipe(2 * 1024 * 1024)) file: Express.Multer.File,
-   @Req() req
-) {
-  return this.authService.uploadProfileImage(file,req.user);
-}
+  @UseGuards(JwtAuthGuard)
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('profileimage'))
+  uploadProfileImage(
+    @UploadedFile(new FileValidationPipe(2 * 1024 * 1024)) file: Express.Multer.File,
+    @Req() req
+  ) {
+    return this.authService.uploadProfileImage(file, req.user);
+  }
 
-@UseGuards(JwtAuthGuard)
-@Get('profileimage')
+  @UseGuards(JwtAuthGuard)
+  @Get('profileimage')
   geProfileImage(@Req() req) {
     return this.authService.geProfileImage(req.user);
   }
 
-/*************User address Section */
-@UseGuards(JwtAuthGuard)
-@Post('user-kyc')
-createkycDetail(@Body() dto: CreateKycDetailDto,@Req() req) {
-  console.log('JWT User:', req.user);  // <--- check if user is set
-  console.log('Body:', dto);
-  return this.authService.createkycDetail(dto, req.user);
-}
+  /*************User address Section */
+  @UseGuards(JwtAuthGuard)
+  @Post('user-kyc')
+  createkycDetail(@Body() dto: CreateKycDetailDto, @Req() req) {
+    console.log('JWT User:', req.user);  // <--- check if user is set
+    console.log('Body:', dto);
+    return this.authService.createkycDetail(dto, req.user);
+  }
 
-@UseGuards(JwtAuthGuard)
-@Get('user-kyc')
-findAllKyc(@Req() req) {
-  return this.authService.findAllKyc(req.user.sub.toString());
-}
+  @UseGuards(JwtAuthGuard)
+  @Get('user-kyc')
+  findAllKyc(@Req() req) {
+    return this.authService.findAllKyc(req.user.sub.toString());
+  }
 
-@UseGuards(JwtAuthGuard)
-@Patch('user-kyc')
-updatekyc( @Body() dto: UpdateKycDetailDto, @Req() req) {
-  // console.log('update JWT User:', req.user);  // <--- check if user is set
-  // console.log('update Body:', dto);
-  return this.authService.updatekyc(dto,req.user);
-}
+  @UseGuards(JwtAuthGuard)
+  @Patch('user-kyc')
+  updatekyc(@Body() dto: UpdateKycDetailDto, @Req() req) {
+    // console.log('update JWT User:', req.user);  // <--- check if user is set
+    // console.log('update Body:', dto);
+    return this.authService.updatekyc(dto, req.user);
+  }
 
-@UseGuards(JwtAuthGuard)
-@Post('user-bank')
-createBankDetail(@Body() dto: CreateBankDetailDto,@Req() req) {
-  console.log('JWT User:', req.user);  // <--- check if user is set
-  console.log('Body:', dto);
-  return this.authService.createBankDetail(dto, req.user);
-}
+  @UseGuards(JwtAuthGuard)
+  @Post('user-bank')
+  createBankDetail(@Body() dto: CreateBankDetailDto, @Req() req) {
+    console.log('JWT User:', req.user);  // <--- check if user is set
+    console.log('Body:', dto);
+    return this.authService.createBankDetail(dto, req.user);
+  }
 
-@UseGuards(JwtAuthGuard)
-@Get('user-bank')
-findAllBank(@Req() req) {
-  return this.authService.findAllBank(req.user.sub.toString());
-}
+  @UseGuards(JwtAuthGuard)
+  @Get('user-bank')
+  findAllBank(@Req() req) {
+    return this.authService.findAllBank(req.user.sub.toString());
+  }
 
-@UseGuards(JwtAuthGuard)
-@Patch('user-bank')
-updateBank( @Body() dto: UpdateBankDetailDto, @Req() req) {
-  // console.log('update JWT User:', req.user);  // <--- check if user is set
-  // console.log('update Body:', dto);
-  return this.authService.updateBank(dto,req.user);
-}
+  @UseGuards(JwtAuthGuard)
+  @Patch('user-bank')
+  updateBank(@Body() dto: UpdateBankDetailDto, @Req() req) {
+    // console.log('update JWT User:', req.user);  // <--- check if user is set
+    // console.log('update Body:', dto);
+    return this.authService.updateBank(dto, req.user);
+  }
 
-@UseGuards(JwtAuthGuard)
-@Post('user-address')
-createAddress(@Body() dto: CreateUserAddressDto,@Req() req) {
- // console.log('JWT User:', req.user);  // <--- check if user is set
- // console.log('Body:', dto);
-  return this.authService.createAddress(dto, req.user);
-}
+  @UseGuards(JwtAuthGuard)
+  @Post('user-address')
+  createAddress(@Body() dto: CreateUserAddressDto, @Req() req) {
+    // console.log('JWT User:', req.user);  // <--- check if user is set
+    // console.log('Body:', dto);
+    return this.authService.createAddress(dto, req.user);
+  }
 
   @UseGuards(JwtAuthGuard)
   @Get('user-address/:addressType')
@@ -322,44 +332,44 @@ createAddress(@Body() dto: CreateUserAddressDto,@Req() req) {
     @Param('addressType', new ParseEnumPipe(AddressType)) addressType: AddressType,
     @Req() req
   ) {
-   // console.log('✅ Controller reached');
-  //  console.log('AddressType:', addressType);
-  //  console.log('JWT User:', req.user);
-    
+    // console.log('✅ Controller reached');
+    //  console.log('AddressType:', addressType);
+    //  console.log('JWT User:', req.user);
+
     return this.authService.findAllForUserAddress(addressType, req.user);
   }
- 
-@UseGuards(JwtAuthGuard)
-@Patch('user-address/:id')
-updateAddress(@Param('id') id: number,  @Body() dto: UpdateUserAddressDto, @Req() req) {
- // console.log('update JWT User:', req.user);  // <--- check if user is set
- // console.log('update Body:', dto);
-  return this.authService.updateAddress(id,dto,req.user);
-}
 
-@UseGuards(JwtAuthGuard)
-@Delete('user-address/:id')
-remove( @Param('id') id: number, @Req() req) {
-  return this.authService.removeAddress(id,req.user);
-}
-/*************End    User address Section */
+  @UseGuards(JwtAuthGuard)
+  @Patch('user-address/:id')
+  updateAddress(@Param('id') id: number, @Body() dto: UpdateUserAddressDto, @Req() req) {
+    // console.log('update JWT User:', req.user);  // <--- check if user is set
+    // console.log('update Body:', dto);
+    return this.authService.updateAddress(id, dto, req.user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('user-address/:id')
+  remove(@Param('id') id: number, @Req() req) {
+    return this.authService.removeAddress(id, req.user);
+  }
+  /*************End    User address Section */
 
 
-/*************Start User Product Section */
-@UseGuards(JwtAuthGuard)
-@Post('products') 
-@UseInterceptors(FileInterceptor('defaultImage'))
-create(
-  @Body() createProductDto: CreateProductDto,
-  @UploadedFile() file: Express.Multer.File,
-  @Req() req,
-) {
- // const imagePath = file?.filename;
-  return this.authService.createProduct(createProductDto, req.user, file);
-}
+  /*************Start User Product Section */
+  @UseGuards(JwtAuthGuard)
+  @Post('products')
+  @UseInterceptors(FileInterceptor('defaultImage'))
+  create(
+    @Body() createProductDto: CreateProductDto,
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req,
+  ) {
+    // const imagePath = file?.filename;
+    return this.authService.createProduct(createProductDto, req.user, file);
+  }
 
-@UseGuards(JwtAuthGuard)
-@Get('products')
+  @UseGuards(JwtAuthGuard)
+  @Get('products')
   async findAll(
     @Query(new PaginationClinetPipe(PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE))
     @Query() paginationDto: ProductPaginationDto,
@@ -382,10 +392,10 @@ create(
     @Body() dto: UpdateProductDto,
     @Req() req,
     @UploadedFile() file?: Express.Multer.File
-    
+
   ) {
     const imagePath = file?.filename;
-    return this.authService.updateProduct(id, dto,req.user, file ?? null );
+    return this.authService.updateProduct(id, dto, req.user, file ?? null);
   }
 
   @Post('products/:product_id/upload-image')
@@ -410,7 +420,7 @@ create(
     }
     return this.authService.updateImageAltText(imageId, altText);
   }
-  
+
   @Delete('products/delete-image/:imageId')
   async deleteImage(@Param('imageId') imageId: number) {
     return this.authService.deleteProductImage(imageId);
@@ -418,16 +428,16 @@ create(
 
 
 
-  
-/*************End User address Section */
-/*************Start User WishList Section */
-@UseGuards(JwtAuthGuard)
-@Post('wishlist')
+
+  /*************End User address Section */
+  /*************Start User WishList Section */
+  @UseGuards(JwtAuthGuard)
+  @Post('wishlist')
   createsWishList(
     @Req() req,
     @Body() createWishlistDto: CreateWishlistDto,
   ) {
- 
+
     return this.authService.addToWishlist(req.user, createWishlistDto);
   }
 
@@ -457,7 +467,7 @@ create(
   removeWishList(@Param('id') id: string) {
     return this.authService.removeWishList(+id);
   }
-/*************End User WishList Section */
+  /*************End User WishList Section */
 }
 
 /*
