@@ -4,6 +4,7 @@ import { AddressType } from "src/shared/entities/users-address.entity";
 export class UserAddressResponseDto {
   id: number;
   type: AddressType;
+   name: string;
   address: string;
   city: string;
   state: string;

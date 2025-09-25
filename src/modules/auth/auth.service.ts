@@ -447,7 +447,10 @@ if (guestCartId) {
       }
       // ✅ Set userType depending on existence
       if (user) {
-        userType = UserType.LOGIN;       // Existing user
+        userType = UserType.LOGIN;  
+        
+        
+        // Existing user
       } else {
         userType = UserType.BUYER;    // New cart user
       }
@@ -1242,6 +1245,7 @@ export function toUserAddressResponse(address: UsersAddress): UserAddressRespons
     id: address.id,
     type: address.type,
     address: address.address,
+    name: address.name,
     city: address.city,
     state: address.state,
     country: address.country,

@@ -20,10 +20,7 @@ export class VerifyOtpDto {
   userType?: UserType; // e.g., 'Login', 'Registration'
 }
 
-
-
-
-
+ 
 
 export class RegisterCartUserDto {
   @IsString()

@@ -31,5 +31,9 @@ export class CreateUserAddressDto {
   other_phone?: string;
 
   @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
   isDefault?: boolean;
 }
