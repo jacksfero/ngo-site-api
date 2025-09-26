@@ -278,7 +278,15 @@ if (updateProductDto.medium_id !== undefined) {
                          .leftJoinAndSelect('product.owner', 'owner')
                          .leftJoinAndSelect('product.category', 'category');
     if (search) {
-      queryBuilder.andWhere('product.productTitle LIKE :search', { search: `%${search}%` });
+       
+        queryBuilder.andWhere(
+          `(LOWER(product.productTitle) LIKE :search 
+        OR LOWER(product.id) LIKE :search
+        OR LOWER(artist.username) LIKE :search
+        OR LOWER(owner.username) LIKE :search)`,
+          { search: `%${search.toLowerCase()}%` },
+        );
+       
     }
     if (artistId) { 
       queryBuilder.andWhere('product.artist_id LIKE :artistId', { artistId  });

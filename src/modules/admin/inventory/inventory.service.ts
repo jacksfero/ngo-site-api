@@ -92,7 +92,14 @@ export class InventoryService {
       qb.andWhere('inventory.status = :status', { status });
     }
     if (search) {
-      qb.andWhere('product.productTitle LIKE :search', { search: `%${search}%` });
+      
+       qb.andWhere(
+          `(LOWER(product.productTitle) LIKE :search 
+        OR LOWER(product.id) LIKE :search
+        OR LOWER(artist.username) LIKE :search
+        OR LOWER(inventory.id) LIKE :search)`,
+          { search: `%${search.toLowerCase()}%` },
+        );
     }
     if (artistId) { 
       // console.log(artistId,'----artist id----------')
