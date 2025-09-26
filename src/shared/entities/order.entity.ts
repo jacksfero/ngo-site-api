@@ -57,25 +57,25 @@ export class Order {
   status: OrderStatus;
 
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
-  subtotal: number;
+  subtotal: number; //(sum of item base prices – discounts, without tax)
 
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
-  shippingCost: number;
+  taxAmount: number; //(sum of all item GST + shipping GST)
 
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
-  taxAmount: number;
-
-  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
-  shippingGstPct: number; // ✅ Added to mirror cart shipping GST
+  discountAmount: number;  //total Discount AMount
 
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
-  shippingGstAmount: number; // ✅ GST value for shipping
+  totalAmount: number;  // subtotal + Tax Amount
 
-  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
-  discountAmount: number;
+  @Column({ length: 3, default: 'INR' })
+currency: string;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
-  totalAmount: number;
+  @Column('decimal', { precision: 10, scale: 4, default: 1 })
+  exchangeRate: number; // INR → selected currency
+
+@Column({ length: 2, nullable: true })
+country: string;
 
   @Column({ nullable: true })
   trackingNumber: string;
@@ -132,18 +132,53 @@ export class Order {
   }
 
   calculateTotals(): void {
-    const subtotal = this.items.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
-    const taxAmount = this.items.reduce((sum, item) => sum + (Number(item.gstAmount) || 0), 0);
-  
-    const shipping = Number(this.shippingGstPct) || 0;
-    const shippingGst = Number(this.shippingGstAmount) || 0;
-  
-    this.subtotal = subtotal;
-    this.taxAmount = taxAmount;
-    this.shippingGstPct = shipping;
-    this.shippingGstAmount = shippingGst;
-    this.totalAmount = subtotal + taxAmount + shipping + shippingGst;
+  if (!this.items || this.items.length === 0) {
+    this.subtotal = 0;
+    this.discountAmount = 0;
+    this.taxAmount = 0;
+    this.totalAmount = 0;
+    return;
   }
+
+  // 1️⃣ Subtotal before tax/shipping (sum of discounted product totals)
+  const subtotal = this.items.reduce(
+    (sum, item) => {
+      const unitPrice = Number(item.originalPrice ?? item.price) || 0;
+      const lineTotal = unitPrice * (item.quantity || 1);
+      return sum + lineTotal;
+    },
+    0,
+  );
+
+  // 2️⃣ Discounts
+  const discountAmount = this.items.reduce(
+    (sum, item) => sum + (Number(item.discountAmount) || 0),
+    0,
+  );
+
+  // 3️⃣ GST on products
+  const productTax = this.items.reduce(
+    (sum, item) => sum + (Number(item.gstAmount) || 0),
+    0,
+  );
+
+  // 4️⃣ Shipping + GST
+  const shippingTotal = this.items.reduce(
+    (sum, item) => sum + (Number(item.shippingCost) || 0),
+    0,
+  );
+
+  const shippingTax = this.items.reduce(
+    (sum, item) => sum + (Number(item.shipGstAmount) || 0),
+    0,
+  );
+
+  // 5️⃣ Final aggregation
+  this.subtotal = subtotal - discountAmount; // Net products
+  this.discountAmount = discountAmount;
+  this.taxAmount = productTax + shippingTax;
+  this.totalAmount = this.subtotal + this.taxAmount + shippingTotal;
+}
 
   updatePaymentStatus(payment: Payment): void {
     if (payment.status === PaymentStatus.SUCCESS) {

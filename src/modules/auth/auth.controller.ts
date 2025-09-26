@@ -186,7 +186,7 @@ export class AuthController {
 
   ) {
     let guestId = req.cookies?.['guestCartId'];
-
+ 
    // console.log('guestId---------', guestId);
     return this.authService.registerCartUserAndLogin(dto, guestId);
   }

@@ -23,7 +23,10 @@ export class OrderItem {
   originalPrice: number; // ✅ Original price (before discount)
 
   @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
-  discount: number; // ✅ Discount %
+  discountPct: number; // ✅ Discount %
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
+  discountAmount: number; // ✅ Discount %
 
   @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
   gstPct: number; // ✅ GST percentage at time of order
@@ -31,34 +34,82 @@ export class OrderItem {
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   gstAmount: number; // ✅ GST value
 
+    @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
+  shipGstPct: number; // ✅ GST percentage at time of order
+
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
+  shippingCost: number;
+
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-  total: number; // ✅ (price - discount + gst) * quantity
+  shipGstAmount: number; // ✅ GST value
+
+    @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
+  shippingCostOther: number; // ✅ shippingCostOther value in case of isDomestic False
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  shipGstAmountOther: number; // ✅ GST Amount in case of isDomestic False
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  total: number; // ✅ (price - discount + gst + shipGst) * quantity
 
   @Column({ nullable: true })
   inventoryId: number; // ✅ Which inventory was used
+
+   @Column({ nullable: true })
+  shippingId: number; // ✅ Which inventory was used
  
   @Column({ type: 'text', nullable: true })
   productName: string; // ✅ Product name at time of purchase
 
   // ✅ Calculate total before saving
-  calculateTotal(): void {
-    const qty = Number(this.quantity) || 0;
-    const unitPrice = Number(this.price) || 0;
-    const discountPct = Number(this.discount) || 0;
-    const gstPct = Number(this.gstPct) || 0;
-  
-    let total = qty * unitPrice;
-  
-    if (discountPct > 0) {
-      total -= (total * discountPct) / 100;
-    }
-  
-    let gst = 0;
-    if (gstPct > 0) {
-      gst = (total * gstPct) / 100;
-    }
-  
-    this.gstAmount = gst;
-    this.total = total + gst;
+  // ✅ Updated calculation
+  // ✅ Calculate total before saving
+calculateTotal(exchangeRate = 1, isDomestic = true): void {
+  const qty = Number(this.quantity) || 1;
+  const baseUnitPrice = Number(this.originalPrice ?? this.price) || 0;
+
+  // 1️⃣ Discount
+  const discountAmtPerUnit = (baseUnitPrice * (this.discountPct || 0)) / 100;
+  this.discountAmount = discountAmtPerUnit * qty;
+
+  const discountedUnitPrice = baseUnitPrice - discountAmtPerUnit;
+
+  // 2️⃣ Line total (pre-tax, pre-shipping)
+  let lineTotal = discountedUnitPrice * qty;
+
+  // 3️⃣ GST on product
+  this.gstAmount = (lineTotal * (this.gstPct || 0)) / 100;
+
+  // 4️⃣ Shipping + Shipping GST
+  let shippingBase = 0;
+  let shipGst = 0;
+
+  if (isDomestic) {
+    shippingBase = Number(this.shippingCost) || 0;
+    shipGst = (shippingBase * (this.shipGstPct || 0)) / 100;
+    this.shipGstAmount = shipGst;
+  } else {
+    shippingBase = Number(this.shippingCostOther) || 0;
+    shipGst = (shippingBase * (this.shipGstPct || 0)) / 100;
+    this.shipGstAmountOther = shipGst;
   }
+
+  // 5️⃣ Final total in base currency
+  const finalTotal = lineTotal + this.gstAmount + shippingBase + shipGst;
+
+  // 6️⃣ Apply exchange rate → store in order currency
+  this.total = finalTotal * exchangeRate;
+  this.gstAmount *= exchangeRate;
+  this.discountAmount *= exchangeRate;
+  if (isDomestic) {
+    this.shippingCost = shippingBase * exchangeRate;
+    this.shipGstAmount *= exchangeRate;
+  } else {
+    this.shippingCostOther = shippingBase * exchangeRate;
+    this.shipGstAmountOther *= exchangeRate;
+  }
+
+  // Save unit price in order currency
+  this.price = discountedUnitPrice * exchangeRate;
+}
 }
