@@ -390,20 +390,20 @@ export class AuthService {
       await this.userRepository.save(user);
     }
 
-    // 3️⃣ Merge guest cart
-  let mergedCart: Cart | undefined;
-if (guestCartId) {
-  const guestCart = await this.cartRepo.findOne({
-    where: { guestId: guestCartId },
-    relations: ['items'], // optional
-  });
+//     // 3️⃣ Merge guest cart
+//   let mergedCart: Cart | undefined;
+// if (guestCartId) {
+//   const guestCart = await this.cartRepo.findOne({
+//     where: { guestId: guestCartId },
+//     relations: ['items'], // optional
+//   });
 
-  if (guestCart) {
-    guestCart.user = user;
-   // guestCart.guestId = null; // remove guest reference
-    mergedCart = await this.cartRepo.save(guestCart); // assign to outer variable
-  }
-}
+//   if (guestCart) {
+//     guestCart.user = user;
+//    // guestCart.guestId = null; // remove guest reference
+//     mergedCart = await this.cartRepo.save(guestCart); // assign to outer variable
+//   }
+// }
 
     // 4️⃣ Generate JWT
     const tokenResponse = await this.login(user);
@@ -419,7 +419,7 @@ if (guestCartId) {
           email: user.email ?? undefined,
           mobile: user.mobile ?? undefined,
         },
-        cart: mergedCart,
+       // cart: mergedCart,
       },
     };
   }
