@@ -16,7 +16,9 @@ import {
   Query,
   BadRequestException,
   ParseEnumPipe,
+  UnauthorizedException,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { AuthService } from './auth.service';
 
 
@@ -54,6 +56,7 @@ import { AddressType } from 'src/shared/entities/users-address.entity';
 import { PaginationClinetPipe } from 'src/shared/pipes/pagination-client.pipe';
 import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
 import { WishlistInventProdDto } from './dto/wishlist-invent-prod-list.dto';
+import { User } from 'src/shared/entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -109,13 +112,27 @@ export class AuthController {
   }
 
 
-  // @UseGuards(AuthGuard('local'))  
-  @Public()
-  @UseGuards(LocalAuthGuard) // ✅ This is KEY
-  @Post('login')
-  async login(@Req() req: ExpressRequest) {
-    return this.authService.login(req.user); // ✅ user comes from validate()
+@Public()
+@UseGuards(LocalAuthGuard)
+@Post('login')
+async login(
+  @Req() req: ExpressRequest,
+  @Res({ passthrough: true }) res: Response,
+) {
+  if (!req.user) {
+    throw new UnauthorizedException('User not found in request');
   }
+
+  const guestId = req.cookies?.['guestCartId'];
+
+  const result = await this.authService.login(req.user as User, guestId);
+
+  if (guestId) {
+    res.clearCookie('guestCartId', { httpOnly: true, sameSite: 'lax' });
+  }
+
+  return result;
+}
 
   @Public()
   @Post('send-login-otp')
@@ -168,7 +185,11 @@ export class AuthController {
 
   @Public()
   @Post('send-otp-cart')
-  async sendOtpCart(@Body('identifier') identifier: string, @Req() req: ExpressRequest) {
+  async sendOtpCart(@Body('identifier') identifier: string, 
+  @Req() req: ExpressRequest,
+  
+) {
+  let guestId = req.cookies?.['guestCartId'];
     // Extract IP if you want to track OTP abuse attempts
     const ipAddress = req.ip || (req.headers['x-forwarded-for'] as string) || undefined;
     return await this.authService.cartLogin(identifier, ipAddress);

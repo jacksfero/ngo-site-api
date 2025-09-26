@@ -425,7 +425,7 @@ if (guestCartId) {
   }
 
 
-  async cartLogin(identifier: string, ipAddress?: string) {
+  async cartLogin(identifier: string,  ipAddress?: string) {
     if (!identifier) {
       throw new BadRequestException('Email or mobile must be provided.');
     }
@@ -533,21 +533,46 @@ if (guestCartId) {
   }
 
 
-  async login(user: any) {
-    if (!user) {
-      this.logger?.warn?.('Login failed: user is undefined');
-      throw new UnauthorizedException('Invalid login request');
-    }
-    const payload: JwtPayload = {
-      sub: user.id,
-      username: user.username,
-      roles: user.roles?.map((r) => r.name),
-      permissions: 'No permission', // optional
-    };
-    return {
-      access_token: this.jwtService.sign(payload),
-    };
+  async login(user: User, guestCartId?: string) {
+  if (!user) {
+    this.logger?.warn?.('Login failed: user is undefined');
+    throw new UnauthorizedException('Invalid login request');
   }
+
+  // 1️⃣ Merge guest cart (optional)
+  let mergedCart: Cart | undefined;
+  if (guestCartId) {
+    const guestCart = await this.cartRepo.findOne({
+      where: { guestId: guestCartId },
+      relations: ['items', 'items.product'], // include product if needed
+    });
+
+    if (guestCart) {
+      // re-assign cart to logged-in user
+      guestCart.user = user;
+      guestCart.guestId = null; // remove guest reference
+      mergedCart = await this.cartRepo.save(guestCart);
+
+      this.logger?.log?.(
+        `Guest cart ${guestCartId} merged into user ${user.id}'s cart.`,
+      );
+    }
+  }
+
+  // 2️⃣ Prepare JWT payload
+  const payload: JwtPayload = {
+    sub: user.id,
+    username: user.username,
+    roles: user.roles?.map((r) => r.name),
+    permissions: 'No permission', // optional
+  };
+
+  // 3️⃣ Return response with optional cart info
+  return {
+    access_token: this.jwtService.sign(payload),
+    ...(mergedCart ? { cart: mergedCart } : {}), // only include if merged
+  };
+}
   async sendResetPasswordOtp(dto: SendOtpDto, ipAddress?: string) {
     // const { identifier, type, userType  } = dto;
     const { identifier, type, userType } = dto;
