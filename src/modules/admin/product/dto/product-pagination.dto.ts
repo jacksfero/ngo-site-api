@@ -1,7 +1,7 @@
 import { IsOptional,IsInt, IsBoolean, IsString, IsEnum } from 'class-validator';
 import { Transform,Type } from 'class-transformer';
-import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
 import { ProductStatus } from 'src/shared/entities/product.entity';
+import { AdminPaginationBaseDto } from 'src/shared/dto/admin-pagination-base.dto';
 
 export enum ProductSearchStatus {
   NEW_ARRIVAL = 'new_arrival',
@@ -12,7 +12,7 @@ export enum ProductSearchStatus {
   PRICE_ON_DEMAND = 'price_on_demand',
   AFFORDABLE_ART = 'affordable_art',
 }
-export class ProductPaginationDto extends PaginationBaseDto {
+export class ProductPaginationDto extends AdminPaginationBaseDto {
   // @IsOptional()
   // @IsBoolean()
   // @Transform(({ value }) => {

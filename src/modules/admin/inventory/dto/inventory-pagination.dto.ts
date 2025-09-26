@@ -2,9 +2,10 @@ import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { IsEnum, IsOptional, IsInt, IsString, IsNumberString } from 'class-validator';
 import { Type } from 'class-transformer';
 //import { InventoryStatus } from 'src/shared/entities/inventory.entity';
-import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
+ 
+import { AdminPaginationBaseDto } from 'src/shared/dto/admin-pagination-base.dto';
 
-export class InventoryPaginationDto extends PaginationBaseDto {
+export class InventoryPaginationDto extends AdminPaginationBaseDto {
   // declare status?: InventoryStatus; // ✅ fixes overwrite warning
 
   @IsOptional()
