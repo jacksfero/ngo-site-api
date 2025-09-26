@@ -35,8 +35,8 @@ export class Product {
   @Column({ type: 'varchar', length: 150 })
   productTitle: string;
 
-  @Column({ type: 'varchar', length: 150,nullable: true })
-  description: string|null;
+  @Column({ type: 'text',  nullable: true })
+  description: string|null; 
 
   @Column({ type: 'varchar', length: 150,default: null  })
   slug: string;

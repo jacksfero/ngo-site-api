@@ -191,14 +191,16 @@ export class InventoryService {
   if (dto.shippingSlot) {
     inventory.shippingSlot = ShippingGstSlot[dto.shippingSlot];
   } 
-  /* if (dto.status) {
-    inventory.status = dto.status;
-  } 
-  if (dto.status) {
-    inventory.status = dto.status;
-  } */
-if (dto.termsAndConditions) {
+  if (dto.termsAndConditions) {
     inventory.termsAndConditions = dto.termsAndConditions;
+  } 
+   
+if (dto.shippingId) {
+   const shipping = await this.shippingRepo.findOne({ where: { id: dto.shippingId } });
+    if (!shipping) {
+      throw new NotFoundException('Shipping not found');
+    }
+    inventory.shippingWeight = shipping;
   } 
     return this.inventoryRepo.save(inventory);
   }
