@@ -28,11 +28,20 @@ export class PayUMoneyService {
   }) {
     const txnId = this.generateTxnId();
     const productInfo = dto.productName || 'Order Payment';
+    const udf1 = '';
+const udf2 = '';
+const udf3 = '';
+const udf4 = '';
+const udf5 = '';
     //sha512(key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||SALT)
-    const hashString = `${this.merchantKey}|${txnId}|${dto.amount}|${productInfo}|${dto.fullName}|${dto.email}|||||||||||${this.merchantSalt}`;
-   console.log('HashString------------',hashString);
-    const hash = crypto.createHash('sha512').update(hashString).digest('hex');
-   console.log('Convertad has -HashString------------',hash);
+  
+//  HashString------------ Qu5Kb7|030d5e02ca133730f4c9|26700.01|painting|Customer|customer@example.com|||||||||||MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDsLjkNpxdiTri198kvVohJOrGRVB1DoAzgRBmUqQmRICUrUSuC53Hj950i79dx5mHZ9jKH7Oz
+   const hashString = `${this.merchantKey}|${txnId}|${dto.amount}|${productInfo}|${dto.fullName}|${dto.email}|${udf1}|${udf2}|${udf3}|${udf4}|${udf5}|${this.merchantSalt}`;
+console.log('HashString:', hashString);
+
+const hash = crypto.createHash('sha512').update(hashString).digest('hex');
+console.log('Generated Hash:', hash);
+
     return {
       gateway: 'PayUMoney',
       txnId,
