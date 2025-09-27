@@ -28,8 +28,9 @@ export class PayUMoneyService {
   }) {
     const txnId = this.generateTxnId();
     const productInfo = dto.productName || 'Order Payment';
-
+    //sha512(key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||SALT)
     const hashString = `${this.merchantKey}|${txnId}|${dto.amount}|${productInfo}|${dto.fullName}|${dto.email}|||||||||||${this.merchantSalt}`;
+   console.log('HashString------------',hashString);
     const hash = crypto.createHash('sha512').update(hashString).digest('hex');
 
     return {
@@ -45,7 +46,7 @@ export class PayUMoneyService {
         email: dto.email,
         phone: dto.phone,
         surl: process.env.PAYU_SUCCESS_URL || "https://indiagalleri-frontend.vercel.app/api/client/payments/success",
-        furl: process.env.PAYU_FAILURE_URL || "https://indiagalleri-frontend.vercel.app/api/client/payments/success",
+        furl: process.env.PAYU_FAILURE_URL || "https://indiagalleri-frontend.vercel.app/api/client/payments/failure",
         hash,
       },
     };
