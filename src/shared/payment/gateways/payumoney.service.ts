@@ -44,8 +44,8 @@ export class PayUMoneyService {
         firstname: dto.fullName,
         email: dto.email,
         phone: dto.phone,
-        surl: process.env.PAYU_SUCCESS_URL,
-        furl: process.env.PAYU_FAILURE_URL,
+        surl: process.env.PAYU_SUCCESS_URL || "https://indiagalleri-frontend.vercel.app/api/client/payments/success",
+        furl: process.env.PAYU_FAILURE_URL || "https://indiagalleri-frontend.vercel.app/api/client/payments/success",
         hash,
       },
     };
