@@ -32,7 +32,7 @@ export class PayUMoneyService {
     const hashString = `${this.merchantKey}|${txnId}|${dto.amount}|${productInfo}|${dto.fullName}|${dto.email}|||||||||||${this.merchantSalt}`;
    console.log('HashString------------',hashString);
     const hash = crypto.createHash('sha512').update(hashString).digest('hex');
-
+   console.log('Convertad has -HashString------------',hash);
     return {
       gateway: 'PayUMoney',
       txnId,
