@@ -60,7 +60,7 @@ export class UsersController {
   } 
    
  @Get('by-role')
-@RequirePermissions('read_user')
+//@RequirePermissions('read_user')
 async getUsersByRoles(
   @Query('roles') roles: string,   // comma-separated roles: seller,artist
   @Query('featured_artist') featured_artist?: boolean,

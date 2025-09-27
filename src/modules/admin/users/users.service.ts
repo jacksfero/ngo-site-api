@@ -124,7 +124,7 @@ export class UsersService {
     .createQueryBuilder('user')
     .leftJoinAndSelect('user.roles', 'role')
    // .where('role.id = :roleName', { roleName })
-      .where('role.name IN (:...roleName)', { roleName })  // ✅ multiple roles
+      .where('role.id IN (:...roleName)', { roleName })  // ✅ multiple roles
     .andWhere('user.status = :status', { status: true })
     .select([
       'user.id',
@@ -137,7 +137,7 @@ export class UsersService {
       query.andWhere('user.featured_artist = :featured_artist', { featured_artist });
     }
     const users = await query.getMany();
-
+//console.log('Generated SQL Query:', users);
  if (!users || users.length === 0) {
       throw new NotFoundException('No users found with the given role');
     }
