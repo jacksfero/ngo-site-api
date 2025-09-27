@@ -27,7 +27,7 @@ export class PayUMoneyService {
   const txnId = this.generateTxnId();
   const productInfo = dto.productName || 'Order Payment';
   
-  // Initialize UDF parameters (empty strings)
+  // Initialize UDF parameters
   const udf1 = '';
   const udf2 = '';
   const udf3 = '';
@@ -37,30 +37,22 @@ export class PayUMoneyService {
   // Format amount to 2 decimal places
   const formattedAmount = dto.amount.toFixed(2);
   
-  // Build hash string according to PayU formula
-  // sha512(key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||SALT)
+  // Build hash string
   const hashString = `${this.merchantKey}|${txnId}|${formattedAmount}|${productInfo}|${dto.fullName}|${dto.email}|${udf1}|${udf2}|${udf3}|${udf4}|${udf5}||||||${this.merchantSalt}`;
   
   console.log('HashString:', hashString);
   
-  // Generate SHA512 hash in hexadecimal format (not base64!)
-  const hash = crypto.createHash('sha512').update(hashString).digest('hex');
+  // Generate both SHA256 (v1) and SHA512 (v2) hashes
+  const v1Hash = crypto.createHash('sha256').update(hashString).digest('hex');
+  const v2Hash = crypto.createHash('sha512').update(hashString).digest('hex');
   
-  console.log('Generated Hash (hex):', hash);
-  
-  // If PayU requires both v1 (SHA256) and v2 (SHA512) hashes (based on error message)
-  // Uncomment the following if needed:
- 
-  const hashV1 = crypto.createHash('sha256').update(hashString).digest('hex');
-  const hashV2 = crypto.createHash('sha512').update(hashString).digest('hex');
-  
+  // Create hash object as shown in error message
   const hashObject = {
-    v1: hashV1,
-    v2: hashV2
+    v1: v1Hash,
+    v2: v2Hash
   };
   
-  console.log('Hash Object:', hashObject);
-  
+  console.log('Hash Object:', JSON.stringify(hashObject));
   
   return {
     gateway: 'PayUMoney',
@@ -69,15 +61,14 @@ export class PayUMoneyService {
     params: {
       key: this.merchantKey,
       txnid: txnId,
-      amount: formattedAmount, // Use formatted amount
+      amount: formattedAmount,
       productinfo: productInfo,
       firstname: dto.fullName,
       email: dto.email,
       phone: dto.phone,
       surl: process.env.PAYU_SUCCESS_URL || "https://indiagalleri-frontend.vercel.app/api/client/payments/success",
       furl: process.env.PAYU_FAILURE_URL || "https://indiagalleri-frontend.vercel.app/api/client/payments/failure",
-      hash: hash, // Use the hex hash
-      // Include UDF parameters in the request (even if empty)
+      hash: JSON.stringify(hashObject), // Send as JSON string if required
       udf1: udf1,
       udf2: udf2,
       udf3: udf3,
