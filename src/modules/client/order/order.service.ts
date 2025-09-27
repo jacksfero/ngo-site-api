@@ -183,6 +183,9 @@ export class OrderService {
        items: orderItems,
         subtotal: total,
         totalAmount: total,
+         country: cart.shippingCountry,
+         exchangeRate:cart.exchangeRate,
+         currency:cart.currency,
         shippingAddress: { id: shippingAddressId } as UsersAddress,  // Use actual entity
         billingAddress: { id: billingAddressId } as UsersAddress,    // Use actual entity
         status: OrderStatus.PENDING,

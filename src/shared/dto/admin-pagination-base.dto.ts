@@ -20,7 +20,7 @@ export class AdminPaginationBaseDto {
   @IsOptional()
   @ValidateIf((o) => o.search && o.search.trim().length > 0) // Only validate if search exists and is not empty
   @IsString()
-  @MinLength(1, { message: 'Search term must be at least 3 characters long' })
+  @MinLength(1, { message: 'Search term must be at least 1 characters long' })
   @MaxLength(30, { message: 'Search term cannot exceed 30 characters' })
   @Matches(/^[a-zA-Z0-9\s\-_@.#&+]*$/, {
     message: 'Search term can only contain letters, numbers, spaces, and special characters: -_@.#&+'

@@ -119,11 +119,12 @@ export class UsersService {
   }
  
 
-  async findUsersByRole(roleName: string,featured_artist?: boolean):  Promise<UserListByRoleNameDto[]> {
+  async findUsersByRole(roleName: string[], featured_artist?: boolean):  Promise<UserListByRoleNameDto[]> {
    const query = await this.userRepository
     .createQueryBuilder('user')
     .leftJoinAndSelect('user.roles', 'role')
-    .where('role.id = :roleName', { roleName })
+   // .where('role.id = :roleName', { roleName })
+      .where('role.name IN (:...roleName)', { roleName })  // ✅ multiple roles
     .andWhere('user.status = :status', { status: true })
     .select([
       'user.id',

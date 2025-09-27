@@ -59,20 +59,16 @@ export class UsersController {
     return this.usersService.findAll(paginationDto);
   } 
    
-  @Get('by-role/:roleName')
-  @RequirePermissions('read_user')
-  async getUsersByRole(
-    @Param('roleName') roleName: string,
-    @Query('featured_artist') featured_artist?: boolean,
-
-  ) {
-    const users = await this.usersService.findUsersByRole(
-      roleName,
-      featured_artist??undefined  
-
-    );
-    return users;
-  }
+ @Get('by-role')
+@RequirePermissions('read_user')
+async getUsersByRoles(
+  @Query('roles') roles: string,   // comma-separated roles: seller,artist
+  @Query('featured_artist') featured_artist?: boolean,
+) {
+  const roleList = roles.split(',').map(r => r.trim());
+  const users = await this.usersService.findUsersByRole(roleList, featured_artist ?? undefined);
+  return users;
+}
 
   @Get('artisttypelist')
   @RequirePermissions('read_user')

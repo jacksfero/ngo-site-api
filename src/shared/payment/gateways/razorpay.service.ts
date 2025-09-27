@@ -1,19 +1,20 @@
-// gateways/razorpay.service.ts
 import { Injectable } from '@nestjs/common';
-import Razorpay from 'razorpay';
+const Razorpay = require('razorpay');
 
 @Injectable()
 export class RazorpayService {
-  private razorpay: Razorpay;
+  private razorpay: any;
 
   constructor() {
     this.razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
+      key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_RLjYNYOCQ9UFUt',
+      key_secret: process.env.RAZORPAY_KEY_SECRET || 'jFVL2nI2OiE3MHd9kGH5dBbQ',
+
+      
     });
   }
 
-  async initiate(dto: any) {
+  async initiate(dto: { amount: number; orderId: number }) {
     const order = await this.razorpay.orders.create({
       amount: dto.amount * 100, // Razorpay works in paise
       currency: 'INR',
@@ -31,7 +32,7 @@ export class RazorpayService {
   }
 
   async handleCallback(body: any) {
-    // Verify signature logic here
+    // Later: verify signature with crypto
     return { success: true, body };
   }
 }

@@ -125,7 +125,7 @@ async login(
 
   const guestId = req.cookies?.['guestCartId'];
 
-  const result = await this.authService.login(req.user as User, guestId);
+  const result = await this.authService.login(req.user as User);
 
   if (guestId) {
     res.clearCookie('guestCartId', { httpOnly: true, sameSite: 'lax' });
@@ -143,7 +143,11 @@ async login(
 
   @Public()
   @Post('login-with-otp')
-  async otpLogin(@Body() dto: VerifyOtpDto) {
+  async otpLogin(@Body() dto: VerifyOtpDto,
+
+) {
+
+   //  const guestId = req.cookies?.['guestCartId'];
     return this.authService.loginWithOtp(dto);
   }
 
@@ -248,9 +252,14 @@ async login(
   }
 
   @Public()
-  @Get('by-role/:roleName')
-  async getUsersByRole(@Param('roleName') roleName: string) {
-    return this.authService.findUsersByRole(roleName);
+  @Get('by-role/')
+  async getUsersByRole(
+    
+     @Query('roles') roles: string,
+  
+  ) {
+      const roleList = roles.split(',').map(r => r.trim());
+    return this.authService.findUsersByRole(roleList);
   }
 
   @UseGuards(JwtAuthGuard)

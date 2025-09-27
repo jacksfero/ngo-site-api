@@ -11,6 +11,7 @@ import { CommisionTypeModule } from './commision-type/commision-type.module';
 import { ShippingTimeModule } from './shipping-time/shipping-time.module';
 import { SizeModule } from './size/size.module';
 import { OrientationModule } from './orientation/orientation.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { OrientationModule } from './orientation/orientation.module';
     S3Module,
     
     PackingModeModule,
+    PaymentModule,
     
     CommisionTypeModule,
     

@@ -5,6 +5,7 @@ import {
   NotFoundException,
   BadRequestException, Logger,
   ForbiddenException,
+  Inject,
 } from '@nestjs/common';
 
 import * as bcrypt from 'bcrypt';
@@ -72,12 +73,18 @@ import { Style } from 'src/shared/entities/style.entity';
 import { slugify } from 'src/shared/utils/slugify';
 import { Cart } from 'src/shared/entities/cart.entity';
 
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
+
 
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   constructor(
+
+     @Inject(REQUEST) private readonly request: Request,
+
     private usersService: UsersService,
     private jwtService: JwtService,
     private readonly s3service: S3Service,
@@ -533,11 +540,17 @@ export class AuthService {
   }
 
 
-  async login(user: User, guestCartId?: string) {
+  async login(user: User ) {
   if (!user) {
     this.logger?.warn?.('Login failed: user is undefined');
     throw new UnauthorizedException('Invalid login request');
   }
+
+  const guestCartId = this.request.cookies?.['guestCartId']; // ✅ Direct access
+
+//  console.log('user id--------------',user);
+//   console.log('guestCartIdss id--------------',guestCartId);
+//   console.log('guset id--------------',guestCartId);
 
   // 1️⃣ Merge guest cart (optional)
   let mergedCart: Cart | undefined;
@@ -550,7 +563,7 @@ export class AuthService {
     if (guestCart) {
       // re-assign cart to logged-in user
       guestCart.user = user;
-      guestCart.guestId = null; // remove guest reference
+     // guestCart.guestId = null; // remove guest reference
       mergedCart = await this.cartRepo.save(guestCart);
 
       this.logger?.log?.(
@@ -697,8 +710,8 @@ export class AuthService {
     });
   }
 
-  async findUsersByRole(roleName: string): Promise<UserListByRoleNameDto[]> {
-    const users = await this.usersService.findUsersByRole(roleName);
+  async findUsersByRole(roleNames: string[]): Promise<UserListByRoleNameDto[]> {
+    const users = await this.usersService.findUsersByRole(roleNames);
     if (!users || users.length === 0) {
       throw new NotFoundException('No users found for the specified role');
     }

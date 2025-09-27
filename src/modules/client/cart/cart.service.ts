@@ -218,7 +218,7 @@ export class CartService {
       );
     }
     // ✅ Detect domestic or overseas (later: use shippingAddress.country)
-    const isDomestic = dto.shippingCountry === 'IN';
+    const isDomestic = dto.shippingCountry === 'IN' ||  dto.shippingCountry === 'INDIA'.toLowerCase()  ;
 
     let item = cart.items.find((i) => i.product.id === dto.productId);
 
@@ -242,7 +242,8 @@ export class CartService {
         inventory.discount,
         //cart.currency,
         cart.exchangeRate,
-        isDomestic);
+        this.isDomestic(cart),
+      );
       await this.cartItemRepo.save(item);
     } else {
       // Create new item
@@ -260,7 +261,9 @@ export class CartService {
         inventory.discount,
         // cart.currency,
         cart.exchangeRate,
-        isDomestic);
+        this.isDomestic(cart),
+      
+      );
       await this.cartItemRepo.save(item);
       cart.items.push(item);
     }
@@ -313,7 +316,7 @@ export class CartService {
         inventory.discount,
         //  cart.currency,
         cart.exchangeRate,
-        isDomestic
+         this.isDomestic(cart),
       );
     }
     await this.cartItemRepo.save(item);
@@ -470,10 +473,10 @@ export class CartService {
     }
 
     // ✅ Save shipping country on cart
-    cart.shippingCountry = country;
+    cart.shippingCountry = country.toLowerCase();
     await this.cartRepo.save(cart);
 
-    const isDomestic = country === 'IN';
+    //const isDomestic = country === 'in' || country === 'india';
 
     // ✅ Recalculate shipping for all items
     await Promise.all(
@@ -535,7 +538,10 @@ export class CartService {
 
   private isDomestic(cart: Cart): boolean {
     // 👉 Example: if shipping country is India
-    return cart.shippingCountry === 'IN';
+
+    const country = (cart.shippingCountry)?.toLowerCase() === 'india' || (cart.shippingCountry)?.toLowerCase() === 'in'
+
+    return country;
   }
 
 

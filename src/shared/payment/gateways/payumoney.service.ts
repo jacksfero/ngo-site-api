@@ -7,8 +7,8 @@ import { Payment, PaymentStatus } from 'src/shared/entities/payment.entity';
 
 @Injectable()
 export class PayUMoneyService {
-  private merchantKey = process.env.PAYU_KEY;       // test/prod merchant key
-  private merchantSalt = process.env.PAYU_SALT;     // test/prod salt
+  private merchantKey = process.env.PAYU_KEY || 'Qu5Kb7';       // test/prod merchant key
+  private merchantSalt = process.env.PAYU_SALT || 'MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDsLjkNpxdiTri198kvVohJOrGRVB1DoAzgRBmUqQmRICUrUSuC53Hj950i79dx5mHZ9jKH7Oz' ;     // test/prod salt
   private baseUrl = process.env.PAYU_BASE_URL || 'https://test.payu.in'; 
 
   constructor(
@@ -50,27 +50,32 @@ export class PayUMoneyService {
       },
     };
   }
-  /** 🔹 Handle callback from PayUMoney */
-   /** 🔹 Handle callback from PayUMoney */
-   async handleCallback(body: any) {
-    const { key, txnid, amount, productinfo, firstname, email, status, hash } = body;
+ 
+ /** 🔹 Handle callback from PayUMoney */
+async handleCallback(body: any) {
+  const { key, txnid, amount, productinfo, firstname, email, status, hash } = body;
 
-    const hashString = `${this.merchantSalt}|${status}|||||||||||${email}|${firstname}|${productinfo}|${amount}|${txnid}|${key}`;
-    const calculatedHash = crypto.createHash('sha512').update(hashString).digest('hex');
+  const hashString = `${this.merchantSalt}|${status}|||||||||||${email}|${firstname}|${productinfo}|${amount}|${txnid}|${key}`;
+  const calculatedHash = crypto.createHash('sha512').update(hashString).digest('hex');
 
-    if (calculatedHash !== hash) {
-      return { success: false, message: 'Hash mismatch', txnId: txnid };
-    }
-
-    const newStatus = status === 'success' ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
-
-    return {
-      success: newStatus === PaymentStatus.SUCCESS,
-      txnId: txnid,
-      amount,
-      status: newStatus,
-    };
+  if (calculatedHash !== hash) {
+    await this.updatePayment(txnid, PaymentStatus.FAILED, { reason: 'Hash mismatch' });
+    return { success: false, message: 'Hash mismatch', txnId: txnid };
   }
+
+  const newStatus = status === 'success' ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
+
+  // ✅ Update DB
+  await this.updatePayment(txnid, newStatus, body);
+
+  return {
+    success: newStatus === PaymentStatus.SUCCESS,
+    txnId: txnid,
+    amount,
+    status: newStatus,
+  };
+}
+
 
   /** 🔹 Update Payment in DB */
   private async updatePayment(txnId: string, status: PaymentStatus, meta?: any) {
