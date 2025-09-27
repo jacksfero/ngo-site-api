@@ -7,9 +7,15 @@ import { Payment, PaymentStatus } from 'src/shared/entities/payment.entity';
 
 @Injectable()
 export class PayUMoneyService {
-  private merchantKey = process.env.PAYU_KEY || 'Qu5Kb7';       // test/prod merchant key
-  private merchantSalt = process.env.PAYU_SALT || 'MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDsLjkNpxdiTri198kvVohJOrGRVB1DoAzgRBmUqQmRICUrUSuC53Hj950i79dx5mHZ9jKH7Oz' ;     // test/prod salt
-  private baseUrl = process.env.PAYU_BASE_URL || 'https://test.payu.in'; 
+  // private merchantKey = process.env.PAYU_KEY || 'Qu5Kb7';       // test/prod merchant key
+  // private merchantSalt = process.env.PAYU_SALT || 'MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDsLjkNpxdiTri198kvVohJOrGRVB1DoAzgRBmUqQmRICUrUSuC53Hj950i79dx5mHZ9jKH7Oz' ;     // test/prod salt
+  // private baseUrl = process.env.PAYU_BASE_URL || 'https://test.payu.in'; 
+
+
+    private merchantKey = process.env.PAYU_KEY || '5yqtuOgE';       // test/prod merchant key
+  private merchantSalt = process.env.PAYU_SALT || 'bKvIPV5BbBp8MSb3TPFKg8aDkrBt9nJ0' ;     // test/prod salt
+  private baseUrl = process.env.PAYU_BASE_URL || 'https://secure.payu.in/_payment'; 
+
 
   constructor(
     @InjectRepository(Payment)
