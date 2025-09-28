@@ -347,7 +347,7 @@ if (updateProductDto.medium_id !== undefined) {
       where: { id },
       relations: ['owner','category','artist','subjects','styles',
       'images', 'packingMode', 'commissionType', 'shippingTime', 'size',
-       'medium', 'surface' ,'orientation' ,
+       'medium', 'surface','tags' ,'orientation' ,
     ],
     });
    // console.log('----------',product);

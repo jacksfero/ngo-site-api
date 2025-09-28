@@ -78,7 +78,7 @@ export class CreateProductDto {
   @IsOptional()
   @IsInt()
   commissionTypeId?: number;
-
+ 
   @IsOptional()
   @IsInt()
   packingModeId?: number;
@@ -86,7 +86,7 @@ export class CreateProductDto {
   @IsOptional()
   @IsInt()
   shippingTimeId?: number;
- 
+  
   @IsOptional()
   @IsInt()
   created_in?: number;
@@ -94,7 +94,7 @@ export class CreateProductDto {
     @IsArray()
   @IsOptional()
   tagIds?: number[];
-
+ 
   // ✅ Boolean Flags
   @IsOptional()
   @IsBoolean()
