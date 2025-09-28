@@ -15,7 +15,8 @@ export class PaypalService {
     // );
     // this.client = new paypal.core.PayPalHttpClient(env);
 
-     const isLive = process.env.PAYPAL_MODE === 'live';
+    // const isLive = process.env.PAYPAL_MODE === 'live';
+      const isLive = true;
   const   PAYPAL_CLIENT_ID = 'AUjce5Gqgl5V_mcjQ8eNj9A3xv54jZ7iWI51mobRJHuODdXW3mzmIUjA2tPxQETcqrT4dqs-y1IGFJNG';
 const PAYPAL_CLIENT_SECRET = 'EL5pTWrsmswkbZ-ofra9Gs9db0SCFvPSV5hTs6ojC6fAUyduX0u6K8P4muDzwSDhJZ6qSlVaR1EkO8oI';
 
@@ -28,7 +29,7 @@ const PAYPAL_CLIENT_SECRET = 'EL5pTWrsmswkbZ-ofra9Gs9db0SCFvPSV5hTs6ojC6fAUyduX0
           process.env.PAYPAL_CLIENT_ID!,
           process.env.PAYPAL_CLIENT_SECRET!,
         );
-
+console.log('ENV variable----------',env);
     this.client = new paypal.core.PayPalHttpClient(env);
   }
 
