@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
 import { Blog } from './blog.entity';
+import { Product } from './product.entity';
 
 @Entity('tags')
 export class Tag {
@@ -13,5 +14,11 @@ export class Tag {
   slug: string;
 
   @ManyToMany(() => Blog, (blog) => blog.tags, )
-blogs: Blog[];
+  blogs: Blog[];
+
+@ManyToMany(() => Product, product => product.tags)
+products: Product[]; // Fixed: should be Product[] not Tag[]
+
+
+
 }

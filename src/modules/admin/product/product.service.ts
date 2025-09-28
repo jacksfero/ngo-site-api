@@ -26,6 +26,7 @@ import { Inventory } from 'src/shared/entities/inventory.entity';
 import { Orientation } from 'src/shared/entities/orientation.entity';
 import { Surface } from 'src/shared/entities/surface.entity';
 import { Medium } from 'src/shared/entities/medium.entity';
+import { Tag } from 'src/shared/entities/tag.entity';
 
 @Injectable()
 export class ProductService {
@@ -39,6 +40,9 @@ export class ProductService {
 
     @InjectRepository(Style)
     private styleRepo: Repository<Style>,
+
+     @InjectRepository(Tag)
+    private tagRepo: Repository<Tag>,
 
     @InjectRepository(Medium)
     private mediumRepo: Repository<Medium>,
@@ -122,6 +126,11 @@ export class ProductService {
       product.styles = await this.styleRepo.findBy({ id: In(dto.stylesIds) });
     }
 
+      if (dto.tagIds?.length) {
+      product.tags = await this.tagRepo.findBy({ id: In(dto.tagIds) });
+    }
+     
+
     return this.productRepository.save(product);
   }
  
@@ -155,14 +164,20 @@ export class ProductService {
       // Save new URL/key in DB
       product.defaultImage = uploadedUrl;
     }
-    // subjects
+    // tags
+  if (updateProductDto.tagIds !== undefined) {
+    product.tags =
+      updateProductDto.tagIds.length > 0
+        ? await this.tagRepo.findBy({ id: In(updateProductDto.tagIds) })
+        : [];
+  }
+   // subjects
   if (updateProductDto.subjectsIds !== undefined) {
     product.subjects =
       updateProductDto.subjectsIds.length > 0
         ? await this.subjectRepo.findBy({ id: In(updateProductDto.subjectsIds) })
         : [];
   }
-
   // styles
   if (updateProductDto.stylesIds !== undefined) {
     product.styles =

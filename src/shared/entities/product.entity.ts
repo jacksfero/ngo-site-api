@@ -15,6 +15,7 @@ import { Subject } from './subject.entity';
 import { Style } from './style.entity';
 import { Medium } from './medium.entity';
 import { Surface } from './surface.entity';
+import { Tag } from './tag.entity';
 
 
 export enum ProductStatus {
@@ -64,9 +65,7 @@ export class Product {
   /*@Column({ type: 'int', nullable: true })
   exhibition_id: number;*/
 
-  @Column({ type: 'varchar', nullable: true })
-  tags: string;
-
+  
   // ✅ Boolean Flags
   @Column({ type: 'boolean', default: false })
   original_painting: boolean;
@@ -261,10 +260,14 @@ shippingTimeId: number;
  })
  styles: Style[];
 
-
-
-
-
+@ManyToMany(() => Tag, tag => tag.products)
+@JoinTable({
+  name: 'products_tag',
+  joinColumn: { name: 'product_id', referencedColumnName: 'id' },
+  inverseJoinColumn: { name: 'tag_id', referencedColumnName: 'id' },
+})
+tags: Tag[];
+ 
 }
   
 /*

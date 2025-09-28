@@ -91,9 +91,9 @@ export class CreateProductDto {
   @IsInt()
   created_in?: number;
 
-  @IsOptional() 
-  @IsString()
-  tags?: string;
+    @IsArray()
+  @IsOptional()
+  tagIds?: number[];
 
   // ✅ Boolean Flags
   @IsOptional()
