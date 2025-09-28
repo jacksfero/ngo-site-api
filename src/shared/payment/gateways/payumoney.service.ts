@@ -4,6 +4,7 @@ import * as crypto from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Payment, PaymentStatus } from 'src/shared/entities/payment.entity';
+import { PaymentCallbackResult } from '../dto/payment-callback-result';
 
 @Injectable()
 export class PayUMoneyService {
@@ -73,7 +74,58 @@ export class PayUMoneyService {
   };
 }
  
-  /** 🔹 Initiate payment */
+  
+ /** 🔹 Handle callback from PayUMoney */
+async handleCallback(body: any): Promise<PaymentCallbackResult> {
+  const { key, txnid, amount, productinfo, firstname, email, status, hash } = body;
+
+  const hashString = `${this.merchantSalt}|${status}|||||||||||${email}|${firstname}|${productinfo}|${amount}|${txnid}|${key}`;
+  const calculatedHash = crypto.createHash('sha512').update(hashString).digest('hex');
+
+  if (calculatedHash !== hash) {
+    await this.updatePayment(txnid, PaymentStatus.FAILED, { reason: 'Hash mismatch' });
+    return {
+      success: false,
+      txnId: txnid,
+      status: PaymentStatus.FAILED,
+      message: 'Hash mismatch',
+      raw: body,
+    };
+  }
+
+  const newStatus = status === 'success' ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
+
+  await this.updatePayment(txnid, newStatus, body);
+
+  return {
+    success: newStatus === PaymentStatus.SUCCESS,
+    txnId: txnid,
+    amount: Number(amount),
+    status: newStatus,
+    raw: body,
+  };
+}
+
+
+
+  /** 🔹 Update Payment in DB */
+  private async updatePayment(txnId: string, status: PaymentStatus, meta?: any) {
+    await this.paymentRepo.update(
+      { txnId: txnId },
+      {
+        status,
+        meta: meta || {},
+      },
+    );
+  }
+
+  private generateTxnId(): string {
+    return crypto.randomBytes(16).toString('hex').substring(0, 20);
+  }
+}
+
+
+/** 🔹 Initiate payment */
  /* async initiateaa_back(dto: {
     amount: number;
     productName: string;
@@ -121,44 +173,3 @@ console.log('Generated Hash---------:', hash);
     };
   }
  */
- /** 🔹 Handle callback from PayUMoney */
-async handleCallback(body: any) {
-  const { key, txnid, amount, productinfo, firstname, email, status, hash } = body;
-
-  const hashString = `${this.merchantSalt}|${status}|||||||||||${email}|${firstname}|${productinfo}|${amount}|${txnid}|${key}`;
-  const calculatedHash = crypto.createHash('sha512').update(hashString).digest('hex');
-
-  if (calculatedHash !== hash) {
-    await this.updatePayment(txnid, PaymentStatus.FAILED, { reason: 'Hash mismatch' });
-    return { success: false, message: 'Hash mismatch', txnId: txnid };
-  }
-
-  const newStatus = status === 'success' ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
-
-  // ✅ Update DB
-  await this.updatePayment(txnid, newStatus, body);
-
-  return {
-    success: newStatus === PaymentStatus.SUCCESS,
-    txnId: txnid,
-    amount,
-    status: newStatus,
-  };
-}
-
-
-  /** 🔹 Update Payment in DB */
-  private async updatePayment(txnId: string, status: PaymentStatus, meta?: any) {
-    await this.paymentRepo.update(
-      { txnId: txnId },
-      {
-        status,
-        meta: meta || {},
-      },
-    );
-  }
-
-  private generateTxnId(): string {
-    return crypto.randomBytes(16).toString('hex').substring(0, 20);
-  }
-}

@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Res, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Response } from 'express';
 import { PaymentService } from './payment.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
@@ -19,6 +20,34 @@ export class PaymentController {
   async callbacks(@Param('gateway') gateway: string, @Body() body: any) {
     return this.paymentService.handleCallbacks(gateway, body);
   }
+
+  @Post('failure')
+ paymentFailure(@Body() response: any) {
+   return { status: 'failed', data: response };
+ }
+
+
+ // ✅ PayUMoney success callback
+  @Post('payumoney/success')
+  async payuSuccess(@Body() body, @Res() res: Response) {
+    const result = await this.paymentService.handleCallbacks('PayUMoney', body);
+
+    return res.redirect(
+      `https://indiagalleri-frontend.vercel.app/payment-success?txnId=${result.txnId}&status=${result.status}`,
+    );
+  }
+
+  // ✅ PayUMoney failure callback
+  @Post('payumoney/failure')
+  async payuFailure(@Body() body, @Res() res: Response) {
+    const result = await this.paymentService.handleCallbacks('PayUMoney', body);
+
+    return res.redirect(
+      `https://indiagalleri-frontend.vercel.app/payment-failure?txnId=${result.txnId}&status=${result.status}`,
+    );
+  }
+
+
 /*
  // ✅ Step 1: Create payment request
  @Post('initiate')
@@ -50,13 +79,7 @@ export class PaymentController {
  }
 */
  // ✅ Step 3: Failure callback
- @Post('failure')
- paymentFailure(@Body() response: any) {
-   return { status: 'failed', data: response };
- }
-
-
-
+ 
 
  
 }

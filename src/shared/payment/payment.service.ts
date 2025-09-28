@@ -12,6 +12,7 @@ import { InitiatePaymentDto } from './dto/initiate-payment.dto';
 import { PayUMoneyService } from './gateways/payumoney.service';
 import { RazorpayService } from './gateways/razorpay.service';
 import { PaypalService } from './gateways/paypal.service';
+import { PaymentCallbackResult } from './dto/payment-callback-result';
 
 
 @Injectable()
@@ -66,19 +67,18 @@ export class PaymentService {
     return result;
   }
 
-  async handleCallbacks(gateway: string, body: any) {
-    switch (gateway) {
-      case 'PayUMoney':
-        return this.payuService.handleCallback(body);
-      case 'Razorpay':
-        return this.razorService.handleCallback(body);
-      case 'PayPal':
-        return this.paypalService.handleCallback(body);
-      default:
-        throw new Error('Unsupported payment gateway');
-    }
+async handleCallbacks(gateway: string, body: any): Promise<PaymentCallbackResult> {
+  switch (gateway) {
+    case 'PayUMoney':
+      return this.payuService.handleCallback(body);
+    case 'Razorpay':
+      return this.razorService.handleCallback(body);
+    case 'PayPal':
+      return this.paypalService.handleCallback(body);
+    default:
+      throw new Error('Unsupported payment gateway');
   }
-
+}
 
 
 

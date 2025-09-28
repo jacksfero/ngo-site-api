@@ -29,6 +29,8 @@ export enum PaymentMethod {
   WALLET = 'WALLET',
   COD = 'COD', // Cash on Delivery
 }
+ 
+
 
 @Entity('payments')
 @Index(['order', 'status']) // For order payment status queries
