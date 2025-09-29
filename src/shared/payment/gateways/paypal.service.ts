@@ -11,33 +11,20 @@ import { ConfigService } from '@nestjs/config';
 export class PaypalService {
   private client: paypal.core.PayPalHttpClient;
 
-  constructor(
+  constructor( private readonly config: ConfigService, ) {
+        const mode = this.config.get<string>('paypal.mode');
+    const clientId = this.config.get<string>('paypal.clientId')!;
+    const clientSecret = this.config.get<string>('paypal.clientSecret')!;
 
-     private readonly config: ConfigService,
-  ) {
- 
-    // const env = new paypal.core.SandboxEnvironment(
-    //   process.env.PAYPAL_CLIENT_ID!,
-    //   process.env.PAYPAL_CLIENT_SECRET!
-    // );
-    // this.client = new paypal.core.PayPalHttpClient(env);
+    const env =
+      mode === 'live'
+        ? new paypal.core.LiveEnvironment(clientId, clientSecret)
+        : new paypal.core.SandboxEnvironment(clientId, clientSecret);
 
-      const isLive = process.env.PAYPAL_MODE === 'live';
-    // const isLive = true;
-    // const PAYPAL_CLIENT_ID = 'AUjce5Gqgl5V_mcjQ8eNj9A3xv54jZ7iWI51mobRJHuODdXW3mzmIUjA2tPxQETcqrT4dqs-y1IGFJNG';
-    // const PAYPAL_CLIENT_SECRET = 'EL5pTWrsmswkbZ-ofra9Gs9db0SCFvPSV5hTs6ojC6fAUyduX0u6K8P4muDzwSDhJZ6qSlVaR1EkO8oI';
-
-    const env = isLive
-      ? new paypal.core.LiveEnvironment(
-        process.env.PAYPAL_CLIENT_ID!,
-        process.env.PAYPAL_CLIENT_SECRET!,
-      )
-      : new paypal.core.SandboxEnvironment(
-        process.env.PAYPAL_CLIENT_ID!,
-        process.env.PAYPAL_CLIENT_SECRET!,
-      );
-   // console.log('ENV variable----------', env);
     this.client = new paypal.core.PayPalHttpClient(env);
+
+   // console.log('ENV variable----------', env);
+  
   }
 
   /** Step 1: Create order + store in DB */

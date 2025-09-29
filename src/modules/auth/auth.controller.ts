@@ -184,7 +184,7 @@ async login(
     // ✅ Clear cookies
     res.clearCookie('access_token', { httpOnly: true, sameSite: 'lax' });
     res.clearCookie('guest_id', { httpOnly: true, sameSite: 'lax' });
-    localStorage.removeItem('token'); // clear JWT
+   // localStorage.removeItem('token'); // clear JWT
 
     // (Optional) You could also invalidate the JWT in a DB/Redis blacklist if required.
 

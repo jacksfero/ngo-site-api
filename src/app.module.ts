@@ -20,12 +20,14 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { SharedModule } from './shared/shared.module';
 import { UnifiedCacheModule } from './core/cache/cache.module';
  import { configurationCache } from './shared/config/configuration.cache';
+import payuConfig from './shared/config/payu.config';
+import paypalConfig from './shared/config/paypal.config';
  
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-       load: [configurationCache],
+       load: [configurationCache,payuConfig,paypalConfig],
       // validate: (config) => {
       //   if (!config.JWT_SECRET) {
       //     throw new Error('JWT_SECRET is required');

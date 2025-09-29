@@ -14,9 +14,9 @@ export class PayUMoneyService {
   // private merchantSalt = process.env.PAYU_SALT || 'MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDsLjkNpxdiTri198kvVohJOrGRVB1DoAzgRBmUqQmRICUrUSuC53Hj950i79dx5mHZ9jKH7Oz' ;     // test/prod salt
   // private baseUrl = process.env.PAYU_BASE_URL || 'https://test.payu.in'; 
 
-  private merchantKey = process.env.PAYU_KEY!;       // test/prod merchant key
-  private merchantSalt = process.env.PAYU_SALT!;     // test/prod salt
-  private baseUrl = process.env.PAYU_BASE_URL!;
+   private merchantKey: string;
+  private merchantSalt: string;
+  private baseUrl: string;
 
   constructor(
 
@@ -27,7 +27,11 @@ export class PayUMoneyService {
 
     @InjectRepository(Order)
     private readonly orderRepo: Repository<Order>,
-  ) {}
+  ) {
+      this.merchantKey = this.config.get<string>('payu.key')!;
+    this.merchantSalt = this.config.get<string>('payu.salt')!;
+    this.baseUrl = this.config.get<string>('payu.baseUrl')!;
+  }
 
   async initiate(dto: {
     amount: number;
@@ -58,7 +62,8 @@ export class PayUMoneyService {
     return {
       gateway: 'PayUMoney',
       txnId,
-      payuUrl: `${this.baseUrl}/_payment`,
+     // payuUrl: `${this.baseUrl}/_payment`,
+       payuUrl: `${this.baseUrl}`,
       params: {
         key: this.merchantKey,
         txnid: txnId,
