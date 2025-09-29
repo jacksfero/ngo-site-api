@@ -47,16 +47,16 @@ export class Product {
   artist_price: number;
  
   
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
   width: number;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
   height: number;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
   depth: number;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
   weight: number;
  
   @Column({ type: 'int', nullable: true })

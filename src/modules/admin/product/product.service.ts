@@ -217,6 +217,9 @@ export class ProductService {
     if (updateProductDto.remark_to_artist !== undefined) {
       product.remark_to_artist = updateProductDto.remark_to_artist;
     }
+    if (updateProductDto.artist_price !== undefined) {
+      product.artist_price = updateProductDto.artist_price;
+    }
     product.category = { id: updateProductDto.category_id } as Productcategory;
     product.packingMode = { id: updateProductDto.packingModeId } as PackingModeEntity;
     product.commissionType = { id: updateProductDto.commissionTypeId } as CommissionType;
