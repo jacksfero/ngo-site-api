@@ -13,6 +13,7 @@ import { PayUMoneyService } from './gateways/payumoney.service';
 import { RazorpayService } from './gateways/razorpay.service';
 import { PaypalService } from './gateways/paypal.service';
 import { PaymentCallbackResult } from './dto/payment-callback-result';
+import { Order, OrderStatus } from '../entities/order.entity';
 
 
 @Injectable()
@@ -21,6 +22,9 @@ export class PaymentService {
  constructor(
   @InjectRepository(Payment)
   private readonly paymentRepo: Repository<Payment>,
+
+   @InjectRepository(Order)
+    private readonly orderRepo: Repository<Order>,   // ✅ add this
 
   private readonly payuService: PayUMoneyService,
 
@@ -53,14 +57,15 @@ export class PaymentService {
     }
 
     // ✅ Save payment record using txnId returned from gateway service
-    const payment = this.paymentRepo.create({
-      orderId: dto.orderId,
-      userId: dto.userId,
-      amount: dto.amount,
-      paymentGateway: dto.gateway,
-      status: PaymentStatus.PENDING,
-      txnId: result.txnId,
-    });
+    // Save PENDING payment in DB
+  const payment = this.paymentRepo.create({
+    orderId: dto.orderId,
+    userId: dto.userId,
+    amount: dto.amount,
+    paymentGateway: dto.gateway,
+    status: PaymentStatus.PENDING,
+    txnId: result.txnId,
+  });
 
     await this.paymentRepo.save(payment);
 
@@ -80,9 +85,55 @@ async handleCallbacks(gateway: string, body: any): Promise<PaymentCallbackResult
   }
 }
 
+async confirmPaypalPayment(orderId: string) {
+  const capture = await this.paypalService.capture(orderId);
 
+ 
+   // ✅ Update payment in DB
+  const payment = await this.paymentRepo.findOne({
+    where: { txnId: capture.txnId },
+    relations: ['order'], // load order relation
+  });
 
+    if (!payment) throw new Error('Payment not found!');
 
+  payment.status = PaymentStatus.SUCCESS;
+  await this.paymentRepo.save(payment);
+
+    // ✅ Update linked order
+  const order = payment.order;
+  order.updatePaymentStatus(payment);
+  order.status = OrderStatus.CONFIRMED;
+  await this.orderRepo.save(order);
+
+   return { ...capture, orderId: order.id };
+}
+
+/** Step 3: Cancel handler */
+  async PaypalCancel(token: string) {
+
+     const payment = await this.paymentRepo.findOne({
+    where: { txnId: token },
+    relations: ['order'],
+  });
+
+  if (!payment) {
+    return { success: false, status: 'CANCELLED', txnId: token };
+  }
+
+   payment.status = PaymentStatus.FAILED;
+  await this.paymentRepo.save(payment);
+
+  const order = payment.order;
+  order.updatePaymentStatus(payment);
+  order.status = OrderStatus.CANCELLED;
+  order.cancelledAt = new Date();
+  await this.orderRepo.save(order);
+
+  return { success: false, status: 'CANCELLED', txnId: token, orderId: order.id  };
+}
+
+}
 
 
 
@@ -212,4 +263,4 @@ async handleCallbacks(gateway: string, body: any): Promise<PaymentCallbackResult
 
 
 
-}
+

@@ -55,6 +55,8 @@ export class CreateProductDto {
   @IsInt()
   surface_id?: number;
 
+  
+
   @IsOptional()
   @IsInt()
   orientation_id?: number;
@@ -91,10 +93,7 @@ export class CreateProductDto {
   @IsInt()
   created_in?: number;
 
-    @IsArray()
-  @IsOptional()
-  tagIds?: number[];
- 
+
   // ✅ Boolean Flags
   @IsOptional()
   @IsBoolean()
@@ -175,4 +174,9 @@ export class CreateProductDto {
   @IsArray()
   @IsOptional()
   stylesIds?: number[];
+
+  @IsArray()
+  @IsOptional()
+  tagIds?: number[];
+ 
 }

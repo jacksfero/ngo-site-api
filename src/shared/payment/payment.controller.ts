@@ -5,11 +5,15 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { PaymentRequestDto } from './dto/payment-request.dto';
 import { InitiatePaymentDto } from './dto/initiate-payment.dto';
+import { ConfigService } from '@nestjs/config';
 
 
 @Controller('payment')
 export class PaymentController {
-  constructor(private readonly paymentService: PaymentService) {}
+  constructor(private readonly paymentService: PaymentService,
+  private readonly config: ConfigService, 
+
+  ) {}
 
   @Post('initiates')
   async initiates(@Body() dto: InitiatePaymentDto) {
@@ -32,9 +36,12 @@ export class PaymentController {
   async payuSuccess(@Body() body, @Res() res: Response) {
     const result = await this.paymentService.handleCallbacks('PayUMoney', body);
 
+    // return res.redirect(
+    //   `https://indiagalleri-frontend.vercel.app/payment-success?txnId=${result.txnId}&status=${result.status}`,
+    // );
     return res.redirect(
-      `https://indiagalleri-frontend.vercel.app/payment-success?txnId=${result.txnId}&status=${result.status}`,
-    );
+  `${this.successRedirectUrl}?txnId=${result.txnId}&status=${result.status}`,
+);
   }
 
   // ✅ PayUMoney failure callback
@@ -42,11 +49,57 @@ export class PaymentController {
   async payuFailure(@Body() body, @Res() res: Response) {
     const result = await this.paymentService.handleCallbacks('PayUMoney', body);
 
+    // return res.redirect(
+    //   `https://indiagalleri-frontend.vercel.app/payment-failure?txnId=${result.txnId}&status=${result.status}`,
+    // );
     return res.redirect(
-      `https://indiagalleri-frontend.vercel.app/payment-failure?txnId=${result.txnId}&status=${result.status}`,
-    );
+  `${this.failureRedirectUrl}?txnId=${result.txnId}&status=${result.status}`,
+);
+  }
+@Post('paypal/initiate')
+  async initiatePaypal(@Body() dto: InitiatePaymentDto, @Res() res: Response) {
+    const result = await this.paymentService.initiatePayments(dto);
+
+    // Redirect user directly to PayPal
+    return res.redirect(result.approveLink);
   }
 
+   @Get('paypal/success')
+  async paypalSuccess(@Query('token') token: string, @Res() res: Response) {
+    const result = await this.paymentService.confirmPaypalPayment(token);
+
+    // return res.redirect(
+    //   `https://indiagalleri-frontend.vercel.app/payment-success?txnId=${result.txnId}&status=${result.status}`,
+    // );
+
+    return res.redirect(
+  `${this.successRedirectUrl}?txnId=${result.txnId}&status=${result.status}`,
+);
+
+  }
+
+  @Get('paypal/cancel')
+async paypalCancel(@Query('token') token: string, @Res() res: Response) {
+  const result = await this.paymentService.PaypalCancel(token);
+
+  // return res.redirect(
+  //   `https://indiagalleri-frontend.vercel.app/payment-failure?txnId=${token}&status=cancelled`,
+  // );
+      return res.redirect(
+      `${this.failureRedirectUrl}?txnId=${token}&status=cancelled`,
+    );
+}
+
+
+private get successRedirectUrl() {
+  return `${this.config.get('FRONTEND_BASE_URL')}${this.config.get('FRONTEND_SUCCESS_PATH')}`;
+}
+
+private get failureRedirectUrl() {
+  return `${this.config.get('FRONTEND_BASE_URL')}${this.config.get('FRONTEND_FAILURE_PATH')}`;
+}
+
+}
 
 /*
  // ✅ Step 1: Create payment request
@@ -82,7 +135,7 @@ export class PaymentController {
  
 
  
-}
+ 
 
 
 /*
