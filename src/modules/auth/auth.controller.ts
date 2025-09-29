@@ -179,12 +179,16 @@ async login(
 
 
   @UseGuards(JwtAuthGuard)
-  @Post('logout')
-  async logout(@Req() req) {
+@Post('logout')
+  async logout(@Req() req: Request, @Res() res: Response) {
+    // ✅ Clear cookies
+    res.clearCookie('access_token', { httpOnly: true, sameSite: 'lax' });
+    res.clearCookie('guest_id', { httpOnly: true, sameSite: 'lax' });
     localStorage.removeItem('token'); // clear JWT
-    //  res.clearCookie('access_token');
-    // navigate('/login');
-    return { message: 'Logged out successfully.  ' };
+
+    // (Optional) You could also invalidate the JWT in a DB/Redis blacklist if required.
+
+    return res.json({ message: 'Logged out successfully.' });
   }
 
   @Public()
