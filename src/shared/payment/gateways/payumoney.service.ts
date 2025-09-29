@@ -127,6 +127,8 @@ export class PayUMoneyService {
   if (!payment) throw new Error(`Payment not found for txnId: ${txnId}`);
 
   payment.status = status;
+   payment.failureReason = meta.error_Message??null;
+   payment.gatewayResponse = meta || {};;
   (payment as any).meta = meta || {}; // only if you have `meta` column
   await this.paymentRepo.save(payment);
 
@@ -138,6 +140,7 @@ export class PayUMoneyService {
       payment.order.status = OrderStatus.CANCELLED;
       payment.order.cancelledAt = new Date();
     }
+     payment.order.updatePaymentStatus(payment);
     await this.orderRepo.save(payment.order);
   }
 
