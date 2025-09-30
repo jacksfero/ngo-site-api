@@ -1,17 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { PaymentCallbackResult } from '../dto/payment-callback-result';
 import { PaymentStatus } from 'src/shared/entities/payment.entity';
+import { ConfigService } from '@nestjs/config';
 
 const Razorpay = require('razorpay');
 
 @Injectable()
 export class RazorpayService {
   private razorpay: any;
+    private keyId: string;
+  private secret: string;
+  
+constructor(private readonly config: ConfigService) {
+    this.keyId = this.config.get<string>('razorpay.keyId')!;
+    this.secret = this.config.get<string>('razorpay.secret')!;
 
-  constructor() {
     this.razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_RLjYNYOCQ9UFUt',
-      key_secret: process.env.RAZORPAY_KEY_SECRET || 'jFVL2nI2OiE3MHd9kGH5dBbQ',
+      key_id: this.keyId,
+      key_secret: this.secret,
     });
   }
 

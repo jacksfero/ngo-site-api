@@ -31,6 +31,8 @@ import { ProductcategoryModule } from './productcategory/productcategory.module'
 import { MediaModule } from './media/media.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { OrdersModule } from './orders/orders.module';
+import { CartAdminController } from './cart/cart.controller';
+import { CartAdminModule } from './cart/cart.module';
  
 
 @Module({
@@ -59,7 +61,7 @@ import { OrdersModule } from './orders/orders.module';
     CategoryModule,
     TagModule,
     MediaModule,
-    InventoryModule, OrdersModule,
+    InventoryModule, OrdersModule,CartAdminModule,
     RouterModule.register([
       {
         path: 'admin', // Prefix for all child routes
@@ -86,6 +88,7 @@ import { OrdersModule } from './orders/orders.module';
           { path: 'contents', module: ContentModule },
           { path: 'inventries', module: InventoryModule },
           { path: 'orders', module: OrdersModule},
+          { path: 'carts', module: CartAdminModule},
         ],
       },
     ]),

@@ -22,12 +22,13 @@ import { UnifiedCacheModule } from './core/cache/cache.module';
  import { configurationCache } from './shared/config/configuration.cache';
 import payuConfig from './shared/config/payu.config';
 import paypalConfig from './shared/config/paypal.config';
+import razorpayConfig from './shared/config/razor.config';
  
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-       load: [configurationCache,payuConfig,paypalConfig],
+       load: [configurationCache,payuConfig,paypalConfig,razorpayConfig],
       // validate: (config) => {
       //   if (!config.JWT_SECRET) {
       //     throw new Error('JWT_SECRET is required');

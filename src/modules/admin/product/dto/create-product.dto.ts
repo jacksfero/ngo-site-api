@@ -56,25 +56,24 @@ export class CreateProductDto {
   surface_id?: number;
 
   
-
   @IsOptional()
   @IsInt()
   orientation_id?: number;
 
-  @IsOptional()
-  @IsInt()
-  width?: number;
+ @IsOptional()
+@IsNumber({ allowNaN: false, maxDecimalPlaces: 2 })
+width?: number;
 
-  @IsOptional()
-  @IsInt()
+ @IsOptional()
+@IsNumber({ allowNaN: false, maxDecimalPlaces: 2 })
   height?: number;
 
-  @IsOptional()
-  @IsInt()
+ @IsOptional()
+@IsNumber({ allowNaN: false, maxDecimalPlaces: 2 })
   depth?: number;
 
-  @IsOptional()
-  @IsInt()
+ @IsOptional()
+@IsNumber({ allowNaN: false, maxDecimalPlaces: 2 })
   weight?: number;
 
   @IsOptional()
