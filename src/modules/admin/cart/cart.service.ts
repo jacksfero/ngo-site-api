@@ -7,25 +7,42 @@ import { CartPaginationDto } from './dto/cart-pagination.dto';
 import { CartListDto } from './dto/cart-list.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { CacheService } from 'src/core/cache/cache.service';
 
 @Injectable()
 export class CartService {
+   private readonly CACHE_NAMESPACE = 'cart_listing';
   constructor(
-    @InjectRepository(Cart) private cartRepo: Repository<Cart>,
+    @InjectRepository(Cart)
+     private cartRepo: Repository<Cart>,
+
+     private cacheService: CacheService,
   ) {}
 
-  async findAllCartsForAdmin ( paginationDto: CartPaginationDto,
-    ): Promise<PaginationResponseDto<CartListDto>> {
+ async findAllCartsForAdmin(
+  paginationDto: CartPaginationDto,
+): Promise<PaginationResponseDto<CartListDto>> {
+  const { page, limit, search, status } = paginationDto;
+ // const cacheKey = this.cacheService.generateKey(this.CACHE_NAMESPACE, { page, limit, search, status });
+const cacheKey = this.cacheService.generateKey(
+  this.CACHE_NAMESPACE,
+  JSON.stringify({ page, limit, search }),
+);
+  // ✅ Check cache
+  const cachedResult = await this.cacheService.get<PaginationResponseDto<CartListDto>>(cacheKey);
+  if (cachedResult) {
+    return cachedResult;
+  }
 
-       const { page , limit, search,status   } = paginationDto;
-    const skip = (page - 1) * limit;
-const query = this.cartRepo
+  const skip = (page - 1) * limit;
+
+  const query = this.cartRepo
     .createQueryBuilder('cart')
     .leftJoinAndSelect('cart.user', 'user')
     .leftJoinAndSelect('cart.items', 'items')
     .leftJoinAndSelect('items.product', 'product')
     .orderBy('cart.createdAt', 'DESC')
-    .skip((page - 1) * limit)
+    .skip(skip)
     .take(limit);
 
   if (search) {
@@ -35,26 +52,38 @@ const query = this.cartRepo
     );
   }
 
-  const [result, total] = await query.getManyAndCount();
-
-    // Check if results exist
-       if (result.length === 0 && total === 0) {
-        throw new NotFoundException('No Blog found matching your criteria');
-      }
-     // Check if requested page exists
-     const totalPages = Math.ceil(total / limit);
-     if (page > totalPages && totalPages > 0) {
-       throw new BadRequestException(`Page ${page} does not exist. Total pages: ${totalPages}`);
-     }
-      const data = plainToInstance(CartListDto, result, {
-        excludeExtraneousValues: true,
-      });
-    
-      return new PaginationResponseDto(data, { total, page, limit  });
-
+  if (status !== undefined) {
+    query.andWhere('cart.status = :status', { status });
   }
 
-  
+  const [result, total] = await query.getManyAndCount();
+
+  // Check if results exist
+  if (result.length === 0 && total === 0) {
+    throw new NotFoundException('No carts found matching your criteria');
+  }
+
+  // Check if requested page exists
+  const totalPages = Math.ceil(total / limit);
+  if (page > totalPages && totalPages > 0) {
+    throw new BadRequestException(`Page ${page} does not exist. Total pages: ${totalPages}`);
+  }
+
+  // ✅ Transform entities -> DTO
+  const data = plainToInstance(CartListDto, result, {
+    excludeExtraneousValues: true,
+  });
+
+  const response = new PaginationResponseDto(data, { total, page, limit });
+
+  // ✅ Save to cache
+  await this.cacheService.set(cacheKey, response, { ttl: 300 });
+
+  return response;
+}
+
+
+
   async deleteCart(id: number): Promise<{ message: string }> {
   const cart = await this.cartRepo.findOne({
     where: { id },

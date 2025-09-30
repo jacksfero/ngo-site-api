@@ -72,7 +72,7 @@ async  findOne(id: number):Promise<Exhibition> {
         where: { id } ,
         relations:[
           'displayMappings',
-          'displayMappings.product'
+          'displayMappings.product','displayMappings.product.artist'
         ]
       
       });
