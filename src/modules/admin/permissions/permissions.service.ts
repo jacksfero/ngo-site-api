@@ -4,12 +4,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Permission } from '../../../shared/entities/permission.entity';
 import { CreatePermissionDto } from './dto/create-permission.dto';
-//import { UpdatePermissionDto } from './dto/update-permission.dto';
+import { CacheService } from 'src/core/cache/cache.service';
 import { Role } from '../../../shared/entities/role.entity';
 
 @Injectable()
 export class PermissionsService {
+   private readonly CACHE_NAMESPACE = 'permission_listing';
   constructor(
+
+    private cacheService: CacheService,
+    
     @InjectRepository(Permission)
     private readonly permissionRepository: Repository<Permission>,
 
@@ -21,7 +25,7 @@ export class PermissionsService {
     permissionData: CreatePermissionDto,
   ): Promise<Permission> {
     const { roleIds, ...rest } = permissionData;
-
+ 
     const permission = this.permissionRepository.create(permissionData);
 
    /* if (roleIds?.length) {
@@ -42,7 +46,20 @@ export class PermissionsService {
   }
 
   async findAllPermissions(): Promise<Permission[]> {
-    return this.permissionRepository.find();
+
+    const cacheKey = 'permissions:all';
+     // 1. Check cache
+  const cached = await this.cacheService.get<Permission[]>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+ // 2. Query DB
+  const permissions = await this.permissionRepository.find();
+
+   // 3. Save to cache for 5 minutes
+  await this.cacheService.set(cacheKey, permissions, { ttl: 600 });
+  return permissions;
+
   }
 
   async findPermissionById(id: number): Promise<Permission> {

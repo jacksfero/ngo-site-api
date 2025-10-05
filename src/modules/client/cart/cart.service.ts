@@ -529,7 +529,7 @@ export class CartService {
     }
 
     // Cache the result
-     await this.cacheService.set(cacheKey, currencyrate.value, { ttl: 300 }); // 5 minutes
+     await this.cacheService.set(cacheKey, currencyrate.value, { ttl: 3 }); // 5 minutes for 300
 
     this.logger.log(`Fetched and cached exchange rate for ${normalizedCurrency}: ${currencyrate.value}`);
     return currencyrate.value;
