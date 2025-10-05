@@ -76,6 +76,21 @@ status: OrderStatus;
  @Expose()
   orderNumber: number;
 
+   @Expose()
+  subtotal: number;
+
+   @Expose()
+  amountPaid: number;
+
+   @Expose()
+  discountAmount: number;
+
+ @Expose()
+  ShippingAmount: number;
+
+   @Expose()
+  currency: number;
+
   @Expose()
   createdAt: Date;
 

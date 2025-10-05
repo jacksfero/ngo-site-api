@@ -258,8 +258,7 @@ async login(
   @Public()
   @Get('by-role/')
   async getUsersByRole(
-    
-     @Query('roles') roles: string,
+         @Query('roles') roles: string,
   
   ) {
       const roleList = roles.split(',').map(r => r.trim());
