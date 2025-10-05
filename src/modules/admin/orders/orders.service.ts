@@ -27,11 +27,11 @@ export class OrdersService {
     const query = this.orderRepo
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.user', 'user')
-      .leftJoinAndSelect('order.items', 'items')
-      .leftJoinAndSelect('order.shippingAddress', 'shippingAddress');
+     // .leftJoinAndSelect('order.items', 'items')
+    //  .leftJoinAndSelect('order.shippingAddress', 'shippingAddress');
 
     if (search) {
-      query.andWhere('user.fullName LIKE :search OR user.email LIKE :search', {
+      query.andWhere('user.username LIKE :search OR user.email LIKE :search', {
         search: `%${search}%`,
       });
     }
@@ -57,7 +57,7 @@ export class OrdersService {
   async findOne(id: number): Promise<OrderResponseDto> {
     const order = await this.orderRepo.findOne({
       where: { id },
-      relations: ['user', 'items', 'shippingAddress'],
+      relations: ['user', 'items', 'shippingAddress','billingAddress'],
     });
     if (!order) throw new NotFoundException(`Order ${id} not found`);
 

@@ -6,9 +6,12 @@ class ProductDto {
 
   @Expose()
   productTitle: string;
+
+   @Expose()
+  defaultImage: string;
 }
 
-class UserDto {
+export  class UserDto {
   @Expose()
   id: number;
 

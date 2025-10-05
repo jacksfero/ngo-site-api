@@ -14,7 +14,7 @@ export class CartAdminController {
   constructor(private readonly cartService: CartService) {}
 
   @Get()
-  //@RequirePermissions('read_cart')
+  @RequirePermissions('read_cart')
   async listAllCarts(
     @Query(new PaginationPipe(PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE))
     paginationDto: CartPaginationDto
@@ -23,7 +23,7 @@ export class CartAdminController {
   }
 
   @Delete(':id')
- //  @RequirePermissions('delete_cart')
+   @RequirePermissions('delete_cart')
   async deleteCart(@Param('id') id: string) {
     return await this.cartService.deleteCart(+id);
   }

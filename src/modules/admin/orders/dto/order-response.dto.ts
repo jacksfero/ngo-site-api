@@ -1,21 +1,53 @@
 // dto/order-response.dto.ts
 import { Exclude, Expose, Type } from 'class-transformer'; 
  
-import { OrderItemDto } from './order-item.dto';
-import { OrderStatus } from 'aws-sdk/clients/outposts';
-import { User } from 'src/shared/entities/user.entity';
-import { UsersAddress } from 'src/shared/entities/users-address.entity';
+ import { OrderItemDto } from './order-item.dto';
+ 
+import { UserDto } from 'src/modules/admin/cart/dto/cart-item-list.dto';
+ 
+ import { UsersAddress } from 'src/shared/entities/users-address.entity';
+import { OrderStatus } from 'src/shared/entities/order.entity';
+import { IsEnum } from 'class-validator';
+import { PaymentStatus } from 'src/shared/entities/payment.entity';
+ 
+ 
+ export  class PaymentDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  paymentGateway: string;
+
+  @Expose()
+  amount: string;
+
+  @Expose()
+  paidAt: string; 
+  
+  @Expose()
+  gatewayResponse: string;
+
+  @IsEnum(PaymentStatus) 
+  @Expose()
+  status: PaymentStatus;
+
+
+}
 
 @Exclude()
 export class OrderResponseDto {
   @Expose()
   id: number;
 
-  @Expose()
-  status: OrderStatus;
+@IsEnum(OrderStatus)
+@Expose()
+status: OrderStatus;
 
   @Expose()
   totalAmount: number;
+
+ @Expose()
+  orderNumber: number;
 
   @Expose()
   createdAt: Date;
@@ -25,16 +57,25 @@ export class OrderResponseDto {
 
   // ✅ user info
   @Expose()
-  @Type(() => User)
-  user: User;
+  @Type(() => UserDto)
+  user: UserDto;
 
   // ✅ shipping address
-  @Expose()
-  @Type(() => UsersAddress)
-  shippingAddress: UsersAddress;
+   @Expose()
+    @Type(() => UsersAddress)
+   shippingAddress: UsersAddress;
 
-  // ✅ order items
-  @Expose()
+    @Expose()
+    @Type(() => UsersAddress)
+   billingAddress: UsersAddress;
+
+  // // ✅ order items
+   @Expose()
   @Type(() => OrderItemDto)
-  items: OrderItemDto[];
+   items: OrderItemDto[];
+
+   // // ✅ Payment items
+   @Expose()
+  @Type(() => PaymentDto)
+   payments: PaymentDto[];
 }
