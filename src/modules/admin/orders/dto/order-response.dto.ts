@@ -5,7 +5,6 @@ import { Exclude, Expose, Type } from 'class-transformer';
  
 import { UserDto } from 'src/modules/admin/cart/dto/cart-item-list.dto';
  
- import { UsersAddress } from 'src/shared/entities/users-address.entity';
 import { OrderStatus } from 'src/shared/entities/order.entity';
 import { IsEnum } from 'class-validator';
 import { PaymentStatus } from 'src/shared/entities/payment.entity';
@@ -30,8 +29,36 @@ import { PaymentStatus } from 'src/shared/entities/payment.entity';
   @IsEnum(PaymentStatus) 
   @Expose()
   status: PaymentStatus;
+ 
+}
 
+ export  class UsersAddressDTO {
+  @Expose()
+  id: number;
 
+  @Expose()
+  address: string;
+
+  @Expose()
+  city: string;
+
+  @Expose()
+  state: string; 
+  
+  @Expose()
+  country: string;
+
+@Expose()
+  pin: string;
+ 
+ @Expose()
+  contact: string;
+  
+  @Expose()
+  other_phone: string;
+  
+  @Expose()
+  name: string;
 }
 
 @Exclude()
@@ -61,13 +88,13 @@ status: OrderStatus;
   user: UserDto;
 
   // ✅ shipping address
-   @Expose()
-    @Type(() => UsersAddress)
-   shippingAddress: UsersAddress;
+ @Expose()
+  @Type(() => UsersAddressDTO)
+  shippingAddress: UsersAddressDTO;
 
     @Expose()
-    @Type(() => UsersAddress)
-   billingAddress: UsersAddress;
+    @Type(() => UsersAddressDTO)
+   billingAddress: UsersAddressDTO;
 
   // // ✅ order items
    @Expose()
