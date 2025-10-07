@@ -11,7 +11,7 @@ import { ParsePrimitivesPipe  } from './core/pipes/parse-boolean.pipe';
 async function bootstrap() {
  // const app = await NestFactory.create(AppModule);
   
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: true });
   app.set('trust proxy', true);
   app.use(cookieParser()); // Apply the middleware
   //app.useStaticAssets(join(__dirname, '..', 'uploads'));
