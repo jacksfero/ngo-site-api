@@ -16,16 +16,13 @@ async function bootstrap() {
   app.use(cookieParser()); // Apply the middleware
   //app.useStaticAssets(join(__dirname, '..', 'uploads'));
    
-  // Apply PublicGuard globally
-  // app.useGlobalGuards(new PublicGuard());
-  //  app.useGlobalPipes(new ValidationPipe());
+ 
    
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   app.setGlobalPrefix('api'); // 👈 adds /api before all routes)
 
   
-
   app.useGlobalPipes(
    new ParsePrimitivesPipe(), 
     new ValidationPipe({
