@@ -117,7 +117,7 @@ async razorpayCallback(@Res() res: Response, @Body() body: any) {
     const verify = await this.paymentService.handleCallbackRazor(body);
 
     // ✅ Redirect to success page (frontend)
-
+     console.error('Payment verification success:', verify);
      return res.redirect(
       `${this.successRedirectUrl}?txnId=${verify.txnId}&status=success`,
     );

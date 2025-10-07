@@ -186,6 +186,9 @@ async handleWebhook(body: any, signature: string) {
 async handleCallbackRazor(body: any) {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
 
+   if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+    throw new Error('Invalid Razorpay callback data');
+  }
 
   // ✅ Verify signature
 
@@ -201,8 +204,8 @@ if (!secret) {
   .digest('hex');
 
 
-  if (sign !== razorpay_signature) {
-    throw new Error('Invalid Razorpay signature');
+if (sign !== razorpay_signature) {
+    throw new Error('Signature mismatch');
   }
 
   // Update Payment to SUCCESS (temporary confirmation)
@@ -211,20 +214,23 @@ if (!secret) {
     relations: ['order'],
   });
 
+    if (!payment) throw new Error('Payment record not found');
+
   if (payment) {
     payment.status = PaymentStatus.SUCCESS;
     payment.gatewayPaymentId = razorpay_payment_id;
+     payment.gatewayResponse = body;
     await this.paymentRepo.save(payment);
 
     // Also update Order
     if (payment.order) {
       payment.order.paymentStatus = PaymentStatus.SUCCESS;
-      payment.order.status = OrderStatus.CONFIRMED;;
+      payment.order.status = OrderStatus.CONFIRMED;
       await this.orderRepo.save(payment.order);
     }
   }
-
-  return { success: true, message: 'Payment verified (callback)' };
+return { success: true, txnId: razorpay_payment_id };
+ // return { success: true, message: 'Payment verified (callback)' };
 }
 
 /*
