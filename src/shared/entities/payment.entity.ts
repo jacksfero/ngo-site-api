@@ -59,6 +59,10 @@ export class Payment {
   @Column({ nullable: true, unique: true })
   txnId: string; // Payment gateway transaction ID
 
+  // ✅ Payment Gateway Info
+  @Column({ nullable: true  })
+  gatewayPaymentId: string; // Payment gateway transaction ID
+
   @Column({ nullable: true })
   paymentGateway: string; // 'PayUMoney', 'Razorpay', 'PayPal', 'Stripe'
 

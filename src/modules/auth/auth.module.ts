@@ -31,6 +31,8 @@ import { Productcategory } from 'src/shared/entities/productcategory.entity';
 import { Subject } from 'src/shared/entities/subject.entity';
 import { Style } from 'src/shared/entities/style.entity';
 import { Cart } from 'src/shared/entities/cart.entity';
+import { MailService } from 'src/shared/mail/mail.service';
+import { MailModule } from 'src/shared/mail/mail.module';
  
 @Module({
   imports: [TypeOrmModule.forFeature([User,Role,OtpVerification,PasswordResetToken,
@@ -40,7 +42,7 @@ import { Cart } from 'src/shared/entities/cart.entity';
     UsersModule,
     OtpModule,
     PassportModule,
-    ConfigModule,
+    ConfigModule, 
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -55,7 +57,7 @@ import { Cart } from 'src/shared/entities/cart.entity';
   controllers: [AuthController],
   providers: [LocalStrategy,
     AuthService,
-    
+   // MailService,
     JwtStrategy,
     JwtAuthGuard,      // 👈 Add
     RolesGuard,        // 👈 Add

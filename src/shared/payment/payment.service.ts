@@ -14,12 +14,16 @@ import { RazorpayService } from './gateways/razorpay.service';
 import { PaypalService } from './gateways/paypal.service';
 import { PaymentCallbackResult } from './dto/payment-callback-result';
 import { Order, OrderStatus } from '../entities/order.entity';
+import { ConfigService } from '@nestjs/config';
 
 
 @Injectable()
 export class PaymentService {
-
+ private secret: string;
+ 
  constructor(
+  
+
   @InjectRepository(Payment)
   private readonly paymentRepo: Repository<Payment>,
 
@@ -31,6 +35,8 @@ export class PaymentService {
   private readonly razorService: RazorpayService,
 
   private readonly paypalService: PaypalService,
+
+  private readonly configService: ConfigService,   // ✅ Add this
 ) {}
 
   private merchantKey = process.env.PAYUMONEY_KEY;
@@ -133,133 +139,139 @@ async confirmPaypalPayment(orderId: string) {
   return { success: false, status: 'CANCELLED', txnId: token, orderId: order.id  };
 }
 
+async handleWebhook(body: any, signature: string) {
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET!;
+  const shasum = crypto.createHmac('sha256', secret);
+  shasum.update(JSON.stringify(body));
+  const digest = shasum.digest('hex');
+
+  if (digest !== signature) {
+    throw new Error('Invalid Razorpay Webhook Signature');
+  }
+
+  const event = body.event;
+  const paymentEntity = body.payload?.payment?.entity;
+
+  const payment = await this.paymentRepo.findOne({
+    where: { txnId: paymentEntity.order_id },
+    relations: ['order'],
+  });
+
+  if (payment) {
+    if (event === 'payment.captured') {
+      payment.status = PaymentStatus.SUCCESS;
+      payment.gatewayResponse = paymentEntity;
+      payment.gatewayPaymentId = paymentEntity.id;
+    } else if (event === 'payment.failed') {
+      payment.status = PaymentStatus.FAILED;
+    }
+    await this.paymentRepo.save(payment);
+
+    if (payment.order) {
+      payment.order.paymentStatus = payment.status;
+      if (payment.status === PaymentStatus.SUCCESS) {
+        payment.order.status = OrderStatus.CONFIRMED;
+      } else if (payment.status === PaymentStatus.FAILED) {
+        payment.order.status = OrderStatus.FAILED;
+      }
+      await this.orderRepo.save(payment.order);
+    }
+  }
+
+  return { success: true };
+}
+
+ 
+
+async handleCallbackRazor(body: any) {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
+
+
+  // ✅ Verify signature
+
+  const secret = this.configService.get<string>('razorpay.secret');
+if (!secret) {
+  throw new Error('Razorpay secret not configured in env');
 }
 
 
+ const sign = crypto
+  .createHmac('sha256', secret)
+  .update(razorpay_order_id + '|' + razorpay_payment_id)
+  .digest('hex');
 
 
+  if (sign !== razorpay_signature) {
+    throw new Error('Invalid Razorpay signature');
+  }
 
-  /**
-    * Step 1: Initiate a payment
-    */
-  /*
- async initiatePayment(orderId: number, userId: number, amount: number, productName: string, email: string, phone: string) {
-  const txnid = 'TXN' + new Date().getTime();
-
-  // hash string format => key|txnid|amount|productinfo|firstname|email|||||||||||salt
-  const hashString = `${this.merchantKey}|${txnid}|${amount}|${productName}|${userId}|${email}|||||||||||${this.merchantSalt}`;
-  const hash = crypto.createHash('sha512').update(hashString).digest('hex');
-
-  // Save Payment record
-  const payment = this.paymentRepo.create({
-    orderId,
-    userId,
-    amount,
-    txnId: txnid,
-    status: 'pending',
-    paymentGateway: 'PayUMoney',
+  // Update Payment to SUCCESS (temporary confirmation)
+  const payment = await this.paymentRepo.findOne({
+    where: { txnId: razorpay_order_id },
+    relations: ['order'],
   });
-  await this.paymentRepo.save(payment);
 
-  // Response for frontend (to redirect to PayUMoney)
-  return {
-    action: 'https://secure.payu.in/_payment', // or sandbox: https://test.payu.in/_payment
-    params: {
-      key: this.merchantKey,
-      txnid,
-      amount,
-      productinfo: productName,
-      firstname: String(userId),
-      email,
-      phone,
-      surl: this.successUrl,
-      furl: this.failureUrl,
-      hash,
-    },
-  };
+  if (payment) {
+    payment.status = PaymentStatus.SUCCESS;
+    payment.gatewayPaymentId = razorpay_payment_id;
+    await this.paymentRepo.save(payment);
+
+    // Also update Order
+    if (payment.order) {
+      payment.order.paymentStatus = PaymentStatus.SUCCESS;
+      payment.order.status = OrderStatus.CONFIRMED;;
+      await this.orderRepo.save(payment.order);
+    }
+  }
+
+  return { success: true, message: 'Payment verified (callback)' };
+}
+
+/*
+async handleRazorpayWebhook(body: any, signature: string) {
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET!;
+
+  // Verify webhook signature
+  const shasum = crypto.createHmac('sha256', secret);
+  shasum.update(JSON.stringify(body));
+  const digest = shasum.digest('hex');
+
+  if (digest !== signature) {
+    throw new Error('Invalid Razorpay Webhook Signature');
+  }
+
+  // Normalize response
+  const event = body.event;
+  const payload = body.payload?.payment?.entity;
+
+  let status = 'PENDING';
+  if (event === 'payment.captured') status = 'SUCCESS';
+  if (event === 'payment.failed') status = 'FAILED';
+
+  // ✅ Update DB
+  const payment = await this.paymentRepo.findOne({
+    where: { txnId: payload.id },
+    relations: ['order'],
+  });
+
+  if (payment) {
+    payment.status = status as any;
+    await this.paymentRepo.save(payment);
+
+    if (payment.order) {
+      payment.order.paymentStatus = payment.status;
+      if (status === 'SUCCESS') {
+        payment.order.status = 'CONFIRMED';
+      }
+      await this.orderRepo.save(payment.order);
+    }
+  }
+
+  return { success: true };
 }
 */
-  /**
-   * Step 2: Handle Callback
-   */
-  /*
-  async handleCallback(body: any) {
-    const { txnid, status, hash, ...rest } = body;
-  
-    // Verify hash
-    const reverseHashStr = `${this.merchantSalt}|${status}|||||||||||${rest.email}|${rest.firstname}|${rest.productinfo}|${rest.amount}|${txnid}|${this.merchantKey}`;
-    const expectedHash = crypto.createHash('sha512').update(reverseHashStr).digest('hex');
-  
-    if (expectedHash !== hash) {
-      throw new Error('Invalid hash from PayUMoney!');
-    }
-  
-    // Update Payment
-    await this.paymentRepo.update({ txnId: txnid }, {
-      status,
-      gatewayResponse: body,
-    });
-  
-    return { message: `Payment ${status}`, txnid };
-  }
-  */
-  /**
-   * (Optional) Verify transaction from PayUMoney API
-   */
-  /*
-  async verifyTransaction(txnId: string) {
-    const response = await axios.post(
-      'https://www.payumoney.com/payment/op/getPaymentResponse',
-      { merchantKey: this.merchantKey, merchantTransactionIds: txnId },
-      { headers: { Authorization: `Bearer ${process.env.PAYUMONEY_AUTH_HEADER}` } },
-    );
-  
-    return response.data;
-  }
-   
-    
-      generatePaymentUrl(paymentDto: PaymentRequestDto) {
-        const { txnId, amount, productInfo, firstName, email, phone } = paymentDto;
-    
-        // ✅ Hash sequence
-        const hashString = `${this.key}|${txnId}|${amount}|${productInfo}|${firstName}|${email}|||||||||||${this.salt}`;
-        const hash = crypto.createHash('sha512').update(hashString).digest('hex');
-    
-        // ✅ PayU endpoint
-        const payuUrl = `${this.baseUrl}/_payment`;
-    
-        return {
-          action: payuUrl,
-          params: {
-            key: this.key,
-            txnid: txnId,
-            amount,
-            productinfo: productInfo,
-            firstname: firstName,
-            email,
-            phone,
-            surl: process.env.PAYU_SUCCESS_URL,
-            furl: process.env.PAYU_FAILURE_URL,
-            hash,
-          },
-        };
-      }
-    
-      // ✅ Callback validation
-      verifyPayment(response: any) {
-        const { key, txnid, amount, productinfo, firstname, email, status, hash } =
-          response;
-    
-        const hashSequence = `${this.salt}|${status}|||||||||||${email}|${firstname}|${productinfo}|${amount}|${txnid}|${key}`;
-        const expectedHash = crypto
-          .createHash('sha512')
-          .update(hashSequence)
-          .digest('hex');
-    
-        return hash === expectedHash;
-      }
-     
-    */
+
+}
 
 
 

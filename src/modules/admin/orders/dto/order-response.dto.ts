@@ -17,6 +17,9 @@ import { PaymentStatus } from 'src/shared/entities/payment.entity';
   @Expose()
   paymentGateway: string;
 
+ @Expose()
+  paymentMethod: string;
+
   @Expose()
   amount: string;
 

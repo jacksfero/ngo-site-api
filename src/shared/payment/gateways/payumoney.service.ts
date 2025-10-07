@@ -89,7 +89,7 @@ export class PayUMoneyService {
   /** 🔹 Handle callback from PayUMoney */
  async handleCallback(body: any): Promise<PaymentCallbackResult> {
   const { key, txnid, amount, productinfo, firstname, email, status, hash } = body;
-  console.log('-------Body----------',body)
+  //console.log('-------Body----------',body)
   const hashString = `${this.merchantSalt}|${status}|||||||||||${email}|${firstname}|${productinfo}|${amount}|${txnid}|${key}`;
   const calculatedHash = crypto.createHash('sha512').update(hashString).digest('hex');
 

@@ -1,4 +1,4 @@
-import { Controller, Get, Res, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller,Headers, Get, Res, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { Response } from 'express';
 import { PaymentService } from './payment.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
@@ -90,6 +90,25 @@ async paypalCancel(@Query('token') token: string, @Res() res: Response) {
     );
 }
 
+// Razorpay Webhook
+//https://yourdomain.com/payment/webhook/razorpay.
+  // @Post('webhooka/razorpay')
+  // async handleRazorpayWebhook(
+  //   @Body() body: any,
+  //   @Headers('x-razorpay-signature') signature: string,
+  // ) {
+  //   return this.paymentService.handleRazorpayWebhook(body, signature);
+  // }
+
+   @Post('webhook/razorpay')
+async webhook(@Body() body: any, @Headers('x-razorpay-signature') signature: string) {
+  return this.paymentService.handleWebhook(body, signature);
+}
+
+@Post('razorpay/callback')
+async razorpayCallback(@Body() body: any) {
+  return this.paymentService.handleCallbackRazor(body);
+}
 
 private get successRedirectUrl() {
   return `${this.config.get('FRONTEND_BASE_URL')}${this.config.get('FRONTEND_SUCCESS_PATH')}`;

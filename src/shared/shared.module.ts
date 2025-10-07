@@ -12,12 +12,13 @@ import { ShippingTimeModule } from './shipping-time/shipping-time.module';
 import { SizeModule } from './size/size.module';
 import { OrientationModule } from './orientation/orientation.module';
 import { PaymentModule } from './payment/payment.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
     OtpModule, DatabaseModule,
     S3Module,
-    
+    MailModule,
     PackingModeModule,
     PaymentModule,
     

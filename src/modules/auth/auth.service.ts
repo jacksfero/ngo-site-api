@@ -72,6 +72,7 @@ import { Subject } from 'src/shared/entities/subject.entity';
 import { Style } from 'src/shared/entities/style.entity';
 import { slugify } from 'src/shared/utils/slugify';
 import { Cart } from 'src/shared/entities/cart.entity';
+import { MailService } from 'src/shared/mail/mail.service';
 
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
@@ -82,6 +83,8 @@ import { Request } from 'express';
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   constructor(
+
+    private readonly mailService: MailService,
 
      @Inject(REQUEST) private readonly request: Request,
 
@@ -250,6 +253,18 @@ export class AuthService {
       where: { id: userId },
       relations: ['profileImage'], // 👈 add relations if you need
     });
+
+
+     await this.mailService.sendMail({
+      to: 'jayprakash005@gmail.com',
+      subject: 'Verify your email',
+      template: 'welcome', // no extension // verify-email.hbs
+      context: {
+        name: "Preeti Jain",
+        link: `https://your-app.com/auth/verify-email?token`,
+      },
+    });
+
 
     if (!user) {
       throw new NotFoundException('User not found');
