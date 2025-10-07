@@ -105,10 +105,35 @@ async webhook(@Body() body: any, @Headers('x-razorpay-signature') signature: str
   return this.paymentService.handleWebhook(body, signature);
 }
 
+// @Post('razorpay/callback')
+// async razorpayCallback(@Body() body: any) {
+//   return this.paymentService.handleCallbackRazor(body);
+// }
+
+
 @Post('razorpay/callback')
-async razorpayCallback(@Body() body: any) {
-  return this.paymentService.handleCallbackRazor(body);
+async razorpayCallback(@Res() res: Response, @Body() body: any) {
+  try {
+    const verify = await this.paymentService.handleCallbackRazor(body);
+
+    // ✅ Redirect to success page (frontend)
+
+     return res.redirect(
+      `${this.successRedirectUrl}?txnId=${verify.txnId}&status=success`,
+    );
+
+  //  return res.redirect(`https://your-frontend.com/payment/success?txnId=${verify.txnId}`);
+  } catch (error) {
+    console.error('Payment verification failed:', error.message);
+
+    // ❌ Redirect to failure page
+  //  return res.redirect(`https://your-frontend.com/payment/failure`);
+     return res.redirect(
+      `${this.failureRedirectUrl}?status=cancelled`,
+    );
+  }
 }
+
 
 private get successRedirectUrl() {
   return `${this.config.get('FRONTEND_BASE_URL')}${this.config.get('FRONTEND_SUCCESS_PATH')}`;
