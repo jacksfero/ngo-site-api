@@ -42,7 +42,9 @@ async function bootstrap() {
       'http://localhost:3000',
       'https://indiagalleri-frontend.vercel.app',
     ], // ✅ allow local React frontend
+     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true, // Optional: allow cookies/auth headers if needed
+     allowedHeaders: 'Content-Type, Authorization',
   });
 
    const port = process.env.PORT ?? 3000;
