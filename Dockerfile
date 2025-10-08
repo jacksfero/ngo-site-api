@@ -14,12 +14,12 @@
     
     WORKDIR /app
     
+    COPY package*.json ./
+    RUN npm install --only=production
     # Only copy built code and package files
     COPY --from=builder /app/dist ./dist
-    COPY --from=builder /app/package*.json ./
-    
-    # Install only production dependencies
-    RUN npm install --omit=dev
+    COPY --from=builder /app/node_modules ./node_modules
+ 
     
     EXPOSE 3006
     

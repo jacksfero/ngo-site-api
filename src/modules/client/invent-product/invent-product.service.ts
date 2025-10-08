@@ -40,6 +40,12 @@ export class InventProductService {
   //  console.log('search-----------',search);
     const skip = (page - 1) * limit;
 
+    const cacheKey = `frontend:soldArtworkByArtist:${JSON.stringify(paginationDto)}`;
+const cached = await this.cacheService.get(cacheKey);
+if (cached) {
+  return cached as PaginationResponseDto<InventProdListDto>;
+}
+
     const qb = this.inventoryRepo.createQueryBuilder('inventory')
     .leftJoinAndSelect('inventory.product', 'product')
     .leftJoinAndSelect('product.artist', 'artist') // ✅ CRITICAL: Join the artist
@@ -173,7 +179,12 @@ export class InventProductService {
       excludeExtraneousValues: true,
     });
   
-    return new PaginationResponseDto<InventProdListDto>(data, { total, page, limit  }); 
+   // return new PaginationResponseDto<InventProdListDto>(data, { total, page, limit  });
+  const response = new PaginationResponseDto<InventProdListDto>(data, { total, page, limit  });
+    
+    await this.cacheService.set(cacheKey, response);
+  // console.log('✅ Cache miss:', cacheKey);
+  return response;
   }
 
  // inventory.service.ts
@@ -279,7 +290,8 @@ async soldArtworkByArtist(
   const skip = (page - 1) * limit;
 
      // 1️⃣ Generate a unique cache key
-const cacheKey = `soldArtworkByArtist:${JSON.stringify(paginationDto)}`;
+    
+const cacheKey = `frontend:soldArtworkByArtist:${JSON.stringify(paginationDto)}`;
 const cached = await this.cacheService.get(cacheKey);
 if (cached) {
   return cached as PaginationResponseDto<InventProdListDto>;
@@ -359,6 +371,8 @@ const defaultInventoryFields = ['id', 'status', 'price', 'discount','gstSlot','s
 const defaultProductFields = ['id', 'productTitle','is_active','price_on_demand','depth','height','width','weight','slug', 'defaultImage'];
 const defaultArtistFields = ['id', 'username'];
 const defaultCategoryFields = ['id', 'name'];
+ const defaultSurfaceFields = ['id', 'surfaceName'];
+ const defaultMediumFields = ['id', 'name'];
 const defaultShippingFields = ['weightSlot', 'costINR', 'CostOthers'];
 
 // ✅ Process requested fields
@@ -392,6 +406,12 @@ let selectedFields: string[] = [];
     // Default artist fields (always included)
     ...defaultArtistFields.map(field => `artist.${field}`),
     
+ // Default artist fields (always included)
+       ...defaultSurfaceFields.map(field => `surface.${field}`),
+
+        // Default artist fields (always included)
+      ...defaultMediumFields.map(field => `medium.${field}`),
+
     // Default shipping fields (always included)
     ...defaultShippingFields.map(field => `shipping.${field}`),
   ]);

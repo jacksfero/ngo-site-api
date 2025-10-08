@@ -22,7 +22,8 @@ import { join } from 'path';
         from: `"Support Team" <${process.env.SES_FROM_EMAIL}>`, // must be verified in SES
       },
        template: {
-        dir: join(process.cwd(), 'src', 'shared', 'mail', 'templates'), // ✅ correct path
+          dir: join(__dirname, 'templates'), // __dirname is dist/shared/mail
+      //  dir: join(process.cwd(), 'src', 'shared', 'mail', 'templates'), // ✅ correct path
         adapter: new HandlebarsAdapter(),
         options: { strict: true },
       },

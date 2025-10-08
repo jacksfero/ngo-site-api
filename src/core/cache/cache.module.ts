@@ -126,6 +126,25 @@ export class UnifiedCacheModule {
 }
 /*
 
+
+// Fetch data
+const cacheKey = `frontend:artwork:${artworkId}`;
+const cached = await this.cacheService.get<PaginationResponseDto<InventProdListDto>>(cacheKey);
+
+if (cached) return cached;
+
+// Get from DB and set cache
+const data = await this.productRepo.find({ where: { artworkId } });
+await this.cacheService.set(cacheKey, data);
+
+// On update or delete, clear both
+await this.cacheService.invalidateArtworkCache(artworkId);
+
+
+
+
+
+
 import { Module, CacheModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as redisStore from 'cache-manager-redis-store';
