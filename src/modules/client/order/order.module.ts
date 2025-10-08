@@ -11,10 +11,11 @@ import { CartItem } from 'src/shared/entities/cart-item.entity';
 import { Inventory } from 'src/shared/entities/inventory.entity';
 import { UsersAddress } from 'src/shared/entities/users-address.entity';
 import { Shipping } from 'src/shared/entities/shipping.entity';
+import { Payment } from 'src/shared/entities/payment.entity';
 
 @Module({
   imports:[TypeOrmModule.forFeature([Order,OrderItem,Product,User,Cart,CartItem,
-    Inventory,UsersAddress,Shipping])],
+    Inventory,UsersAddress,Shipping,Payment])],
   controllers: [OrderController],
   providers: [OrderService],
 })

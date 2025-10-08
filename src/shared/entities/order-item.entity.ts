@@ -2,6 +2,13 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { Order } from './order.entity';
 import { Product } from './product.entity';
 
+export enum OrderItemStatus {
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+  CANCELLED = 'CANCELLED',
+  REFUNDED = 'REFUNDED',
+}
+
 @Entity('order_items')
 export class OrderItem {
   @PrimaryGeneratedColumn()
@@ -12,6 +19,15 @@ export class OrderItem {
 
   @ManyToOne(() => Product, { eager: true })
   product: Product;
+
+   @Column({ type: 'enum', enum: OrderItemStatus, default: OrderItemStatus.PENDING })
+  status: OrderItemStatus;
+
+  @Column({ nullable: true })
+  cancelledAt?: Date;
+
+  @Column({ nullable: true })
+  refundId?: string;
 
   @Column()
   quantity: number;
@@ -60,6 +76,8 @@ export class OrderItem {
  
   @Column({ type: 'text', nullable: true })
   productName: string; // ✅ Product name at time of purchase
+
+
 
   // ✅ Calculate total before saving
   // ✅ Updated calculation

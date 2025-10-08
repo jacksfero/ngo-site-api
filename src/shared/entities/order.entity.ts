@@ -22,7 +22,7 @@ export enum OrderStatus {
   SHIPPED = 'shipped',
   OUT_FOR_DELIVERY = 'out_for_delivery',
   DELIVERED = 'delivered',
-  CANCELLED = 'cancelled',
+  CANCELLED = 'cancelled', PARTIALLY_CANCELLED = 'partially_cancelled',
   REFUNDED = 'refunded',
    FAILED = 'failed',
 }

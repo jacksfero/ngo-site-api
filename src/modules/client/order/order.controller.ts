@@ -71,4 +71,19 @@ export class OrderController {
        );
      }
    }
+
+
+@Post(':orderId/cancel-items')
+async cancelItems(
+  @Param('orderId') orderId: number,
+  @Body('itemIds') itemIds: number[],
+  @Req() req: any
+) {
+  const userId = req.user?.sub;
+  return this.orderService.cancelOrderItems(orderId, itemIds, userId);
+}
+
+
+
+
 }

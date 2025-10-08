@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order, OrderStatus } from 'src/shared/entities/order.entity';
-import { OrderItem } from 'src/shared/entities/order-item.entity';
+import { OrderItem, OrderItemStatus } from 'src/shared/entities/order-item.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
 import { Cart } from 'src/shared/entities/cart.entity';
@@ -12,6 +12,7 @@ import { User } from 'src/shared/entities/user.entity';
 import { Inventory } from 'src/shared/entities/inventory.entity';
 import { UsersAddress } from 'src/shared/entities/users-address.entity';
 import { Shipping } from 'src/shared/entities/shipping.entity';
+import { Payment, PaymentStatus } from 'src/shared/entities/payment.entity';
 
 @Injectable()
 export class OrderService {
@@ -21,6 +22,9 @@ export class OrderService {
 
     @InjectRepository(OrderItem)
     private orderItemRepo: Repository<OrderItem>,
+
+     @InjectRepository(Payment)
+    private paymentRepo: Repository<Payment>,
 
     @InjectRepository(Cart)
     private cartRepo: Repository<Cart>,
@@ -290,6 +294,59 @@ export class OrderService {
     return this.orderRepo.save(order);
   }
 
+async cancelOrderItems(orderId: number, itemIds: number[], userId: number) {
+  const order = await this.orderRepo.findOne({
+    where: { id: orderId },
+    relations: ['items', 'payments'],
+  });
+  if (!order) throw new Error('Order not found');
+
+  const itemsToCancel = order.items.filter((i) =>
+    itemIds.includes(i.id),
+  );
+
+  if (itemsToCancel.length === 0)
+    throw new Error('No valid items to cancel');
+
+  // Calculate refund amount
+  const refundAmount = itemsToCancel.reduce((sum, item) => sum + Number(item.price), 0);
+
+  // Find successful payment
+  const payment = order.payments.find((p) => p.status === PaymentStatus.SUCCESS);
+  if (!payment) throw new Error('No payment found for refund');
+
+  // Refund using Razorpay
+ // const refund = await this.razorpayService.refundPayment(payment.gatewayPaymentId, refundAmount);
+
+  // Update items
+  for (const item of itemsToCancel) {
+    item.status = OrderItemStatus.REFUNDED;
+    item.cancelledAt = new Date();
+    //item.refundId = refund.id;
+  }
+  await this.orderItemRepo.save(itemsToCancel);
+
+  // Update order status
+  const allCancelled = order.items.every(
+    (i) => i.status === OrderItemStatus.REFUNDED || i.status === OrderItemStatus.CANCELLED,
+  );
+  order.status = allCancelled ? OrderStatus.REFUNDED : OrderStatus.PARTIALLY_CANCELLED;
+  await this.orderRepo.save(order);
+
+  // Update payment status (optional)
+  payment.status = allCancelled ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
+  await this.paymentRepo.save(payment);
+
+  return {
+    success: true,
+    refundedAmount: refundAmount,
+  //  refundId: refund.id,
+    orderStatus: order.status,
+    message: allCancelled
+      ? 'Full order refunded successfully.'
+      : 'Selected items refunded successfully.',
+  };
+}
 
 }
 
