@@ -1,34 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { MailService } from './mail.service';
-import { CreateMailDto } from './dto/create-mail.dto';
-import { UpdateMailDto } from './dto/update-mail.dto';
 
 @Controller('mail')
 export class MailController {
   constructor(private readonly mailService: MailService) {}
 
-  @Post()
-  create(@Body() createMailDto: CreateMailDto) {
-    return this.mailService.create(createMailDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.mailService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.mailService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMailDto: UpdateMailDto) {
-    return this.mailService.update(+id, updateMailDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.mailService.remove(+id);
+  @Post('send')
+  async sendEmail(
+    @Body('to') to: string,
+    @Body('template') template: string,
+    @Body('subject') subject: string,
+    @Body('context') context: Record<string, any>,
+  ) {
+    const result = await this.mailService.sendTemplateEmail(to, template, context, subject);
+    return {
+      success: true,
+      message: 'Email sent successfully',
+     // messageId: result.MessageId,
+    };
   }
 }

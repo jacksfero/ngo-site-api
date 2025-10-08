@@ -255,15 +255,23 @@ export class AuthService {
     });
 
 
-     await this.mailService.sendMail({
-      to: 'jayprakash005@gmail.com',
-      subject: 'Verify your email',
-      template: 'welcome', // no extension // verify-email.hbs
-      context: {
-        name: "Preeti Jain",
-        link: `https://your-app.com/auth/verify-email?token`,
-      },
-    });
+    //  await this.mailService.sendMail({
+    //   to: 'jayprakash005@gmail.com',
+    //   subject: 'Verify your email',
+    //   template: 'welcome', // no extension // verify-email.hbs
+    //   context: {
+    //     name: "Preeti Jain",
+    //     link: `https://your-app.com/auth/verify-email?token`,
+    //   },
+    // });
+
+     // Send welcome email
+    await this.mailService.sendTemplateEmail(
+      'jayprakash005@gmail.com',
+      'welcome', // name of your .hbs file (welcome.hbs)
+      { name: 'Jay Jain',link: `https://your-app.com/auth/verify-email?token`, },
+      'Welcome to Indigalleria!'
+    );
 
 
     if (!user) {

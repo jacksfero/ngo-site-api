@@ -6,9 +6,10 @@
     "deleteOutDir": true,
     "assets": [
       {
-        "include": "src/shared/mail/templates/**/*",
-        "outDir": "dist/shared/mail/templates"
+        "include": "shared/mail/templates/**/*",
+        "outDir": "dist"
       }
-    ]
+    ],
+    "watchAssets": true
   }
 }
