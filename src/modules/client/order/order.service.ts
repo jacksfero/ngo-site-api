@@ -294,7 +294,13 @@ export class OrderService {
     return this.orderRepo.save(order);
   }
 
-async cancelOrderItems(orderId: number, itemIds: number[], userId: number) {
+async cancelOrderItems(orderId: number, itemIds: number[] | number, userId: number) {
+ 
+ // 🔹 Ensure itemIds is always an array
+  if (!Array.isArray(itemIds)) {
+    itemIds = [Number(itemIds)];
+  }
+  
   const order = await this.orderRepo.findOne({
     where: { id: orderId },
     relations: ['items', 'payments'],
