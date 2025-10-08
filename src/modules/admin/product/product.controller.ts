@@ -126,7 +126,15 @@ async deleteImage(@Param('imageId') imageId: number) {
 
 
 
+// @Delete('cache/clear')
+// async clearCache() {
+//   await this.cacheService.deletePattern('*');
+//   return { message: 'Cache cleared successfully' };
+// }
 
+// await this.productRepo.save(product);
 
-
+// // Invalidate related caches
+// await this.cacheService.deletePattern('soldArtworkByArtist:*');
+// await this.cacheService.deletePattern('product:*');
 }

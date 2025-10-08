@@ -10,12 +10,14 @@ import { InventProdPaginatDto } from './dto/invent-product-paginate.dto';
 import { InventProdListDto } from './dto/invent-prod-list.dto';
 import { InventProductDetailResponseDto } from './dto/invent-product-detail-response.dto';
 import { ProductStatus } from 'src/shared/entities/product.entity';
+import { CacheService } from 'src/core/cache/cache.service';
 
 
 @Injectable()
 export class InventProductService {
 
   constructor(
+    private cacheService: CacheService,
     @InjectRepository(Inventory)
     private readonly inventoryRepo: Repository<Inventory>,
   ) {}
@@ -276,6 +278,12 @@ async soldArtworkByArtist(
 //  console.log('search-----------',search);
   const skip = (page - 1) * limit;
 
+     // 1️⃣ Generate a unique cache key
+const cacheKey = `soldArtworkByArtist:${JSON.stringify(paginationDto)}`;
+const cached = await this.cacheService.get(cacheKey);
+if (cached) {
+  return cached as PaginationResponseDto<InventProdListDto>;
+}
   const qb = this.inventoryRepo.createQueryBuilder('inventory')
   .leftJoinAndSelect('inventory.product', 'product')
   .leftJoinAndSelect('product.artist', 'artist') // ✅ CRITICAL: Join the artist
@@ -400,7 +408,14 @@ let selectedFields: string[] = [];
     excludeExtraneousValues: true,
   });
 
-  return new PaginationResponseDto<InventProdListDto>(data, { total, page, limit  }); 
+ // return new PaginationResponseDto<InventProdListDto>(data, { total, page, limit  }); 
+
+   const response = new PaginationResponseDto<InventProdListDto>(data, { total, page, limit });
+
+ 
+await this.cacheService.set(cacheKey, response);
+  // console.log('✅ Cache miss:', cacheKey);
+  return response;
 }
   
 }

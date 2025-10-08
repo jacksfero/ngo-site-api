@@ -3,6 +3,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { ConfigService } from '@nestjs/config';
+import type { RedisClientType } from 'redis'; // only for typing
 
 export interface CacheOptions {
   ttl?: number; // TTL in seconds
@@ -41,7 +42,8 @@ export class CacheService {
   async set<T>(key: string, value: T, options?: CacheOptions): Promise<void> {
     try {
       // ✅ Fix: Handle undefined ttl with default value
-      const ttl = (options?.ttl || this.defaultTtl) * 1000;
+      //const ttl = (options?.ttl || this.defaultTtl) * 1000;
+      const ttl = options?.ttl || this.defaultTtl;
       await this.cacheManager.set(key, value, ttl);
     } catch (error) {
       this.logger.error(`Failed to set cache key ${key}:`, error);
@@ -127,7 +129,28 @@ export class CacheService {
   async deletePattern(pattern: string): Promise<void> {
     // This is a simplified version. For Redis, you'd use SCAN + DEL
     // For memory cache, we can't easily pattern delete, so we'll log a warning
-    this.logger.warn(`Pattern-based deletion not fully supported for cache type: ${this.cacheType}`);
-    this.logger.warn(`Consider using individual key deletion instead of pattern: ${pattern}`);
+ if (this.cacheType.includes('redis')) {
+      try {
+        // Get underlying Redis client
+       // const client: RedisClientType = (this.cacheManager.store as any).getClient();
+        const client: RedisClientType = (this.cacheManager.stores[0] as any).getClient();
+
+        const keys = await client.keys(pattern);
+        if (keys.length) {
+          await client.del(keys);
+          this.logger.log(`Deleted ${keys.length} keys matching: ${pattern}`);
+        } else {
+          this.logger.log(`No keys matched pattern: ${pattern}`);
+        }
+      } catch (error) {
+        this.logger.error(`Failed to delete pattern ${pattern}:`, error);
+      }
+    } else {
+      this.logger.warn(`Pattern-based deletion not supported for cache type: ${this.cacheType}`);
+    }
+ 
+
+  //  this.logger.warn(`Pattern-based deletion not fully supported for cache type: ${this.cacheType}`);
+  //  this.logger.warn(`Consider using individual key deletion instead of pattern: ${pattern}`);
   }
 }

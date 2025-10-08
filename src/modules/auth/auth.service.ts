@@ -255,15 +255,15 @@ export class AuthService {
     });
 
 
-    //  await this.mailService.sendMail({
-    //   to: 'jayprakash005@gmail.com',
-    //   subject: 'Verify your email',
-    //   template: 'welcome', // no extension // verify-email.hbs
-    //   context: {
-    //     name: "Preeti Jain",
-    //     link: `https://your-app.com/auth/verify-email?token`,
-    //   },
-    // });
+     await this.mailService.sendMail({
+      to: 'jayprakash005@gmail.com',
+      subject: 'Verify your email',
+      template: 'welcome', // no extension // verify-email.hbs
+      context: {
+        name: "Preeti Jain",
+        link: `https://your-app.com/auth/verify-email?token`,
+      },
+    });
 
 
     if (!user) {
