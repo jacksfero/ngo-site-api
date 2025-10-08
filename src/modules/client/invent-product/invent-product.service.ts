@@ -280,6 +280,8 @@ async soldArtworkByArtist(
   .leftJoinAndSelect('inventory.product', 'product')
   .leftJoinAndSelect('product.artist', 'artist') // ✅ CRITICAL: Join the artist
   .leftJoinAndSelect('product.category', 'category')
+    .leftJoinAndSelect('product.surface', 'surface')
+    .leftJoinAndSelect('product.medium', 'medium')
   // .leftJoinAndSelect('product.subjects', 'subject') // manytomany
   // .leftJoinAndSelect('product.styles', 'style')
   .leftJoinAndSelect('inventory.shippingWeight', 'shipping')
