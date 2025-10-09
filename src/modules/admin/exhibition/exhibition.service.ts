@@ -9,12 +9,16 @@ import { ExhibitionProduct } from 'src/shared/entities/exhibition-product.entity
 import { Product } from 'src/shared/entities/product.entity';
 import { User } from 'src/shared/entities/user.entity';
 import { S3Service } from 'src/shared/s3/s3.service';
+import { CacheService } from 'src/core/cache/cache.service';
 
 @Injectable()
 export class ExhibitionService {
 
   constructor(
     private readonly s3service: S3Service,
+
+      private readonly cacheService: CacheService,
+
 
     @InjectRepository(Exhibition)
     private exhibitionRepository: Repository<Exhibition>,
@@ -41,8 +45,11 @@ export class ExhibitionService {
       createdBy:user.sub.toString(),
 
     });
-    return this.exhibitionRepository.save(exhibition);
+    const exhi = await this.exhibitionRepository.save(exhibition);
 
+     await this.cacheService.deletePattern('frontend:artwork:exhibition:*');
+
+  return exhi;
   }
 
  async findAll() :Promise<Exhibition[]> {
@@ -106,7 +113,11 @@ async  findOne(id: number):Promise<Exhibition> {
 
     Object.assign(exhibition,dto);
     exhibition.updatedBy = user.sub.toString();
-    return this.exhibitionRepository.save(exhibition);
+    const exhit = await this.exhibitionRepository.save(exhibition);
+
+     await this.cacheService.deletePattern('frontend:artwork:exhibition:*');
+
+     return exhit;
   }
 
 
@@ -134,7 +145,11 @@ async  findOne(id: number):Promise<Exhibition> {
     Exhibition.status = !Exhibition.status;
     Exhibition.updatedBy = user.sub.toString(); // or user.sub.toString()
 
-    return this.exhibitionRepository.save(Exhibition);
+   const exhit =await this.exhibitionRepository.save(Exhibition);
+
+     await this.cacheService.deletePattern('frontend:artwork:exhibition:*');
+
+     return exhit;
   }
 
  async getMappedProducts(displayId: number): Promise<
@@ -171,7 +186,11 @@ async  findOne(id: number):Promise<Exhibition> {
        user: { id: userId },
     });
 
-    return this.exhibitionProductRepository.save(mapping);
+    const exhit = await this.exhibitionProductRepository.save(mapping);
+ await this.cacheService.deletePattern('frontend:artwork:exhibition:*');
+
+     return exhit;
+    
   }
 
 
@@ -180,6 +199,11 @@ async  findOne(id: number):Promise<Exhibition> {
     const mapping = await this.exhibitionProductRepository.findOneBy({ id: mappingId });
     if (!mapping) throw new NotFoundException('Mapping not found');
     await this.exhibitionProductRepository.remove(mapping);
+
+     
+ await this.cacheService.deletePattern('frontend:artwork:exhibition:*');
+
+     
   }
 
 

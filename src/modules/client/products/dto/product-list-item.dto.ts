@@ -3,6 +3,7 @@ import { Exclude, Expose, Type } from 'class-transformer';
 import { ArtistDto } from 'src/modules/auth/dto/artist.dto';
 import { ImageDto } from './product-image.dto';
 import { CategoryDto } from '../../invent-product/dto/invent-prod-list.dto';
+import { MediumDto, SurfaceDto } from '../../invent-product/dto/invent-product-detail-response.dto';
 
 
 @Exclude()
@@ -39,13 +40,11 @@ export class ProductListItemDto {
   
    @Expose()
   createdAt: Date;
-
  
   @Expose()
   @Type(() => CategoryDto)
   category: CategoryDto;
-   
-
+    
    @Expose()
   owner?: {
     id: number;
@@ -60,5 +59,11 @@ export class ProductListItemDto {
   @Type(() => ArtistDto)
   artist: ArtistDto;
 
-
+  @Expose()
+  @Type(() => SurfaceDto)
+  surface: SurfaceDto; 
+  
+  @Expose()
+  @Type(() => MediumDto)
+  medium: MediumDto;
 }

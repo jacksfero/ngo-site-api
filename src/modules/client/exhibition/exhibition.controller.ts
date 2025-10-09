@@ -16,7 +16,7 @@ findAllPublic(@Query() paginationDto: PaginationDto) {
 
 @Get('nextexhi/:id')
 nextonlineExhi(@Param('id', ParseIntPipe) id: number) {
-  console.log('id-------------',id)
+ // console.log('id-------------',id)
   return this.exhibitionService.nextonlineExhi(id);
 }
 

@@ -33,6 +33,7 @@ import { InventoryModule } from './inventory/inventory.module';
 import { OrdersModule } from './orders/orders.module';
 import { CartAdminController } from './cart/cart.controller';
 import { CartAdminModule } from './cart/cart.module';
+import { TestimonialModule } from './testimonial/testimonial.module';
  
 
 @Module({
@@ -60,7 +61,7 @@ import { CartAdminModule } from './cart/cart.module';
     SurfaceModule,
     CategoryModule,
     TagModule,
-    MediaModule,
+    MediaModule,TestimonialModule,
     InventoryModule, OrdersModule,CartAdminModule,
     RouterModule.register([
       {
@@ -89,6 +90,8 @@ import { CartAdminModule } from './cart/cart.module';
           { path: 'inventries', module: InventoryModule },
           { path: 'orders', module: OrdersModule},
           { path: 'carts', module: CartAdminModule},
+           { path: 'testimonials', module: TestimonialModule},
+          
         ],
       },
     ]),

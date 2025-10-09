@@ -266,14 +266,14 @@ export class AuthService {
     // });
 
      // Send welcome email
-    await this.mailService.sendTemplateEmail(
-      'jayprakash005@gmail.com',
-      'welcome', // name of your .hbs file (welcome.hbs)
-      { name: 'Jay Jain',link: `https://your-app.com/auth/verify-email?token`, },
-      'Welcome to Indigalleria!'
-    );
-
-
+  await this.mailService.sendTemplateEmail({
+  to: 'jayprakash005@gmail.com',
+  cc: ['info@indigalleria.com'],
+  //bcc: 'admin@indigalleria.com',
+  subject: 'Welcome to IndiGalleria 🎨',
+  template: 'welcome',
+  context: { name: 'Jay Prakash Jain' },
+})
     if (!user) {
       throw new NotFoundException('User not found');
     }

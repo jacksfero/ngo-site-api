@@ -40,7 +40,7 @@ export class InventProductService {
   //  console.log('search-----------',search);
     const skip = (page - 1) * limit;
 
-    const cacheKey = `frontend:soldArtworkByArtist:${JSON.stringify(paginationDto)}`;
+    const cacheKey = `frontend:ArtworkByArtist:${JSON.stringify(paginationDto)}`;
 const cached = await this.cacheService.get(cacheKey);
 if (cached) {
   return cached as PaginationResponseDto<InventProdListDto>;

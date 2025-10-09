@@ -10,152 +10,178 @@ import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ExhibitionListItemDto } from './dto/exhibition-list-item.dto';
 import { ExhibitionDetailDto } from './dto/exhibition-detail.dto';
 import { ProductListItemDto } from '../products/dto/product-list-item.dto';
+import { CacheService } from 'src/core/cache/cache.service';
 
-  
+
 @Injectable()
 export class ExhibitionService {
   constructor(
-     @InjectRepository(Exhibition)
+    private readonly cacheService: CacheService,
+
+    @InjectRepository(Exhibition)
     private exhibitionRepo: Repository<Exhibition>,
 
-  ){}
-  
-
-  async findPublicAll(paginationDto: PaginationDto): Promise<PaginationResponseDto<ExhibitionListItemDto>> {
-  const { page = 1, limit = 10 } = paginationDto;
-//console.log('aaaaaaaaaaaaaaaa================');
-  const query = this.exhibitionRepo.createQueryBuilder('exhibition')
-    .where('exhibition.status = :status', { status: true })
-    .orderBy('exhibition.dateStart', 'DESC')
-    .skip((page - 1) * limit)
-    .take(limit);
-
-  const [items, total] = await query.getManyAndCount();
-
-  return new PaginationResponseDto(
-    plainToInstance(ExhibitionListItemDto, items),
-    { total, page, limit }
-  );
-}
-
-async getExhibitionArtistsWithProductCount(exhibitionId: number) {
-  const result = await this.exhibitionRepo
-    .createQueryBuilder('exhibition')
-    .innerJoin('exhibition.exhibitionProducts', 'exhibitionProduct')
-    .innerJoin('exhibitionProduct.product', 'product')
-    .innerJoin('product.artist', 'artist') // product belongs to artist
-    .innerJoin('artist.roles', 'roles') // artist must have role
-    .where('exhibition.id = :exhibitionId', { exhibitionId })
-    .andWhere('roles.id = :roleId', { roleId: 13 }) // 13 = Artist role
-    .select('exhibition.id', 'exhibitionId')
-    .addSelect('artist.id', 'artistId')
-    .addSelect('artist.username', 'artistName')
-    .addSelect('COUNT(product.id)', 'productCount')
-    .groupBy('exhibition.id')
-    .addGroupBy('artist.id')
-    .getRawMany();
-
-  return result;
-}
-async nextonlineExhi_BKA(id: number) {
-  const exhibition = await this.exhibitionRepo
-    .createQueryBuilder('exhibition')
-    .leftJoinAndSelect('exhibition.displayMappings', 'exhprod')
-    .leftJoinAndSelect('exhprod.product', 'product')
-    .leftJoinAndSelect('product.category', 'category')
-    .leftJoinAndSelect('product.artist', 'artist')
-    .leftJoinAndSelect('artist.profileImage', 'proimg')
-    .where('exhibition.id = :exhibitionId', { exhibitionId: id })
-     
-    
-    .getOne();
-
-  //if (!exhibition.length) throw new NotFoundException('Exhibition not found');
-
-   
-
-  return exhibition;
-}
+  ) {}
  
-async nextonlineExhi(id: number) {
-  const exhibition = await this.exhibitionRepo
-    .createQueryBuilder('exhibition')
-    .leftJoin('exhibition.displayMappings', 'exhprod')
-    .leftJoin('exhprod.product', 'product')
-    .leftJoin('product.artist', 'artist')
-    .leftJoin('artist.profileImage', 'proimg')
-    .where('exhibition.id = :exhibitionId', { exhibitionId: id })
-    .select([
-      'exhibition.id AS exhibition_id',
-      'exhibition.ExibitionTitle AS exhibition_title',
-      'exhibition.description AS exhibition_description',
-      'exhibition.imageURL AS exhibition_imgurl',
-      'exhibition.dateStart AS exhibition_startDate',
-      'exhibition.dateEnd AS exhibition_endDate',
-      'artist.id AS artist_id',
-      'artist.username AS artist_username',
-      'proimg.imageUrl AS artist_img',
-    ])
-    .groupBy('exhibition.id')
-    .addGroupBy('artist.id')
-    .getRawMany();
+  async findPublicAll(paginationDto: PaginationDto): Promise<PaginationResponseDto<ExhibitionListItemDto>> {
+     
+    const { page = 1, limit = 10 } = paginationDto;
 
-  if (!exhibition.length) throw new NotFoundException('Exhibition not found');
-
-  // ✅ Now destructuring works correctly
-  const {
-    exhibition_id,
-    exhibition_title,
-    exhibition_description,
-    exhibition_imgurl,
-    exhibition_startDate,
-    exhibition_endDate,
-  } = exhibition[0];
-
-  const result = {
-    id: exhibition_id,
-    title: exhibition_title,
-    desc: exhibition_description,
-    imgurl: exhibition_imgurl,
-    startDate: exhibition_startDate,
-    endDate: exhibition_endDate,
-    artists: exhibition.map((e) => ({
-      id: e.artist_id,
-      username: e.artist_username,
-      img: e.artist_img,
-    })),
-  };
-
-  return result;
-}
+      const cacheKey = `frontend:artwork:exhibition:${paginationDto}`;
+  const cached = await this.cacheService.get<PaginationResponseDto<ExhibitionListItemDto>>(cacheKey);
+  if (cached) return cached;
 
 
+    //console.log('aaaaaaaaaaaaaaaa================');
+    const query = this.exhibitionRepo.createQueryBuilder('exhibition')
+      .where('exhibition.status = :status', { status: true })
+      .orderBy('exhibition.dateStart', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
 
-async findOnePublic(id: number): Promise<ExhibitionDetailDto> {
-  const exhibition = await this.exhibitionRepo.findOne({
-    where: { id, status: true },
-    relations: ['displayMappings', 'displayMappings.product',
-    'displayMappings.product.category','displayMappings.product.artist',
-     'displayMappings.product.artist.profileImage'
-    
-    ]
-  });
+    const [items, total] = await query.getManyAndCount();
 
-  if (!exhibition) throw new NotFoundException('Exhibition not found');
+    const response=  new PaginationResponseDto(
+      plainToInstance(ExhibitionListItemDto, items),
+      { total, page, limit }
+    );
 
-  const dto = plainToInstance(ExhibitionDetailDto, exhibition);
+     await this.cacheService.set(cacheKey, response);
+  return response;
+  }
 
-  // ✅ Convert to ProductListItemDto
-  // dto.displayMappings = exhibition.displayMappings.map((mapping) =>
-  //   plainToInstance(ProductListItemDto, mapping.product)
-  // );
+  async getExhibitionArtistsWithProductCount(exhibitionId: number) {
+    const cacheKey = `frontend:artwork:exhibition:ProductCount:${exhibitionId}`;
+    const cached = await this.cacheService.get(cacheKey);
+    if (cached) return cached;
 
-  dto.displayMappings = exhibition.displayMappings.map((mapping) =>
-  plainToInstance(ProductListItemDto, mapping.product, { excludeExtraneousValues: true })
-);
+    const result = await this.exhibitionRepo
+      .createQueryBuilder('exhibition')
+      .innerJoin('exhibition.exhibitionProducts', 'exhibitionProduct')
+      .innerJoin('exhibitionProduct.product', 'product')
+      .innerJoin('product.artist', 'artist') // product belongs to artist
+      .innerJoin('artist.roles', 'roles') // artist must have role
+      .where('exhibition.id = :exhibitionId', { exhibitionId })
+      .andWhere('roles.id = :roleId', { roleId: 13 }) // 13 = Artist role
+      .select('exhibition.id', 'exhibitionId')
+      .addSelect('artist.id', 'artistId')
+      .addSelect('artist.username', 'artistName')
+      .addSelect('COUNT(product.id)', 'productCount')
+      .groupBy('exhibition.id')
+      .addGroupBy('artist.id')
+      .getRawMany();
+     await this.cacheService.set(cacheKey, result);
+    return result;
+  }
+  async nextonlineExhi_BKA(id: number) {
+    const exhibition = await this.exhibitionRepo
+      .createQueryBuilder('exhibition')
+      .leftJoinAndSelect('exhibition.displayMappings', 'exhprod')
+      .leftJoinAndSelect('exhprod.product', 'product')
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.artist', 'artist')
+      .leftJoinAndSelect('artist.profileImage', 'proimg')
+      .where('exhibition.id = :exhibitionId', { exhibitionId: id })
 
-  return dto;
-}
+
+      .getOne();
+
+    //if (!exhibition.length) throw new NotFoundException('Exhibition not found');
+
+
+
+    return exhibition;
+  }
+
+  async nextonlineExhi(id: number) {
+
+     const cacheKey = `frontend:artwork:exhibition:next:${id}`;
+    const cached = await this.cacheService.get(cacheKey);
+    if (cached) return cached;
+
+
+    const exhibition = await this.exhibitionRepo
+      .createQueryBuilder('exhibition')
+      .leftJoin('exhibition.displayMappings', 'exhprod')
+      .leftJoin('exhprod.product', 'product')
+      .leftJoin('product.artist', 'artist')
+      .leftJoin('artist.profileImage', 'proimg')
+      .where('exhibition.id = :exhibitionId', { exhibitionId: id })
+      .select([
+        'exhibition.id AS exhibition_id',
+        'exhibition.ExibitionTitle AS exhibition_title',
+        'exhibition.description AS exhibition_description',
+        'exhibition.imageURL AS exhibition_imgurl',
+        'exhibition.dateStart AS exhibition_startDate',
+        'exhibition.dateEnd AS exhibition_endDate',
+        'artist.id AS artist_id',
+        'artist.username AS artist_username',
+        'proimg.imageUrl AS artist_img',
+      ])
+      .groupBy('exhibition.id')
+      .addGroupBy('artist.id')
+      .getRawMany();
+
+    if (!exhibition.length) throw new NotFoundException('Exhibition not found');
+
+    // ✅ Now destructuring works correctly
+    const {
+      exhibition_id,
+      exhibition_title,
+      exhibition_description,
+      exhibition_imgurl,
+      exhibition_startDate,
+      exhibition_endDate,
+    } = exhibition[0];
+
+    const result = {
+      id: exhibition_id,
+      title: exhibition_title,
+      desc: exhibition_description,
+      imgurl: exhibition_imgurl,
+      startDate: exhibition_startDate,
+      endDate: exhibition_endDate,
+      artists: exhibition.map((e) => ({
+        id: e.artist_id,
+        username: e.artist_username,
+        img: e.artist_img,
+      })),
+    };
+     await this.cacheService.set(cacheKey, result);
+  
+    return result;
+  }
+
+
+  async findOnePublic(id: number): Promise<ExhibitionDetailDto> {
+    const cacheKey = `frontend:artwork:exhibition:${id}`;
+    const cached = await this.cacheService.get<ExhibitionDetailDto>(cacheKey);
+    if (cached) return cached;
+
+    const exhibition = await this.exhibitionRepo.findOne({
+      where: { id, status: true },
+      relations: [
+        'displayMappings',
+        'displayMappings.product',
+        'displayMappings.product.category',
+        'displayMappings.product.artist',
+        'displayMappings.product.medium',
+        'displayMappings.product.surface',
+        'displayMappings.product.artist.profileImage'
+      ],
+    });
+
+    if (!exhibition) throw new NotFoundException('Exhibition not found');
+
+    const dto = plainToInstance(ExhibitionDetailDto, exhibition);
+    dto.displayMappings = exhibition.displayMappings.map(mapping =>
+      plainToInstance(ProductListItemDto, mapping.product, { excludeExtraneousValues: true }),
+    );
+
+    await this.cacheService.set(cacheKey, dto);
+    return dto;
+  }
+
 
 
 }

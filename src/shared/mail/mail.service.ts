@@ -5,6 +5,25 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import * as Handlebars from 'handlebars';
 
+ 
+import * as fs from 'fs';
+import * as path from 'path';
+ 
+
+interface MailTemplateData {
+  [key: string]: any;
+}
+
+
+interface SendMailOptions {
+  to: string | string[];
+  subject: string;
+  template: string;
+  context?: Record<string, any>;
+  cc?: string | string[];
+  bcc?: string | string[];
+}
+
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
@@ -34,10 +53,63 @@ export class MailService {
     });
   }
 
+async sendTemplateEmail(options: SendMailOptions): Promise<void> {
+    try {
+      // ✅ Build template file path
+      const templatePath = path.join(
+        __dirname,
+        'templates',
+        `${options.template}.hbs`,
+      );
+
+      if (!fs.existsSync(templatePath)) {
+        throw new Error(`Template not found: ${templatePath}`);
+      }
+
+      const source = fs.readFileSync(templatePath, 'utf8');
+      const template = Handlebars.compile(source);
+      const html = template(options.context || {});
+
+      // ✅ Build SES params
+      const params = {
+        Source: this.fromEmail,
+        Destination: {
+          ToAddresses: Array.isArray(options.to) ? options.to : [options.to],
+          CcAddresses: options.cc
+            ? Array.isArray(options.cc)
+              ? options.cc
+              : options.cc.split(',').map((x) => x.trim())
+            : [],
+          BccAddresses: options.bcc
+            ? Array.isArray(options.bcc)
+              ? options.bcc
+              : options.bcc.split(',').map((x) => x.trim())
+            : [],
+        },
+        Message: {
+          Subject: { Data: options.subject },
+          Body: {
+            Html: { Data: html },
+          },
+        },
+      };
+
+      // ✅ Send using AWS SES
+      await this.sesClient.send(new SendEmailCommand(params));
+      this.logger.log(`✅ Email sent to ${options.to}`);
+    } catch (error) {
+      this.logger.error(`❌ Failed to send email to ${options.to}:`, error);
+      throw error;
+    }
+  }
+
+
+
+
   /**
    * Send email using AWS SES API + Handlebars template
    */
-  async sendTemplateEmail(
+  async sendTemplateEmailss(
     to: string,
     templateName: string,
     context: Record<string, any>,

@@ -6,17 +6,39 @@ export class MailController {
   constructor(private readonly mailService: MailService) {}
 
   @Post('send')
-  async sendEmail(
-    @Body('to') to: string,
-    @Body('template') template: string,
-    @Body('subject') subject: string,
-    @Body('context') context: Record<string, any>,
+  async sendMail(
+    @Body()
+    body: {
+      to: string;
+      subject: string;
+      template: string;
+      context: Record<string, any>;
+      cc?: string | string[];
+      bcc?: string | string[];
+    },
   ) {
-    const result = await this.mailService.sendTemplateEmail(to, template, context, subject);
-    return {
-      success: true,
-      message: 'Email sent successfully',
-     // messageId: result.MessageId,
-    };
+    await this.mailService.sendTemplateEmail({
+      to: body.to,
+      subject: body.subject,
+      template: body.template,
+      context: body.context,
+      cc: body.cc,
+      bcc: body.bcc,
+    });
+
+    return { success: true, message: 'Email sent successfully' };
   }
 }
+
+/*
+await this.mailService.sendTemplateEmail({
+  to: 'jayprakash005@gmail.com',
+  cc: ['support@indigalleria.com', 'team@indigalleria.com'],
+  bcc: 'admin@indigalleria.com',
+  subject: 'Welcome to IndiGalleria 🎨',
+  template: 'welcome', // corresponds to welcome.hbs
+  context: {
+    name: 'Jay Prakash',
+    appUrl: 'https://indigalleria.com',
+  },
+});*/
