@@ -4,6 +4,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { ConfigService } from '@nestjs/config';
 import type { RedisClientType } from 'redis'; // only for typing
+ 
 
 export interface CacheOptions {
   ttl?: number; // TTL in seconds
@@ -126,7 +127,52 @@ export class CacheService {
   /**
    * Pattern-based deletion (Redis-specific, falls back to individual deletion for memory cache)
    */
-  async deletePattern(pattern: string): Promise<void> {
+
+
+
+
+
+
+async deletePattern(pattern: string): Promise<void> {
+  if (this.cacheType.includes('redis')) {
+    try {
+      // Get Redis client depending on the store type
+      const store: any = (this.cacheManager as any).store;
+
+      // Redis v4 compatible
+      let client: RedisClientType;
+
+      if (typeof store.getClient === 'function') {
+        client = store.getClient();
+      } else if (store.client) {
+        client = store.client;
+      } else {
+        throw new Error('Redis client not found on cache store');
+      }
+
+      // Scan for matching keys
+      const keys = await client.keys(pattern);
+      if (keys.length) {
+        await client.del(keys);
+        this.logger.log(`Deleted ${keys.length} keys matching: ${pattern}`);
+      } else {
+        this.logger.log(`No keys matched pattern: ${pattern}`);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to delete pattern ${pattern}:`, error);
+    }
+  } else {
+    this.logger.warn(
+      `Pattern-based deletion not supported for cache type: ${this.cacheType}`
+    );
+  }
+}
+
+
+
+
+
+  async deletePatterns(pattern: string): Promise<void> {
     // This is a simplified version. For Redis, you'd use SCAN + DEL
     // For memory cache, we can't easily pattern delete, so we'll log a warning
  if (this.cacheType.includes('redis')) {

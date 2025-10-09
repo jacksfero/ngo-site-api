@@ -1,13 +1,13 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { Product, ProductStatus } from '../../../shared/entities/product.entity';
+import { PriceOnDemand, Product, ProductStatus } from '../../../shared/entities/product.entity';
 import { ProductImage } from '../../../shared/entities/product-image.entity';
 import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
  import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ProductDto } from './dto/product.dto';
-import { PaginationDto } from 'src/shared/dto/pagination.dto';
+import { CacheService } from 'src/core/cache/cache.service';
 import { plainToInstance } from 'class-transformer';
 import { S3Service } from 'src/shared/s3/s3.service';
 import { ProductPaginationDto, ProductSearchStatus } from './dto/product-pagination.dto';
@@ -31,6 +31,8 @@ import { Tag } from 'src/shared/entities/tag.entity';
 @Injectable()
 export class ProductService {
   constructor(
+     private cacheService: CacheService,
+
     private readonly s3service: S3Service,
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
@@ -112,6 +114,7 @@ export class ProductService {
       owner: { id: dto.owner_id } as User,
       createdBy: user.sub.toString(),
       is_active:  dto.is_active as ProductStatus,
+       price_on_demand:  dto.price_on_demand as PriceOnDemand,
      // surface: { id: dto.surface_id } as Surface,
    //   medium: { id: dto.medium_id } as Medium,
  
@@ -131,7 +134,12 @@ export class ProductService {
     }
      
 
-    return this.productRepository.save(product);
+  //  return this.productRepository.save(product);
+    const productss = await this.productRepository.save(product);
+
+     await this.cacheService.deletePattern('Admin:Artwork:*');
+
+  return productss;
   }
  
   async update(
@@ -190,6 +198,7 @@ export class ProductService {
   }
   //if (updateProductDto.status !== undefined) {  
     product.is_active =  updateProductDto.is_active as ProductStatus;
+     product.price_on_demand =  updateProductDto.price_on_demand as PriceOnDemand;
  // }
     product.updatedBy = user.sub.toString();
 
@@ -260,7 +269,7 @@ if (updateProductDto.medium_id !== undefined) {
       // 🔹 Multiple boolean fields update
   const booleanFields: (keyof UpdateProductDto)[] = [
     'is_lock','original_painting','new_arrival','eliteChoice','affordable_art',
-    'price_on_demand','negotiable','printing_rights','featured','refundable'
+    'negotiable','printing_rights','featured','refundable'
     ,'certificate','is_lock' ,'terms_and_conditions'    
   ];
   for (const field of booleanFields) {
@@ -270,7 +279,11 @@ if (updateProductDto.medium_id !== undefined) {
     }
   }
 
-    return this.productRepository.save(product);
+     const productss = await this.productRepository.save(product);
+
+     await this.cacheService.deletePattern('Admin:Artwork:*');
+
+  return productss;
   }
 
 
@@ -289,8 +302,13 @@ if (updateProductDto.medium_id !== undefined) {
   ): Promise<PaginationResponseDto<ProductDto>> {
     const { page, limit,is_active, search,artistId,status,   categoryId } = paginationDto;
     const skip = (page - 1) * limit;
-   
 
+
+     const cacheKey = `Admin:Artwork:${JSON.stringify(paginationDto)}`;
+const cached = await this.cacheService.get(cacheKey);
+    if (cached) {
+      return cached as PaginationResponseDto<ProductDto>;
+    }
     const queryBuilder = this.productRepository.createQueryBuilder('product')
                          .leftJoinAndSelect('product.artist', 'artist')
                          .leftJoinAndSelect('product.owner', 'owner')
@@ -342,10 +360,16 @@ if (updateProductDto.medium_id !== undefined) {
       excludeExtraneousValues: true,
     });
 
-    return new PaginationResponseDto(data, { total, page, limit });
-
+   const response = new PaginationResponseDto(data, { total, page, limit });
+    await this.cacheService.set(cacheKey, response);
+    return response;
   }
   async findOne(id: number): Promise<Product> {
+
+      const cacheKey = `Admin:Artwork:${id}`;
+        const cached = await this.cacheService.get<Product>(cacheKey);
+        if (cached) return cached;
+
     const product = await this.productRepository.findOne({
       where: { id },
       relations: ['owner','category','artist','subjects','styles',
@@ -357,7 +381,10 @@ if (updateProductDto.medium_id !== undefined) {
     if (!product) {
       throw new NotFoundException(`Product with id ${id} not found`);
     }
+     await this.cacheService.set(cacheKey, product);
+    
     return product;
+
   }
 
   async toggleStatus(id: number, user: any): Promise<Product> {
@@ -367,8 +394,9 @@ if (updateProductDto.medium_id !== undefined) {
     }
    // product.status = !product.status;
     product.updatedBy = user.sub.toString(); // or user.sub.toString()
-
+     await this.cacheService.deletePattern('Admin:Artwork:*');
     return this.productRepository.save(product);
+
   }
 
   async remove(id: number): Promise<void> {
@@ -407,7 +435,7 @@ if (updateProductDto.medium_id !== undefined) {
       alt_text:alt_text ?? null,
       product,
     });
-
+ await this.cacheService.deletePattern('Admin:Artwork:*');
     return this.imageRepo.save(image);
   }
   async updateImageAltText(imageId: number, altText: string) {
@@ -419,7 +447,7 @@ if (updateProductDto.medium_id !== undefined) {
   
     image.alt_text = altText;
     await this.imageRepo.save(image);
-  
+   await this.cacheService.deletePattern('Admin:Artwork:*');
     return {
       message: 'Alt text updated successfully',
       image,
@@ -439,7 +467,7 @@ if (updateProductDto.medium_id !== undefined) {
       // const oldKey = this.extractS3Key(blog.titleImage);
       await this.s3service.deleteObject(image.imagePath);
     }
-
+ await this.cacheService.deletePattern('Admin:Artwork:*');
     return this.imageRepo.remove(image);
   }
 

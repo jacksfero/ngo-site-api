@@ -7,7 +7,7 @@ import {
   IsString, 
   MaxLength ,IsEnum
 } from 'class-validator';
-import { ProductStatus } from 'src/shared/entities/product.entity';
+import { PriceOnDemand, ProductStatus } from 'src/shared/entities/product.entity';
 
 export class CreateProductDto {
   @IsString()
@@ -18,6 +18,10 @@ export class CreateProductDto {
   @IsOptional()
   @IsEnum(ProductStatus)
   is_active?: ProductStatus; // For direct status input
+
+    @IsOptional()
+  @IsEnum(PriceOnDemand)
+  price_on_demand?: PriceOnDemand; // For direct status input
 
   @IsOptional()
   @IsString()
@@ -114,10 +118,7 @@ width?: number;
   @IsBoolean()
   affordable_art?: boolean;
 
-  @IsOptional()
-  @IsBoolean()
-  price_on_demand?: boolean;
-
+  
   @IsOptional()
   @IsBoolean()
   negotiable?: boolean;

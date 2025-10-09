@@ -57,6 +57,7 @@ import { PaginationClinetPipe } from 'src/shared/pipes/pagination-client.pipe';
 import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
 import { WishlistInventProdDto } from './dto/wishlist-invent-prod-list.dto';
 import { User } from 'src/shared/entities/user.entity';
+import { RequirePermissions } from './decorators/permissions.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -391,6 +392,7 @@ async login(
   /*************Start User Product Section */
   @UseGuards(JwtAuthGuard)
   @Post('products')
+   @RequirePermissions('create_artwork')
   @UseInterceptors(FileInterceptor('defaultImage'))
   create(
     @Body() createProductDto: CreateProductDto,
@@ -403,6 +405,7 @@ async login(
 
   @UseGuards(JwtAuthGuard)
   @Get('products')
+   @RequirePermissions('read_artwork')
   async findAll(
     @Query(new PaginationClinetPipe(PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE))
     @Query() paginationDto: ProductPaginationDto,
@@ -413,12 +416,14 @@ async login(
 
   @UseGuards(JwtAuthGuard)
   @Get('products/:id')
+  @RequirePermissions('read_artwork')
   findOneProduct(@Param('id') id: string) {
     return this.authService.findOneProduct(+id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch('products/:id')
+  @RequirePermissions('update_artwork')
   @UseInterceptors(FileInterceptor('defaultImage'))
   async updateProduct(
     @Param('id', ParseIntPipe) id: number,
@@ -432,6 +437,7 @@ async login(
   }
 
   @Post('products/:product_id/upload-image')
+  @RequirePermissions('update_artwork')
   @UseInterceptors(FileInterceptor('image'))
   async uploadImage(
     @Param('product_id', ParseIntPipe) productId: number,
@@ -444,6 +450,7 @@ async login(
   }
 
   @Patch('products/image/:image_id/alt-text')
+  @RequirePermissions('update_artwork')
   async updateImageAltText(
     @Param('image_id', ParseIntPipe) imageId: number,
     @Body('alt_text') altText: string,
@@ -455,6 +462,7 @@ async login(
   }
 
   @Delete('products/delete-image/:imageId')
+  @RequirePermissions('delete_artwork')
   async deleteImage(@Param('imageId') imageId: number) {
     return this.authService.deleteProductImage(imageId);
   }

@@ -26,6 +26,12 @@ export enum ProductStatus {
   TRASH = 'Trash'
 }
 
+export enum PriceOnDemand {
+  DISPLAY_PRICE = '0',
+  PRICE_ON_DEMAND = '1',
+  CONTACT_FOR_THIS_ART = '2',
+}
+
 @Entity()
 @Unique(['slug']) // Enforce unique slug
 export class Product {
@@ -78,9 +84,13 @@ export class Product {
 
   @Column({ type: 'boolean', default: false })
   affordable_art: boolean;
-
-  @Column({ type: 'boolean', default: false })
-  price_on_demand: boolean;
+ 
+   @Column({
+    type: 'enum',
+    enum: PriceOnDemand,
+    default: PriceOnDemand.DISPLAY_PRICE
+  })
+  price_on_demand: PriceOnDemand;
 
   @Column({ type: 'boolean', default: false })
   negotiable: boolean;
