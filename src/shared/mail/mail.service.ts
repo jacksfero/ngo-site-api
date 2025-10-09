@@ -18,7 +18,7 @@ interface MailTemplateData {
 interface SendMailOptions {
   to: string | string[];
   subject: string;
-  template: string;
+  template: string; // filename without .hbs
   context?: Record<string, any>;
   cc?: string | string[];
   bcc?: string | string[];
@@ -51,6 +51,8 @@ export class MailService {
         secretAccessKey,  // ✅ same here
       },
     });
+
+    this.registerPartials();
   }
 
 async sendTemplateEmail(options: SendMailOptions): Promise<void> {
@@ -102,7 +104,22 @@ async sendTemplateEmail(options: SendMailOptions): Promise<void> {
       throw error;
     }
   }
-
+private registerPartials(): void {
+    const partialsDir = path.join(__dirname, 'templates', 'partials');
+    if (fs.existsSync(partialsDir)) {
+      const files = fs.readdirSync(partialsDir);
+      for (const file of files) {
+        if (file.endsWith('.hbs')) {
+          const partialName = path.basename(file, '.hbs');
+          const partialContent = fs.readFileSync(path.join(partialsDir, file), 'utf8');
+          Handlebars.registerPartial(partialName, partialContent);
+        }
+      }
+      this.logger.log(`📄 Loaded ${files.length} Handlebars partials`);
+    } else {
+      this.logger.warn(`⚠️ Partials directory not found: ${partialsDir}`);
+    }
+  }
 
 
 

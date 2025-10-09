@@ -11,6 +11,7 @@ import { InventProductModule } from './invent-product/invent-product.module';
 import { ContentModule } from './content/content.module';
  
 import { ClientTestimonialModule } from './testimonial/client-testimonial.module';
+import { ContactUsClientModule } from './contact/contact-us-client.module';
 
 
 @Module({
@@ -21,7 +22,7 @@ import { ClientTestimonialModule } from './testimonial/client-testimonial.module
     ExhibitionModule,
     InventProductModule,
     CartModule,ClientTestimonialModule,
-    OrderModule,ContentModule,
+    OrderModule,ContentModule,ContactUsClientModule,
     RouterModule.register([
       {
         path: 'client', // Prefix for all child routes
@@ -34,6 +35,7 @@ import { ClientTestimonialModule } from './testimonial/client-testimonial.module
           { path: 'order', module: OrderModule },
           { path: 'content', module: ContentModule }, 
            { path: 'testimonials', module: ClientTestimonialModule },
+             { path:'contact-us', module: ContactUsClientModule },
         ],
       }, 
     ]),
