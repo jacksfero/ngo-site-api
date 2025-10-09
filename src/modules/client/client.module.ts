@@ -9,7 +9,8 @@ import { OrderModule } from './order/order.module';
 import { InventProductModule } from './invent-product/invent-product.module';
 //import { PaymentModule } from './payment/payment.module';
 import { ContentModule } from './content/content.module';
-import { TestimonialModule } from '../admin/testimonial/testimonial.module';
+ 
+import { ClientTestimonialModule } from './testimonial/client-testimonial.module';
 
 
 @Module({
@@ -19,7 +20,7 @@ import { TestimonialModule } from '../admin/testimonial/testimonial.module';
     ProductsModule,
     ExhibitionModule,
     InventProductModule,
-    CartModule,TestimonialModule,
+    CartModule,ClientTestimonialModule,
     OrderModule,ContentModule,
     RouterModule.register([
       {
@@ -32,7 +33,7 @@ import { TestimonialModule } from '../admin/testimonial/testimonial.module';
           { path: 'cart', module: CartModule },
           { path: 'order', module: OrderModule },
           { path: 'content', module: ContentModule }, 
-           { path: 'testimonials', module: TestimonialModule },
+           { path: 'testimonials', module: ClientTestimonialModule },
         ],
       }, 
     ]),

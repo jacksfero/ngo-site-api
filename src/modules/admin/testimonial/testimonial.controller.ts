@@ -27,7 +27,7 @@ export class TestimonialController {
   }
 
   @Patch(':id')
-   @RequirePermissions('update_testimonail')
+    @RequirePermissions('update_testimonail')
   update(@Param('id') id: number, @Body() dto: UpdateTestimonialDto) {
     return this.testimonialService.update(id, dto);
   }
@@ -39,13 +39,13 @@ export class TestimonialController {
   }
 
   @Post(':id/approve')
-  @RequirePermissions('update_testimonail')
+   @RequirePermissions('update_testimonail')
   approve(@Param('id') id: number) {
     return this.testimonialService.approve(id);
   }
 
   @Post(':id/reject')
-  @RequirePermissions('update_testimonail')
+   @RequirePermissions('update_testimonail')
   reject(@Param('id') id: number, @Body('reason') reason: string) {
     return this.testimonialService.reject(id, reason);
   }
