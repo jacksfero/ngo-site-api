@@ -52,6 +52,7 @@ if (cached) {
     .leftJoinAndSelect('product.category', 'category')
     .leftJoinAndSelect('product.surface', 'surface')
     .leftJoinAndSelect('product.medium', 'medium')
+    .leftJoinAndSelect('product.tags', 'tag')
     // .leftJoinAndSelect('product.subjects', 'subject') // manytomany
     // .leftJoinAndSelect('product.styles', 'style')
     .leftJoinAndSelect('inventory.shippingWeight', 'shipping')
@@ -69,7 +70,7 @@ if (cached) {
   }
 
     if (search) {
-      qb.andWhere('product.productTitle LIKE :search OR product.description LIKE :search', {
+      qb.andWhere('product.productTitle LIKE :search OR tag.name LIKE :search OR artist.username LIKE :search', {
         search: `%${search}%`,
       });
     }

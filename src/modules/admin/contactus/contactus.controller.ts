@@ -3,6 +3,11 @@ import { ContactUsService } from './contactus.service';
 import { CreateContactUsDto } from './dto/create-contactus.dto';
 import { UpdateContactUsDto } from './dto/update-contactus.dto';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
+import { PaginationPipe } from 'src/shared/pipes/pagination.pipe';
+import { BLOG_LIMIT,BLOG_MAX_LIMIT,BLOG_PAGE } from 'src/shared/config/pagination.config';
+import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
+import { ContactPaginationDto } from './dto/contact-pagination.dto';
+import { ContactListDto } from './dto/contact-list.dto';
 
 @Controller()
 export class ContactUsController {
@@ -15,10 +20,20 @@ export class ContactUsController {
  
 
 
-  @Get()
-findAll(@Query() query: PaginationDto) {
-  return this.contactusService.findAll(query);
+//   @Get()
+// findAll(@Query() query: PaginationDto) {
+//   return this.contactusService.findAll(query);
+// }
+
+@Get()
+async findAll(
+  @Query(new PaginationPipe(BLOG_LIMIT, BLOG_MAX_LIMIT, BLOG_PAGE))
+  paginationDto: ContactPaginationDto
+): Promise<PaginationResponseDto<ContactListDto>> {
+  return this.contactusService.findAll(paginationDto);
 }
+
+
 
   @Get(':id')
   findOne(@Param('id') id: string) {

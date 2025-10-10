@@ -10,10 +10,14 @@ import { Wishlist } from '../../../shared/entities/wishlist.entity';
 import { Repository } from 'typeorm';
 import { User } from '../../../shared/entities/user.entity';
 import { Product } from '../../../shared/entities/product.entity';
+import { CacheService } from 'src/core/cache/cache.service';
 
 @Injectable()
 export class WishlistService {
   constructor(
+     private readonly cacheService: CacheService,
+
+
     @InjectRepository(Wishlist)
     private wishlistRepository: Repository<Wishlist>,
 
@@ -56,12 +60,27 @@ export class WishlistService {
   }
 
   async getUserWishlist(userId: number): Promise<Wishlist[]> {
-    return this.wishlistRepository.find({
-      where: { user: { id: userId } },
-      relations: ['product'],
-      order: { id: 'DESC' },
-    });
+  const cacheKey = `admin:wishlist:${userId}`;
+
+  // Check cache
+  const cached = await this.cacheService.get<Wishlist[]>(cacheKey);
+  if (cached) {
+    return cached;
   }
+
+  // Fetch from DB
+  const response = await this.wishlistRepository.find({
+   // where: { user: { id: userId } },
+    relations: ['product'],
+    order: { id: 'DESC' },
+  });
+
+  // Set cache (TTL optional, e.g., 10 minutes)
+  await this.cacheService.set(cacheKey, response, { ttl: 10000 });
+
+  return response;
+}
+
 
 
 

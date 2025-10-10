@@ -59,7 +59,7 @@ export class ProductController {
   }
  
   @Patch(':id')
-  @RequirePermissions('update_artwork')
+   @RequirePermissions('update_artwork')
   @UseInterceptors(FileInterceptor('defaultImage'))
   async update(
     @Param('id', ParseIntPipe) id: number,
