@@ -392,7 +392,7 @@ const cached = await this.cacheService.get(cacheKey);
      await this.cacheService.set(cacheKey, product);
     
     return product;
-
+ 
   }
 
   async toggleStatus(id: number, user: any): Promise<Product> {
