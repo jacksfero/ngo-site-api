@@ -6,10 +6,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import { SubjectResponseDto } from './dto/subject-response.dto';
+import { CacheService } from 'src/core/cache/cache.service';
+
 
 @Injectable()
 export class SubjectService {
   constructor(
+     private cacheService: CacheService,
+
     @InjectRepository(Subject)
     private subjectRepository: Repository<Subject>,
   ) { }
@@ -29,30 +33,59 @@ export class SubjectService {
       // createdBy: user.username, // or user.sub (ID), depending on your use case
       createdBy: user.sub.toString(), //userid
     });
-    return this.subjectRepository.save(subject);
+  const saved = await this.subjectRepository.save(subject);
+
+  // 🧹 Invalidate admin and frontend caches
+  await this.cacheService.deletePattern('admin:subjects:*');
+  await this.cacheService.deletePattern('frontend:subjects:*');
+
+  return saved;
+    
     } catch (error) {
       throw new  error("Subject Noe save ")
     }
      
   }
   async getActiveList(): Promise<SubjectResponseDto[]> {
-    const surfaces = await this.subjectRepository.find({
-      order: { subject: 'ASC' },
-       where: {
-        status: true, // only active surfaces
-      }
-    });
-    return plainToInstance(SubjectResponseDto, surfaces, {
-      excludeExtraneousValues: true,
-    });
+    const cacheKey = 'Admin:subjects:active';
+
+     // ✅ 1. Try cache first
+   const cached = await this.cacheService.get<SubjectResponseDto[]>(cacheKey);
+  if (cached && cached.length) {
+    return cached;
+  } // ✅ 2. Fetch from DB if not cached
+  const subjects = await this.subjectRepository.find({
+    where: { status: true },
+    order: { subject: 'ASC' },
+  });
+
+  const response = plainToInstance(SubjectResponseDto, subjects, {
+    excludeExtraneousValues: true,
+  });
+
+  // ✅ 3. Cache result for 1 hour (3600 seconds)
+  await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+
+  return response;
   }
   async findAll(): Promise<Subject[]> {
-   return this.subjectRepository.find({
-      order: {
-        id: 'DESC', // sort by newest first
-      },
-      
-    });
+     const cacheKey = 'Admin:subjects:all';
+   
+  const cached = await this.cacheService.get<Subject[]>(cacheKey);
+  if (cached && cached.length) {
+    return cached;
+  }
+    
+
+      // ✅ 2. Fetch from database if not cached
+  const subjects = await this.subjectRepository.find({
+    order: { id: 'DESC' },
+  });
+
+  // ✅ 3. Store in cache for 1 hour
+  await this.cacheService.set(cacheKey, subjects, { ttl: 3600 });
+
+  return subjects;
   }
 
  async findOne(id: number): Promise<Subject> {
@@ -77,6 +110,9 @@ export class SubjectService {
     const subject = await this.findOne(id);
     Object.assign(subject, dto);
     subject.updatedBy = user.sub.toString(); // or user.sub.toString()
+      // 🧹 Invalidate caches
+  await this.cacheService.deletePattern('Admin:subjects:*');
+  await this.cacheService.deletePattern('Admin:subjects:*');
     return this.subjectRepository.save(subject);
   }
 

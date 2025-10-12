@@ -16,13 +16,15 @@ import { BlogListDto } from './dto/blog-list.dto';
 import { plainToInstance } from 'class-transformer';
 import { S3Service } from 'src/shared/s3/s3.service';
 import { sanitizeFileName } from 'src/shared/utils/sanitizefilename';
-
+import { CacheService } from 'src/core/cache/cache.service';
 
 
 @Injectable()
 export class BlogService {
   private readonly logger = new Logger(BlogService.name);
   constructor(
+    private cacheService: CacheService,
+
     private readonly s3service: S3Service,
 
     @InjectRepository(Blog)
@@ -91,7 +93,9 @@ export class BlogService {
    // blog.createdBy = user.username || user.email || user.sub.toString();
   //  blog.updatedBy = user.username || user.email || user.sub.toString();
 
-    return this.blogRepository.save(blog);
+    const response = this.blogRepository.save(blog);
+     await this.cacheService.deletePattern('Admin:blog:*');
+     return response;
 }
 
 private async deleteImageFile(filename: string): Promise<void> {
@@ -124,7 +128,11 @@ private async deleteImageFile(filename: string): Promise<void> {
     const { page , limit, search,status   } = paginationDto;
     const skip = (page - 1) * limit;
     //const search = search || '';
-  
+   const cacheKey = `Admin:blog:${JSON.stringify(paginationDto)}`;
+  const cached = await this.cacheService.get(cacheKey);
+      if (cached) {
+        return cached as PaginationResponseDto<BlogListDto>;
+      }
     const queryBuilder = this.blogRepository
     .createQueryBuilder('blog')    
     .leftJoinAndSelect('blog.category', 'category')
@@ -161,7 +169,10 @@ private async deleteImageFile(filename: string): Promise<void> {
       excludeExtraneousValues: true,
     });
   
-    return new PaginationResponseDto(data, { total, page, limit  });
+  //  return new PaginationResponseDto(data, { total, page, limit  });
+    const response = new PaginationResponseDto(data, { total, page, limit });
+    await this.cacheService.set(cacheKey, response);
+    return response;
   }
 
   async publish(id: number) {
@@ -244,7 +255,10 @@ if (dto.author) {
   blog.keywordsTag = dto.keywordsTag??'';    
   blog.scheduledPublishDate = dto.scheduledPublishDate??null;  
   blog.descriptionTag = dto.descriptionTag??'';      
-    return this.blogRepository.save(blog);
+    //return this.blogRepository.save(blog);
+     const response = this.blogRepository.save(blog);
+     await this.cacheService.deletePattern('Admin:blog:*');
+     return response;
   }
 
   async remove(id: number): Promise<void> {
@@ -296,7 +310,10 @@ if (dto.author) {
       blog.status = !blog.status;
       //content.updatedBy = user.sub.toString(); // or user.sub.toString()
   
-      return this.blogRepository.save(blog);
+      const response = this.blogRepository.save(blog);
+     await this.cacheService.deletePattern('Admin:blog:*');
+     await this.cacheService.deletePattern('frontend:blog:*');
+     return response;
     }
 
 }

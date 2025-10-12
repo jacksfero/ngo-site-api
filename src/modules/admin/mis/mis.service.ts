@@ -30,7 +30,7 @@ export class MisService {
 
 async getSummary(dateRange: DateRangeDto) {
   const { startDate, endDate } = dateRange;
-  const cacheKey = `admin:mis:summary:${startDate || 'all'}:${endDate || 'all'}`;
+  const cacheKey = `Admin:mis:summary:${startDate || 'all'}:${endDate || 'all'}`;
 
   // ✅ Check cache
   const cached = await this.cacheService.get(cacheKey);

@@ -16,12 +16,14 @@ import { Subject } from 'src/shared/entities/subject.entity';
 import { Inventory } from 'src/shared/entities/inventory.entity';
 import { Productcategory } from 'src/shared/entities/productcategory.entity';
 import { ProductcategoryResponseDto } from 'src/modules/admin/productcategory/dto/pcate-res.dto';
-
+import { CacheService } from 'src/core/cache/cache.service';
  
 @Injectable()
 export class ProductsService {
   constructor(
-    @InjectRepository(Style)
+      private cacheService: CacheService,
+    
+          @InjectRepository(Style)
     private readonly styleRepo: Repository<Style>,
 
     @InjectRepository(Surface)
@@ -45,7 +47,11 @@ export class ProductsService {
   ) {}
   async findAll(paginationDto: PaginationDto): Promise<PaginationResponseDto<ProductListItemDto>> {
     const { page = 1, limit = 20, search } = paginationDto;
-
+     const cacheKey = `frontend:Artwork:${JSON.stringify(paginationDto)}`;
+     const cached = await this.cacheService.get(cacheKey);
+         if (cached) {
+           return cached as PaginationResponseDto<ProductListItemDto>;
+         }
     const query = this.inventoryRepo.createQueryBuilder('inventory')
        .leftJoinAndSelect('inventory.product', 'product') // Join relation      
         .leftJoin('product.owner', 'owner')
@@ -77,7 +83,10 @@ export class ProductsService {
 
     const data = plainToInstance(ProductListItemDto, items);
 
-    return new PaginationResponseDto(data, { total, page, limit });
+   // return new PaginationResponseDto(data, { total, page, limit });
+      const response = new PaginationResponseDto(data, { total, page, limit });
+    await this.cacheService.set(cacheKey, response);
+    return response;
   }
   async findAll_bk(paginationDto: PaginationDto): Promise<PaginationResponseDto<ProductListItemDto>> {
     const { page = 1, limit = 20, search } = paginationDto;
@@ -151,31 +160,57 @@ export class ProductsService {
 
 
   async getActiveCategoryList():  Promise<ProductcategoryResponseDto[]> {
+
+     const cacheKey = 'frontend:category:active';
+      const cached = await this.cacheService.get<ProductcategoryResponseDto[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
     const prodcat = await this.prodCatRepo.find({
       order: { id: 'ASC' },
       where: {
        status: true, // only active surfaces
      }
     });
-    return plainToInstance(ProductcategoryResponseDto, prodcat, {
+    const response = plainToInstance(ProductcategoryResponseDto, prodcat, {
       excludeExtraneousValues: true,
     });
+    // ✅ 3. Cache result for 1 hour (3600 seconds)
+  await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+
+  return response;
   }
 
 
   async getActiveStyleList():  Promise<StyleResponseDto[]> {
+    const cacheKey = 'frontend:style:active';
+      const cached = await this.cacheService.get<StyleResponseDto[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
     const style = await this.styleRepo.find({
       order: { title: 'ASC' },
       where: {
        status: true, // only active surfaces
      }
     });
-    return plainToInstance(StyleResponseDto, style, {
+    const response = plainToInstance(StyleResponseDto, style, {
       excludeExtraneousValues: true,
     });
+     // ✅ 3. Cache result for 1 hour (3600 seconds)
+  await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+
+  return response;
   }
 
   async getActiveProdSurfaceList(slug: string):  Promise<SurfaceResponseDto[]>  {
+
+    const cacheKey = 'frontend:surface:active';
+      const cached = await this.cacheService.get<SurfaceResponseDto[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
+
     const surfaces =  await this.surfaceRepo
       .createQueryBuilder('surface')
      // .leftJoin('surface.product', 'product')
@@ -189,11 +224,21 @@ export class ProductsService {
       .orderBy('surface.surfaceName', 'ASC')
       .getMany();
   
-     return plainToInstance(SurfaceResponseDto, surfaces, {
+    const response =  plainToInstance(SurfaceResponseDto, surfaces, {
        excludeExtraneousValues: true,
      });
+       // ✅ 3. Cache result for 1 hour (3600 seconds)
+  await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+
+  return response;
   }
   async getActiveProdStyleList(slug: string): Promise<StyleResponseDto[]> {
+
+    const cacheKey = 'frontend:Style:active';
+      const cached = await this.cacheService.get<StyleResponseDto[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
    const styles = await this.styleRepo
     .createQueryBuilder('style' )
     .leftJoin('style.products', 'product')  
@@ -204,23 +249,24 @@ export class ProductsService {
      .andWhere('inventory.status = :inventoryStatus', { inventoryStatus: true })  
      .andWhere('category.slug = :slug', { slug })
     .getMany();
-  /*/
-  const styles = await this.styleRepo.find({
-    where: { 
-      status: true 
-    },
-    relations: ['products'], // Let TypeORM handle the join
-    order: { 
-      title: 'ASC' 
-    }
-  });*/
-    return plainToInstance(StyleResponseDto, styles, {
+   
+    const response =  plainToInstance(StyleResponseDto, styles, {
       excludeExtraneousValues: true,
     });
+      // ✅ 3. Cache result for 1 hour (3600 seconds)
+  await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+
+  return response;
   }
   
    
   async getActiveProdSubjectList(slug: string):  Promise<SubjectResponseDto[]>  {
+     const cacheKey = 'frontend:Subject:active';
+      const cached = await this.cacheService.get<SubjectResponseDto[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
+
     const surfaces =  await this.subjectRepo
       .createQueryBuilder('subject')     
       .leftJoin('subject.products', 'product')  
@@ -233,23 +279,39 @@ export class ProductsService {
       .orderBy('subject.subject', 'ASC')
       .getMany();
   
-     return plainToInstance(SubjectResponseDto, surfaces, {
+    const response = plainToInstance(SubjectResponseDto, surfaces, {
        excludeExtraneousValues: true,
      });
+      await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+
+  return response;
   }
   async getActiveSurfaceList():  Promise<SurfaceResponseDto[]> {
+    const cacheKey = 'frontend:SurfaceRe:active';
+      const cached = await this.cacheService.get<SurfaceResponseDto[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
     const style = await this.surfaceRepo.find({
       order: { surfaceName: 'ASC' },
       where: {
        status: true, // only active surfaces
      }
     });
-    return plainToInstance(SurfaceResponseDto, style, {
+    const response =  plainToInstance(SurfaceResponseDto, style, {
       excludeExtraneousValues: true,
     });
+    await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+
+  return response;
   }
 
   async getActiveProdMediumList(slug: string):  Promise<MediumResponseDto[]> {
+     const cacheKey = 'frontend:Medium:active';
+      const cached = await this.cacheService.get<MediumResponseDto[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
     const surfaces =  await this.mediumRepo
     .createQueryBuilder('medium')
    // .leftJoin('surface.product', 'product')
@@ -262,32 +324,52 @@ export class ProductsService {
     .andWhere('inventoryProduct.status = :active', { active: true })
     .orderBy('medium.name', 'ASC')
     .getMany();
-    return plainToInstance(MediumResponseDto, surfaces, {
+   const response =  plainToInstance(MediumResponseDto, surfaces, {
       excludeExtraneousValues: true,
     });
+     await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+
+  return response;
   }
 
   async getActiveMediumList():  Promise<MediumResponseDto[]> {
+    const cacheKey = 'frontend:MediumRes:active';
+      const cached = await this.cacheService.get<MediumResponseDto[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
     const style = await this.mediumRepo.find({
       order: { name: 'ASC' },
       where: {
        status: true, // only active surfaces
      }
     });
-    return plainToInstance(MediumResponseDto, style, {
+     const response =  plainToInstance(MediumResponseDto, style, {
       excludeExtraneousValues: true,
     });
+    await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+
+  return response;
   }
   async getActiveSubjectList():  Promise<SubjectResponseDto[]> {
+    const cacheKey = 'frontend:SubjectResp:active';
+      const cached = await this.cacheService.get<SubjectResponseDto[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
     const style = await this.subjectRepo.find({
       order: { subject: 'ASC' },
       where: {
        status: true, // only active surfaces
      }
     });
-    return plainToInstance(SubjectResponseDto, style, {
+     const response =  plainToInstance(SubjectResponseDto, style, {
       excludeExtraneousValues: true,
     });
+await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+
+  return response;
+      
   }
 
   

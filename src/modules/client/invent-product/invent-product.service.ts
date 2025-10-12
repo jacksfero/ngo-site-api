@@ -190,6 +190,15 @@ if (cached) {
 
  // inventory.service.ts
  async findOne(productSlug: string): Promise<InventProductDetailResponseDto> {
+
+   const cacheKey = 'frontend:artworkdetail:active';
+  
+       // ✅ 1. Try cache first
+     const cached = await this.cacheService.get<InventProductDetailResponseDto>(cacheKey);
+    if (cached  ) {
+      return cached;
+    } // ✅ 2. Fetch from DB if not cached
+
   const inventory = await this.inventoryRepo
   .createQueryBuilder('inventory')
     .innerJoinAndSelect('inventory.product', 'product') // Changed to innerJoinAndSelect
@@ -265,7 +274,7 @@ if (cached) {
       throw new NotFoundException(`Product with slug "${productSlug}" not found or out of stock`);
     }
 
-  return plainToInstance(
+  const response = plainToInstance(
     InventProductDetailResponseDto,
     {
       ...inventory.product,
@@ -273,6 +282,10 @@ if (cached) {
     },
     { excludeExtraneousValues: true },
   );
+
+  await this.cacheService.set(cacheKey, response);
+  // console.log('✅ Cache miss:', cacheKey);
+  return response;
 }
 
 async soldArtworkByArtist(

@@ -57,7 +57,7 @@ export class PermissionsService {
   const permissions = await this.permissionRepository.find();
 
    // 3. Save to cache for 5 minutes
-  await this.cacheService.set(cacheKey, permissions, { ttl: 600 });
+  await this.cacheService.set(cacheKey, permissions, { ttl: 82600 });
   return permissions;
 
   }

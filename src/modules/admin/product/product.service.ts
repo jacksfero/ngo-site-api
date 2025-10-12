@@ -62,6 +62,11 @@ export class ProductService {
 
 
   async getProductList(): Promise<ProductListDto[]> {
+     const cacheKey = 'Admin:prod:active';
+          const cached = await this.cacheService.get<ProductListDto[]>(cacheKey);
+          if (cached && cached.length) {
+            return cached;
+          }
     const products = await this.productRepository
       .createQueryBuilder('product')
       .leftJoin('product.productInventory', 'inventory')
@@ -77,9 +82,12 @@ export class ProductService {
       productTitle: `${p.productTitle} (IG${p.id})`,
     }));
 
-    return plainToInstance(ProductListDto, formatted, {
+    const response = plainToInstance(ProductListDto, formatted, {
       excludeExtraneousValues: true,
     });
+      await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+
+  return response;
   }
    
 

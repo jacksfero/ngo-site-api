@@ -11,17 +11,19 @@ import { BlogListDto } from './dto/blog-list.dto';
 import { CategoryWithBlogCountDto } from './dto/category-with-count.dto';
 import { Category } from '../../../shared/entities/category.entity';
 import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
+import { CacheService } from 'src/core/cache/cache.service';
+import { response } from 'express';
 
 
 @Injectable()
 export class BlogClientService {
   constructor(
+    private readonly cacheService: CacheService,
     @InjectRepository(Blog)
     private blogRepo: Repository<Blog>,
 
        @InjectRepository(Category)
     private categoryRepo: Repository<Category>,
-
 
   ) {}
 
@@ -35,7 +37,11 @@ export class BlogClientService {
       const { page , limit, search   } = paginationDto;
       const skip = (page - 1) * limit;
   const searchTerm = search?.toLowerCase() || '';
- 
+   const cacheKey = `frontend:blog:${JSON.stringify(paginationDto)}`;
+const cached = await this.cacheService.get(cacheKey);
+if (cached) {
+  return cached as PaginationResponseDto<BlogListDto>;
+}
 
        const queryBuilder = this.blogRepo
        .createQueryBuilder('blog')    
@@ -73,8 +79,10 @@ export class BlogClientService {
     excludeExtraneousValues: true,
   });
 
-  return new PaginationResponseDto(data, { total, page, limit  });
-        
+ const response = new PaginationResponseDto(data, { total, page, limit  });
+        await this.cacheService.set(cacheKey, response, { ttl: 900 });
+
+  return response;
   }
 
  
@@ -115,7 +123,13 @@ async findBlogsByCategorySlug(
     const { page = 1, limit = 10, search } = paginationDto;
   const skip = (page - 1) * limit;
   const searchTerm = search?.toLowerCase() || '';
-
+   const cacheKey = 'frontend:blogcat:active';
+  
+       // ✅ 1. Try cache first
+     const cached = await this.cacheService.get(cacheKey);
+    if (cached  ) {
+      return cached as PaginationResponseDto<BlogListDto>;
+    } // ✅ 2. Fetch from DB if not cached
  const where: any = {
   status: true,
     category: { slug },
@@ -138,11 +152,15 @@ const data = plainToInstance(BlogListDto, result, {
   excludeExtraneousValues: true,
   enableImplicitConversion: true, // optional but helps with nested types
 });
-  return new PaginationResponseDto(data, {
+  const response = new PaginationResponseDto(data, {
     total,
     page,
     limit,
   });
+
+   await this.cacheService.set(cacheKey, response);
+  // console.log('✅ Cache miss:', cacheKey);
+  return response;
 } 
  
 async findBlogsByTagSlug(
@@ -152,7 +170,13 @@ async findBlogsByTagSlug(
   const { page = 1, limit = 10, search } = paginationDto;
   const skip = (page - 1) * limit;
   const searchTerm = search?.toLowerCase() || '';
-
+const cacheKey = 'frontend:blogtag:active';
+  
+       // ✅ 1. Try cache first
+     const cached = await this.cacheService.get(cacheKey);
+    if (cached  ) {
+      return cached as PaginationResponseDto<BlogListDto>;
+    }
    // Validate input parameters
    if (page < 1) throw new BadRequestException('Page must be greater than 0');
    if (limit < 1 || limit > 100) throw new BadRequestException('Limit must be between 1 and 100');
@@ -193,16 +217,27 @@ async findBlogsByTagSlug(
     enableImplicitConversion: true,
   });
 
-  return new PaginationResponseDto(data, {
+ const response = new PaginationResponseDto(data, {
     total,
     page,
     limit,
   });
+
+   await this.cacheService.set(cacheKey, response);
+  // console.log('✅ Cache miss:', cacheKey);
+  return response;
 }
 
  
 
 async getCategoriesWithBlogCount(): Promise<CategoryWithBlogCountDto[]> {
+   const cacheKey = 'frontend:blogcount:active';
+  
+       // ✅ 1. Try cache first
+     const cached = await this.cacheService.get<CategoryWithBlogCountDto[]>(cacheKey);
+    if (cached && cached.length) {
+      return cached;
+    } // ✅ 2. Fetch from DB if not cached
   const raw = await this.categoryRepo
     .createQueryBuilder('category')
     .leftJoin('category.blogs', 'blog', 'blog.status = true')
@@ -212,7 +247,7 @@ async getCategoriesWithBlogCount(): Promise<CategoryWithBlogCountDto[]> {
     .having('COUNT(blog.id) > 0')
     .getRawMany();
 
-  return plainToInstance(CategoryWithBlogCountDto, raw.map((c) => ({
+  const response = plainToInstance(CategoryWithBlogCountDto, raw.map((c) => ({
     id: c.category_id,
     name: c.category_name,
     slug: c.category_slug,
@@ -220,6 +255,10 @@ async getCategoriesWithBlogCount(): Promise<CategoryWithBlogCountDto[]> {
   })), {
     excludeExtraneousValues: true,
   });
+
+     await this.cacheService.set(cacheKey, response);
+  // console.log('✅ Cache miss:', cacheKey);
+  return response;
 }
 
 

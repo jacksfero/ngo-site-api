@@ -60,7 +60,7 @@ export class WishlistService {
   }
 
   async getUserWishlist(userId: number): Promise<Wishlist[]> {
-  const cacheKey = `admin:wishlist:${userId}`;
+  const cacheKey = `Admin:wishlist:${userId}`;
 
   // Check cache
   const cached = await this.cacheService.get<Wishlist[]>(cacheKey);

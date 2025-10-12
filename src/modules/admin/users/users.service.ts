@@ -32,12 +32,14 @@ import { ArtistType } from 'src/shared/entities/artist-type.entity';
 import { sanitizeFileName } from 'src/shared/utils/sanitizefilename';
 import { UserProfileImage } from 'src/shared/entities/user-profile-image.entity';
 import { S3Service } from 'src/shared/s3/s3.service'; 
+import { CacheService } from 'src/core/cache/cache.service';
+import { response } from 'express';
 
 @Injectable()
 export class UsersService {
 
  constructor(
-
+   private readonly cacheService: CacheService,
     private readonly s3service: S3Service,
 
     @InjectRepository(User)
@@ -66,12 +68,23 @@ export class UsersService {
 
   ) {}
   async GetArtistTypeList(): Promise<ArtistType[]> {
+
+      const cacheKey = 'Admin:ArtistType:all';
+       
+      const cached = await this.cacheService.get<ArtistType[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
+
+
     const user = await this.artistTypeRepo.find({
       order:{
         id: "ASC"
     }      
     });
-
+     // ✅ 3. Store in cache for 1 hour
+  await this.cacheService.set(cacheKey, user, { ttl: 333600 });
+ 
     return user;
   }
 
@@ -120,7 +133,15 @@ export class UsersService {
  
 
   async findUsersByRole(roleName: string[], featured_artist?: boolean):  Promise<UserListByRoleNameDto[]> {
-   const query = await this.userRepository
+   
+    const cacheKey = 'Admin:UserListByRoleNameDto:active';
+   
+        // ✅ 1. Try cache first
+      const cached = await this.cacheService.get<UserListByRoleNameDto[]>(cacheKey);
+     if (cached && cached.length) {
+       return cached;
+     } // ✅ 2. Fetch from DB if not cached
+    const query = await this.userRepository
     .createQueryBuilder('user')
     .leftJoinAndSelect('user.roles', 'role')
    // .where('role.id = :roleName', { roleName })
@@ -141,8 +162,11 @@ export class UsersService {
  if (!users || users.length === 0) {
       throw new NotFoundException('No users found with the given role');
     }
-    return plainToInstance(UserListByRoleNameDto, users, { excludeExtraneousValues: true });
-}
+    const response = plainToInstance(UserListByRoleNameDto, users, { excludeExtraneousValues: true });
+     await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+
+  return response;
+  }
 
 
 async findByUsername_bk(username: string): Promise<User | null> {
@@ -178,7 +202,11 @@ async findByUsername(username: string): Promise<User | undefined> {
     const { page , limit, search,status,is_verified,userTypeID  } = paginationDto;
     const skip = (page - 1) * limit;
     //const search = search || '';
-  
+     const cacheKey = `Admin:users:${JSON.stringify(paginationDto)}`;
+    const cached = await this.cacheService.get(cacheKey);
+        if (cached) {
+          return cached as PaginationResponseDto<UsersListDto>;
+        }
     const queryBuilder = this.userRepository
     .createQueryBuilder('user')
     .leftJoinAndSelect('user.roles', 'role')
@@ -211,7 +239,10 @@ async findByUsername(username: string): Promise<User | undefined> {
       excludeExtraneousValues: true,
     });
   
-    return new PaginationResponseDto(data, { total, page, limit  });
+   // return new PaginationResponseDto(data, { total, page, limit  });
+    const response = new PaginationResponseDto(data, { total, page, limit });
+    await this.cacheService.set(cacheKey, response);
+    return response;
   }
 
   async uploadProfileImage(uId: number,profileimage: Express.Multer.File, user: any): Promise<UserProfileImage> {
@@ -235,15 +266,23 @@ async findByUsername(username: string): Promise<User | undefined> {
       profileImage = this.profileImageRepo.create({ imageUrl: image_Url, user: userd });
     }
 
-    return this.profileImageRepo.save(profileImage);
+    const imgs = await this.profileImageRepo.save(profileImage);
+     await this.cacheService.deletePattern('Admin:user:img:*');
+
+     return imgs;
   }
 
   async geProfileImage(userId: number): Promise<UserProfileImage> {
    // const userId = user.sub.toString();
+    const cacheKey = `Admin:user:img:${userId}`;
+           const cached = await this.cacheService.get<UserProfileImage>(cacheKey);
+           if (cached) return cached;
     const profileImage = await this.profileImageRepo.findOne({
       where: { user: { id: userId } },
     });
     if (!profileImage) throw new NotFoundException('Profile image not found');
+
+ await this.cacheService.set(cacheKey, profileImage);
     return profileImage;
   }
   
@@ -379,6 +418,11 @@ async findByUsername(username: string): Promise<User | undefined> {
   }
 
   async getUserWithRoles(userId: number): Promise<User> {
+
+     const cacheKey = `Admin:user:img:${userId}`;
+           const cached = await this.cacheService.get<User>(cacheKey);
+           if (cached) return cached;
+
     const User = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['roles', 'roles.permissions'],
@@ -386,6 +430,7 @@ async findByUsername(username: string): Promise<User | undefined> {
     if (!User) {
       throw new NotFoundException(`Permission '${userId}' not found`);
     }
+     await this.cacheService.set(cacheKey, User);
     return User;
   }
 

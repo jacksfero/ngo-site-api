@@ -7,10 +7,13 @@ import { Not, Repository } from 'typeorm';
 import e from 'express';
 import { plainToInstance } from 'class-transformer';
 import { StyleResponseDto } from './dto/style-response.dto';
+import { CacheService } from 'src/core/cache/cache.service';
 
 @Injectable()
 export class StyleService {
   constructor(
+    private cacheService: CacheService,
+
     @InjectRepository(Style)
     private styleRepository: Repository<Style>,
   ) { }
@@ -29,29 +32,51 @@ if (existingStyle) {
       // createdBy: user.username, // or user.sub (ID), depending on your use case
       createdBy: user.sub.toString(), //userid
     });
-    return this.styleRepository.save(style);
+    const saved = this.styleRepository.save(style);
+    await this.cacheService.deletePattern('admin:style:*');
+  await this.cacheService.deletePattern('frontend:style:*');
+
+  return saved;
 
   }
   async getActiveList():  Promise<StyleResponseDto[]> {
+    const cacheKey = 'Admin:style:active';
+    const cached = await this.cacheService.get<StyleResponseDto[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
     const surfaces = await this.styleRepository.find({
       order: { title: 'ASC' },
       where: {
        status: true, // only active surfaces
      }
     });
-    return plainToInstance(StyleResponseDto, surfaces, {
+    const response = plainToInstance(StyleResponseDto, surfaces, {
       excludeExtraneousValues: true,
     });
+     // ✅ 3. Cache result for 1 hour (3600 seconds)
+  await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+
+  return response;
   }
 
 
   async findAll(): Promise<Style[]> {
+     const cacheKey = 'Admin:Style:all';
+       
+      const cached = await this.cacheService.get<Style[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
     const result = await this.styleRepository.find({
       order: {
         id: 'DESC', // sort by newest first
       },
 
     });    
+     await this.cacheService.set(cacheKey, result, { ttl: 3600 });
+
+  
     return result;
   }
 
@@ -80,9 +105,7 @@ if (existingStyle) {
       throw new ConflictException('Style title already exists');
     }
   }
-  
-  
-  
+    
   const style = await this.findOne(id);
       
     if (!style) throw new NotFoundException(`style ${id} not found`);
@@ -103,7 +126,11 @@ if (existingStyle) {
       style.status = !style.status;
       style.updatedBy = user.sub.toString(); // or user.sub.toString()
   
-      return this.styleRepository.save(style);
+      const saved = this.styleRepository.save(style);
+       await this.cacheService.deletePattern('admin:style:*');
+  await this.cacheService.deletePattern('frontend:style:*');
+
+  return saved;
     }
     async validateStyleTitle(title: string, excludeId?: number): Promise<boolean> {
       const where: any = { title: title.trim() };
