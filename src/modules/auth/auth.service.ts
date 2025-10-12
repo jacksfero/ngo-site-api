@@ -255,25 +255,17 @@ export class AuthService {
     });
 
 
-    //  await this.mailService.sendMail({
-    //   to: 'jayprakash005@gmail.com',
-    //   subject: 'Verify your email',
-    //   template: 'welcome', // no extension // verify-email.hbs
-    //   context: {
-    //     name: "Preeti Jain",
-    //     link: `https://your-app.com/auth/verify-email?token`,
-    //   },
-    // });
+ 
 
      // Send welcome email
-  await this.mailService.sendTemplateEmail({
-  to: 'jayprakash005@gmail.com',
-  cc: ['info@indigalleria.com'],
-  //bcc: 'admin@indigalleria.com',
-  subject: 'Welcome to IndiGalleria 🎨',
-  template: 'welcome',
-  context: { name: 'Jay Prakash Jain' },
-})
+//   await this.mailService.sendTemplateEmail({
+//   to: 'jayprakash005@gmail.com',
+//   cc: ['info@indigalleria.com'],
+//   //bcc: 'admin@indigalleria.com',
+//   subject: 'Welcome to IndiGalleria 🎨',
+//   template: 'welcome',
+//   context: { name: 'Jay Prakash Jain' },
+// })
     if (!user) {
       throw new NotFoundException('User not found');
     }
