@@ -6,31 +6,36 @@ import { Currency } from '../../../shared/entities/currency.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not,FindOptionsWhere, Repository } from 'typeorm';
 import { CurrencyListDto } from './dto/currency-list.dto';
-
+import { CacheService } from 'src/core/cache/cache.service';
 
 @Injectable()
 export class CurrencyService {
   constructor(
+     private cacheService: CacheService,
+
     @InjectRepository(Currency)
     private currencyRepository: Repository<Currency>,
   ) { }
 
 
   async getCurrencyList(): Promise<CurrencyListDto[]> {
+     const cacheKey = 'Admin:currency:list';
+       
+      const cached = await this.cacheService.get<CurrencyListDto[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
     const currency = await this.currencyRepository.find({
       select: ['id', 'code','icon','currency','value'],
       where: { status: true } ,
    //   order: { weightSlot: 'ASC' },
     });
-
-    // const formatted = products.map((p) => ({
-    //   id: p.id,
-    //   weightSlot: `${p.weightSlot} (${p.costINR} - ${p.CostOthers})`,
-    // }));
-
-    return plainToInstance(CurrencyListDto, currency, {
+ 
+    const subjects = plainToInstance(CurrencyListDto, currency, {
       excludeExtraneousValues: true,
     });
+    await this.cacheService.set(cacheKey, subjects, { ttl: 36500 });
+    return subjects;
   }
 
 
@@ -60,6 +65,12 @@ export class CurrencyService {
   }
 
   async findAll(): Promise<Currency[]> {
+       const cacheKey = 'Admin:currency:all';
+       
+      const cached = await this.cacheService.get<Currency[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
     const result = await this.currencyRepository.find({
       order: {
         createdAt: 'DESC', // sort by newest first
@@ -68,6 +79,8 @@ export class CurrencyService {
         status: true, // only active surfaces
       },*/
     });
+    // ✅ 3. Store in cache for 1 hour
+  await this.cacheService.set(cacheKey, result, { ttl: 3600 })
     return result;
   }
 

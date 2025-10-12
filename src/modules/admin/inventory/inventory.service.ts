@@ -12,10 +12,12 @@ import { InventoryResponseDto } from './dto/inventry-response.dto';
 import { InventoryStatusDto } from './dto/inventory-status.dto';
 import { AartworkGstSlot, ShippingGstSlot } from '../shipping/enums/gst.enum';
 import { Shipping } from 'src/shared/entities/shipping.entity';
-
+import { CacheService } from 'src/core/cache/cache.service';
 @Injectable()
 export class InventoryService {
   constructor(
+     private cacheService: CacheService,
+
     @InjectRepository(Inventory)
      private inventoryRepo: Repository<Inventory>,
 
@@ -80,7 +82,11 @@ export class InventoryService {
       categoryId,artistId,search,
       endDate, select } = paginationDto;
     const skip = (page - 1) * limit;
-
+  const cacheKey = `Admin:inventory:${JSON.stringify(paginationDto)}`;
+const cached = await this.cacheService.get(cacheKey);
+    if (cached) {
+      return cached as PaginationResponseDto<InventoryResponseDto>;
+    }
     const qb = this.inventoryRepo.createQueryBuilder('inventory')
     .leftJoinAndSelect('inventory.product', 'product')
     .leftJoinAndSelect('product.artist', 'artist') // ✅ CRITICAL: Join the artist
@@ -174,16 +180,33 @@ export class InventoryService {
       excludeExtraneousValues: true,
     });
   
-    return new PaginationResponseDto(data, { total, page, limit  }); 
+    const response =  new PaginationResponseDto(data, { total, page, limit  }); 
+     await this.cacheService.set(cacheKey, response);
+    return response;
   }
  
   async findByProduct(productId: number): Promise<Inventory> {
+
+    const cacheKey = 'Admin:inventory:active';
+    
+         // ✅ 1. Try cache first
+       const cached = await this.cacheService.get<Inventory>(cacheKey);
+      if (cached ) {
+        return cached;
+      } // ✅ 2. Fetch from DB if not cached
+
+
     const inventory = await this.inventoryRepo.findOne({
        where: { product: { id: productId } }, 
        relations: ['product'] 
       
       });
     if (!inventory) throw new NotFoundException('Inventory not found for this product');
+   
+      // ✅ 3. Cache result for 1 hour (3600 seconds)
+  await this.cacheService.set(cacheKey, inventory, { ttl: 3600 });
+
+  //return response;
     return inventory;
   }
 
@@ -213,11 +236,21 @@ if (dto.shippingId) {
   }
 
   async findOne(id: number): Promise<Inventory> {
+    const cacheKey = `Admin:inventory:${id}`;
+    
+         // ✅ 1. Try cache first
+       const cached = await this.cacheService.get<Inventory>(cacheKey);
+      if (cached ) {
+        return cached;
+      } // ✅ 2. Fetch from DB if not cached
     const inventory = await this.inventoryRepo.findOne({
        where: { id }, 
        relations: ['product','product.artist','product.size','product.shippingTime',
        'product.commissionType', 'product.packingMode', 'product.category'] });
     if (!inventory) throw new NotFoundException('Inventory not found');
+      // ✅ 3. Cache result for 1 hour (3600 seconds)
+  await this.cacheService.set(cacheKey, inventory, { ttl: 3600 });
+
     return inventory;
   }
 
@@ -228,7 +261,7 @@ if (dto.shippingId) {
     }
     inventory.status = !inventory.status;
     inventory.updatedBy = user.sub.toString(); // or user.sub.toString()
-
+    await this.cacheService.deletePattern('Admin:inventory:*');
     return this.inventoryRepo.save(inventory);
   }
 

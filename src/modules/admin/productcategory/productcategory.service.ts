@@ -7,11 +7,15 @@ import { Productcategory } from 'src/shared/entities/productcategory.entity';
 import { slugify } from 'src/shared/utils/slugify';
 import { plainToInstance } from 'class-transformer';
 import { ProductcategoryResponseDto } from './dto/pcate-res.dto';
+ 
+import { CacheService } from 'src/core/cache/cache.service';
 
 @Injectable()
 export class ProductcategoryService {
 
   constructor(
+     private cacheService: CacheService,
+    
     @InjectRepository(Productcategory)
     private procateRepository: Repository<Productcategory>,
   ) { }
@@ -43,19 +47,35 @@ export class ProductcategoryService {
     return slug;
   }
   async getActiveList():  Promise<ProductcategoryResponseDto[]> {
+     const cacheKey = 'Admin:productcat:all';
+       
+      const cached = await this.cacheService.get<ProductcategoryResponseDto[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
+
     const surfaces = await this.procateRepository.find({
       order: { id: 'DESC' },
       where: {
        status: true, // only active surfaces
      }
     });
-    return plainToInstance(ProductcategoryResponseDto, surfaces, {
+    const  response =    plainToInstance(ProductcategoryResponseDto, surfaces, {
       excludeExtraneousValues: true,
     });
+     await this.cacheService.set(cacheKey, response, { ttl: 93600 });
+
+  return response;
   }
 
   async findAll(): Promise<Productcategory[]> {
-    return this.procateRepository.find({
+     const cacheKey = 'Admin:productcat:all';
+       
+      const cached = await this.cacheService.get<Productcategory[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
+  const  response = await this.procateRepository.find({
       order: {
         id: 'DESC', // sort by newest first
       },
@@ -63,6 +83,11 @@ export class ProductcategoryService {
          status: true, // only active surfaces
        }, */
     });
+
+    // ✅ 3. Store in cache for 1 hour
+  await this.cacheService.set(cacheKey, response, { ttl: 93600 });
+
+  return response;
   }
 
 

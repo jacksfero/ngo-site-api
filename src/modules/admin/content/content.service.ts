@@ -4,10 +4,13 @@ import { UpdateContentDto } from './dto/update-content.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Content } from '../../../shared/entities/content.entity';
 import { Repository } from 'typeorm';
+import { CacheService } from 'src/core/cache/cache.service';
 
 @Injectable()
 export class ContentService {
   constructor(
+      private cacheService: CacheService,
+
     @InjectRepository(Content)
     private contentRepository: Repository<Content>,
   ) { }
@@ -23,12 +26,20 @@ export class ContentService {
   }
 
   async findAll(): Promise<Content[]> {
+      const cacheKey = 'Admin:Content:all';
+       
+      const cached = await this.cacheService.get<Content[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
     const result = await this.contentRepository.find({
       order: {
         id: 'DESC', // sort by newest first
       },
 
     });    
+    await this.cacheService.set(cacheKey, result, { ttl: 93600 });
+ 
     return result;
   }
 
@@ -60,7 +71,7 @@ export class ContentService {
     }
     content.status = !content.status;
     content.updatedBy = user.sub.toString(); // or user.sub.toString()
-
+ await this.cacheService.deletePattern('Admin:Content:*');
     return this.contentRepository.save(content);
   }
 

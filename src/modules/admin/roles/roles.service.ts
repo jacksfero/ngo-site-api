@@ -6,10 +6,14 @@ import { Role } from '../../../shared/entities/role.entity';
 import { Permission } from '../../../shared/entities/permission.entity';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { CacheService } from 'src/core/cache/cache.service';
+import { response } from 'express';
 
 @Injectable()
 export class RolesService {
   constructor(
+     private cacheService: CacheService,
+
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
     @InjectRepository(Permission)
@@ -57,10 +61,18 @@ export class RolesService {
   }
 
   async findAllRoles(): Promise<Role[]> {
-    return this.roleRepository.find({ relations: ['permissions'],order: {
+     const cacheKey = 'Admin:roles:all';
+       
+      const cached = await this.cacheService.get<Role[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
+   const response = await this.roleRepository.find({ relations: ['permissions'],order: {
       id: 'DESC', // sort by newest first
     },
    });
+    await this.cacheService.set(cacheKey, response, { ttl: 93600 });
+    return response;
   }
 
   async findRoleById(id: number): Promise<Role> {

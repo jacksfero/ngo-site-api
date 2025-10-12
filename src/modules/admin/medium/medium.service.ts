@@ -8,10 +8,13 @@ import { Not, Repository } from 'typeorm';
 import { Medium } from '../../../shared/entities/medium.entity';
 import { MediumResponseDto } from './dto/medium-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { CacheService } from 'src/core/cache/cache.service';
 
 @Injectable()
 export class MediumService {
   constructor(
+     private cacheService: CacheService,
+     
     @InjectRepository(Medium)
     private mediumRepository: Repository<Medium>,
 
@@ -38,7 +41,7 @@ export class MediumService {
   }
   async getActiveList(): Promise<MediumResponseDto[]> {
     // 1. Check cache
-    const cacheKey = 'active_medium_list';
+    const cacheKey = 'Admin:medium:active';
     const cachedData = await this.cacheManager.get<MediumResponseDto[]>(cacheKey);
 
     if (cachedData) {
@@ -62,13 +65,19 @@ export class MediumService {
     });
 
     // 3. Store in cache
-    await this.cacheManager.set(cacheKey, response, 300); // cache 5 min
+    await this.cacheManager.set(cacheKey, response, 99300); // cache 5 min
 
     return response;
   }
 
   async findAll(): Promise<Medium[]> {
-    return this.mediumRepository.find({
+     const cacheKey = 'Admin:Medium:all';
+       
+      const cached = await this.cacheService.get<Medium[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
+    const response = await this.mediumRepository.find({
       order: {
         id: 'DESC', // sort by newest first
       },
@@ -76,6 +85,10 @@ export class MediumService {
         status: true, // only active surfaces
       },*/
     });
+      // 3. Store in cache
+    await this.cacheManager.set(cacheKey, response, 300); // cache 5 min
+
+    return response;
   }
 
   async findOne(id: number): Promise<Medium> {
@@ -121,7 +134,7 @@ export class MediumService {
     }
     medium.status = !medium.status;
     medium.updatedBy = user.sub.toString(); // or user.sub.toString()
-
+     await this.cacheService.deletePattern('Admin:Medium:*');
     return this.mediumRepository.save(medium);
   }
 

@@ -7,10 +7,13 @@ import { Category } from 'src/shared/entities/category.entity';
 import { slugify } from 'src/shared/utils/slugify';
 import { plainToInstance } from 'class-transformer';
 import { BlogcategoryResponseDto } from './dto/blog-cat-res-dto';
+import { CacheService } from 'src/core/cache/cache.service';
 
 @Injectable()
 export class CategoryService {
   constructor(
+     private cacheService: CacheService,
+
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
 
@@ -28,18 +31,35 @@ export class CategoryService {
   }
 
   async getActiveList(): Promise<BlogcategoryResponseDto[]> {
+     const cacheKey = 'Admin:category:active';
+    
+         // ✅ 1. Try cache first
+       const cached = await this.cacheService.get<BlogcategoryResponseDto[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      } // ✅ 2. Fetch from DB if not cached
     const surfaces = await this.categoryRepository.find({
       order: { name: 'ASC' },
       where: {
         status: true, // only active surfaces
       }
     });
-    return plainToInstance(BlogcategoryResponseDto, surfaces, {
+    const response = plainToInstance(BlogcategoryResponseDto, surfaces, {
       excludeExtraneousValues: true,
     });
+    // ✅ 3. Cache result for 1 hour (3600 seconds)
+  await this.cacheService.set(cacheKey, response, { ttl: 93600 });
+
+  return response;
   }
   async findAll(): Promise<Category[]> {
-    return this.categoryRepository.find({
+    const cacheKey = 'Admin:category:all';
+       
+      const cached = await this.cacheService.get<Category[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
+    const response = await this.categoryRepository.find({
       order: {
         createdAt: 'DESC', // sort by newest first
       },
@@ -47,6 +67,11 @@ export class CategoryService {
         status: true, // only active surfaces
       },*/
     });
+
+    // ✅ 3. Store in cache for 1 hour
+  await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+
+  return response;
   }
 
   async findOne(id: number): Promise<Category> {
@@ -84,7 +109,7 @@ export class CategoryService {
     }
     category.status = !category.status;
     //medium.updatedBy = user.sub.toString(); // or user.sub.toString()
-
+await this.cacheService.deletePattern('Admin:category:*');
     return this.categoryRepository.save(category);
   }
 

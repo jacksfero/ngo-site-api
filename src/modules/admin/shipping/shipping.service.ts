@@ -8,17 +8,26 @@ import { ShippingListDto } from './dto/shipping-list.dto';
 import { plainToInstance } from 'class-transformer';
 import { AartworkGstSlot, ShippingGstSlot } from './enums/gst.enum';  
 import { GstSlotResponseDto } from './dto/gst-slot-response.dto';
- 
+ import { CacheService } from 'src/core/cache/cache.service';
 
 
 @Injectable()
 export class ShippingService {
   constructor(
+     private cacheService: CacheService,
+
     @InjectRepository(Shipping)
     private shippingRepository: Repository<Shipping>,
   ) {}
 
   async getShippingList(): Promise<ShippingListDto[]> {
+    const cacheKey = 'Admin:shipping:active';
+    
+         // ✅ 1. Try cache first
+       const cached = await this.cacheService.get<ShippingListDto[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      } // ✅ 2. Fetch from DB if not cached
     const products = await this.shippingRepository.find({
       select: ['id', 'weightSlot','CostOthers','costINR'],
       where: { status: true } ,
@@ -30,9 +39,13 @@ export class ShippingService {
       weightSlot: `${p.weightSlot} (${p.costINR} - ${p.CostOthers})`,
     }));
 
-    return plainToInstance(ShippingListDto, formatted, {
+    const response = plainToInstance(ShippingListDto, formatted, {
       excludeExtraneousValues: true,
     });
+    // ✅ 3. Cache result for 1 hour (3600 seconds)
+  await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+
+  return response;
   }
   getArtGstSlot(): GstSlotResponseDto[] {
     const slots = Object.keys(AartworkGstSlot)
@@ -74,11 +87,22 @@ export class ShippingService {
   }
  
   async findAll(): Promise<Shipping[]> {
+     const cacheKey = 'Admin:shipping:list';
+    
+         // ✅ 1. Try cache first
+       const cached = await this.cacheService.get<Shipping[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      } // ✅ 2. Fetch from DB if not cached
     const result = await this.shippingRepository.find({
       order: {
         id: 'DESC', // sort by newest first
       }
     });
+    // ✅ 3. Cache result for 1 hour (3600 seconds)
+  await this.cacheService.set(cacheKey, result, { ttl: 3600 });
+
+  
     return result;
   }
 
@@ -108,7 +132,7 @@ async  remove(id: number): Promise<void> {
       }
       shipping.status = !shipping.status;
       shipping.updatedBy = user.sub.toString(); // or user.sub.toString()
-  
+  await this.cacheService.deletePattern('Admin:shipping:*');
       return this.shippingRepository.save(shipping);
     }
   

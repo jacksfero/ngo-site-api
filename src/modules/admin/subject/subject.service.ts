@@ -16,7 +16,7 @@ export class SubjectService {
 
     @InjectRepository(Subject)
     private subjectRepository: Repository<Subject>,
-  ) { }
+  ) {}
 
   async create(createSubjectDto: CreateSubjectDto,user: any,): Promise<Subject> {
     try {
@@ -36,7 +36,7 @@ export class SubjectService {
   const saved = await this.subjectRepository.save(subject);
 
   // 🧹 Invalidate admin and frontend caches
-  await this.cacheService.deletePattern('admin:subjects:*');
+  await this.cacheService.deletePattern('Admin:subjects:*');
   await this.cacheService.deletePattern('frontend:subjects:*');
 
   return saved;
@@ -75,8 +75,7 @@ export class SubjectService {
   if (cached && cached.length) {
     return cached;
   }
-    
-
+     
       // ✅ 2. Fetch from database if not cached
   const subjects = await this.subjectRepository.find({
     order: { id: 'DESC' },

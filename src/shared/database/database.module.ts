@@ -1,44 +1,46 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { Module, Logger } from '@nestjs/common';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { RolesService } from 'src/modules/admin/roles/roles.service';
-import { PermissionsService } from 'src/modules/admin/permissions/permissions.service';
-import { RolesModule } from 'src/modules/admin/roles/roles.module';
-import { PermissionsModule } from 'src/modules/admin/permissions/permissions.module';
-import { RolesSeed } from './seeds/roles.seed';
+import { connectWithRetry, patchQueryRunner } from './database.providers';
+import { DataSource } from 'typeorm';
 
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'mysql',
-        host: configService.get<string>('DB_HOST'),
-        port: configService.get<number>('DB_PORT'),
-        username: configService.get<string>('DB_USERNAME'),
-        password: configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_NAME'),
-        entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-        //  entities: [Surface],
-        entityPrefix: 'my_',
+      useFactory: async (configService: ConfigService): Promise<TypeOrmModuleOptions> => {
+        const logger = new Logger('TypeORM');
 
-        /* synchronize:
-          configService.get<string>('DATABASE_SYNCHRONIZE', 'false') === 'true',*/
-        synchronize:
-          configService.get<string>('DATABASE_SYNCHRONIZE') === 'true',
-          //migrationsRun: true,
-        logging: configService.get('DB_LOGGING') === 'true',
-      //  logging: ['query', 'error']
-      }),
+        const options: TypeOrmModuleOptions = {
+          type: 'mysql',
+          host: configService.get<string>('DB_HOST'),
+          port: configService.get<number>('DB_PORT'),
+          username: configService.get<string>('DB_USERNAME'),
+          password: configService.get<string>('DB_PASSWORD'),
+          database: configService.get<string>('DB_NAME'),
+          synchronize: false,
+          autoLoadEntities: true,
+          entityPrefix: 'my_',
+          extra: {
+            connectionLimit: 10,
+            connectTimeout: 10000,
+            keepAlive: true,
+          },
+          // ✅ fix: NestJS expects boolean | 'all' | ['query', 'error', ...]
+          logging: ['error', 'warn'] as any,
+        };
+
+        // Initialize DataSource manually for retry logic
+        const dataSource = new DataSource(options as any);
+
+        await connectWithRetry(dataSource);
+        patchQueryRunner(dataSource);
+
+        logger.log('✅ TypeORM initialized successfully');
+        return options;
+      },
     }),
-  //  RolesModule,
-   // PermissionsModule,
-
-    //RolesService,
-    // PermissionsService,
   ],
- // providers: [RolesSeed],
- // exports: [RolesSeed], // 👈 So AppModule can use it
 })
 export class DatabaseModule {}

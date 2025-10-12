@@ -4,10 +4,13 @@ import { UpdatePolicyDto } from './dto/update-policy.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Policy } from '../../../shared/entities/policy.entity';
 import { Repository } from 'typeorm';
+import { CacheService } from 'src/core/cache/cache.service';
 
 @Injectable()
 export class PolicyService {
   constructor(
+    private cacheService: CacheService,
+
     @InjectRepository(Policy)
     private policyRepository: Repository<Policy>,
   ) {}
@@ -22,12 +25,20 @@ export class PolicyService {
   }
 
   async findAll(): Promise<Policy[]> {
+    const cacheKey = 'Admin:Policy:all';
+       
+      const cached = await this.cacheService.get<Policy[]>(cacheKey);
+      if (cached && cached.length) {
+        return cached;
+      }
     const result = await this.policyRepository.find({
       order: {
         id: 'DESC', // sort by newest first
       },
 
     });    
+     // ✅ 3. Store in cache for 1 hour
+  await this.cacheService.set(cacheKey, result, { ttl: 38600 });
     return result;
   }
 
@@ -57,7 +68,7 @@ async remove(id: number): Promise<void> {
     }
     policy.status = !policy.status;
     policy.updatedBy = user.sub.toString(); // or user.sub.toString()
-
+     await this.cacheService.deletePattern('Admin:Policy:*');
     return this.policyRepository.save(policy);
   }
 }
