@@ -253,10 +253,7 @@ export class AuthService {
       where: { id: userId },
       relations: ['profileImage'], // 👈 add relations if you need
     });
-
-
  
-
      // Send welcome email
 //   await this.mailService.sendTemplateEmail({
 //   to: 'jayprakash005@gmail.com',
