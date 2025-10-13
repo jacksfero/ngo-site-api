@@ -1,7 +1,7 @@
 // modules/client/blog/blog-client.controller.ts
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, Req } from '@nestjs/common';
 import { BlogClientService } from './blog-client.service';
- 
+ import { Request } from 'express';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { BlogListDto } from './dto/blog-list.dto';
@@ -29,7 +29,13 @@ export class BlogClientController {
     return this.blogService.findAllPublished(paginationDto);
   }
   
-
+ @Get('top-viewed')
+  async findAll_top_viewed(
+    @Query(new PaginationPipe(FRONT_BLOG_LIMIT, FRONT_BLOG_MAX_LIMIT, FRONT_BLOG_PAGE))
+    paginationDto: PaginationBaseDto
+  ): Promise<PaginationResponseDto<BlogListDto>> {
+    return this.blogService.findAll_top_viewed(paginationDto);
+  }
 
 
 @Get('categories-with-count') 
@@ -55,9 +61,12 @@ export class BlogClientController {
     return this.blogService.findBlogsByTagSlug(slug, paginationDto);
   }
 
- @Get(':slug')
- 
-  getBlogBySlug(@Param('slug') slug: string) {
-    return this.blogService.getBlogBySlug(slug);
+  @Get(':slug')
+  async getBlog(@Param('slug') slug: string, @Req() req: Request) {
+    // ✅ Fix: use "as any" for extended properties (req.user, req.ip)
+    const viewerIdentifier =
+      (req as any)?.user?.id?.toString() || (req as any)?.ip || 'unknown';
+
+    return this.blogService.getBlogBySlug(slug, viewerIdentifier);
   }
 }

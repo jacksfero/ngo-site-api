@@ -13,6 +13,7 @@ import { Category } from '../../../shared/entities/category.entity';
 import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
 import { CacheService } from 'src/core/cache/cache.service';
 import { response } from 'express';
+import { BlogView } from 'src/shared/entities/blog-view.entity';
 
 
 @Injectable()
@@ -21,6 +22,9 @@ export class BlogClientService {
     private readonly cacheService: CacheService,
     @InjectRepository(Blog)
     private blogRepo: Repository<Blog>,
+
+     @InjectRepository(BlogView)
+    private blogViewRepo: Repository<BlogView>,
 
        @InjectRepository(Category)
     private categoryRepo: Repository<Category>,
@@ -45,7 +49,7 @@ if (cached) {
 
        const queryBuilder = this.blogRepo
        .createQueryBuilder('blog')    
-       .select(['blog.id','blog.title', 'blog.descriptionTag','blog.scheduledPublishDate', 'blog.slug','blog.createdAt','blog.titleImage','blog.blogContent'])
+       .select(['blog.id','blog.title','blog.views', 'blog.descriptionTag','blog.scheduledPublishDate', 'blog.slug','blog.createdAt','blog.titleImage','blog.blogContent'])
        .leftJoin('blog.category', 'category', 'category.status = :isActive', { isActive: true })
        .addSelect([ 'category.name', 'category.slug'])
        .leftJoin('blog.tags', 'tags')
@@ -85,22 +89,110 @@ if (cached) {
   return response;
   }
 
- 
-  async getBlogBySlug(slug: string): Promise<BlogListDto> {
-  const blog = await this.blogRepo.findOne({
-    where: {
-      slug,
-      status: true, // ✅ likely should be true, not false
-    },
-    relations: ['category', 'tags'], // ✅ include if your DTO exposes these
-  });
+   async findAll_top_viewed(
+      paginationDto: PaginationBaseDto,
+    ): Promise<PaginationResponseDto<BlogListDto>> {
 
-  if (!blog) throw new NotFoundException('Blog not found');
-
-  return plainToInstance(BlogListDto, blog, {
-    excludeExtraneousValues: true, // ✅ ensures only @Expose fields are returned
-  });
+      const { page , limit, search   } = paginationDto;
+      const skip = (page - 1) * limit;
+  const searchTerm = search?.toLowerCase() || '';
+   const cacheKey = `frontend:blog:topViews:${JSON.stringify(paginationDto)}`;
+const cached = await this.cacheService.get(cacheKey);
+if (cached) {
+  return cached as PaginationResponseDto<BlogListDto>;
 }
+
+       const queryBuilder = this.blogRepo
+       .createQueryBuilder('blog')    
+       .select(['blog.id','blog.title','blog.views','blog.descriptionTag','blog.scheduledPublishDate', 'blog.slug','blog.createdAt','blog.titleImage','blog.blogContent'])
+       .leftJoin('blog.category', 'category', 'category.status = :isActive', { isActive: true })
+       .addSelect([ 'category.name', 'category.slug'])
+       .leftJoin('blog.tags', 'tags')
+       .leftJoin('blog.author', 'author')
+        .addSelect([  'author.username'])
+       .where('blog.status = :status', { status: true })
+       .orderBy('blog.views', 'DESC')
+       .take(limit)
+       .skip(skip);
+
+       if (searchTerm) {
+        queryBuilder.andWhere(
+          `(LOWER(blog.title) LIKE :search 
+        OR LOWER(category.name) LIKE :search
+        OR LOWER(tags.name) LIKE :search
+        OR LOWER(author.username) LIKE :search)`,
+          { search: `%${searchTerm.toLowerCase()}%` },
+        );
+      }
+      const [result, total] = await queryBuilder.getManyAndCount();
+        // Check if results exist
+     if (result.length === 0 && total === 0) {
+      throw new NotFoundException('No Blog found matching your criteria');
+    }
+    // Check if requested page exists
+   const totalPages = Math.ceil(total / limit);
+   if (page > totalPages && totalPages > 0) {
+     throw new BadRequestException(`Page ${page} does not exist. Total pages: ${totalPages}`);
+   }
+   const data = plainToInstance(BlogListDto, result, {
+    excludeExtraneousValues: true,
+  });
+
+ const response = new PaginationResponseDto(data, { total, page, limit  });
+        await this.cacheService.set(cacheKey, response, { ttl: 900 });
+
+  return response;
+  }
+
+ 
+   async getBlogBySlug(slug: string, viewerIdentifier: string): Promise<BlogListDto> {
+    const cacheKey = `frontend:blog:${slug}`;
+    let blog = await this.cacheService.get<Blog>(cacheKey);
+
+    // ✅ Fix: remove re-declaration of "blog"
+    if (!blog) {
+      blog = await this.blogRepo.findOne({
+        where: { slug, status: true },
+        relations: ['category', 'tags'],
+      });
+
+      if (!blog) throw new NotFoundException('Blog not found');
+
+      await this.cacheService.set(cacheKey, blog, { ttl: 600 });
+    }
+
+    // ✅ Now blog is always defined, but add safeguard
+    if (!blog) throw new NotFoundException('Blog not found');
+
+    const blogId = blog.id; // ✅ define for later use
+
+    // ✅ Unique view logic
+    const existingView = await this.blogViewRepo.findOne({
+      where: { blog: { id: blogId }, viewerIdentifier },
+    });
+
+    if (!existingView) {
+      await this.blogViewRepo.save({
+        blog: { id: blogId },
+        viewerIdentifier,
+      });
+
+      // ✅ Increment in DB
+      await this.blogRepo.increment({ id: blogId }, 'views', 1);
+
+      // ✅ Increment in cache
+      if (typeof blog.views === 'number') {
+        blog.views += 1;
+        await this.cacheService.set(cacheKey, blog);
+      }
+    }
+
+    // ✅ Return DTO
+    return plainToInstance(BlogListDto, blog, {
+      excludeExtraneousValues: true,
+    });
+  }
+ 
 
   /*async findBlogsByCategory(categoryId: number, page = 1, limit = 10): Promise<PaginationResponseDto<BlogListDto>> {
   const [result, total] = await this.blogRepo.findAndCount({

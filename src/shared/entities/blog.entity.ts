@@ -1,8 +1,9 @@
-import { Column, JoinTable, ManyToMany, ManyToOne, Entity, PrimaryGeneratedColumn, Unique, BeforeInsert, BeforeUpdate } from 'typeorm';
-import { Expose } from 'class-transformer';
+import { Column, JoinTable,OneToMany, ManyToMany, ManyToOne, Entity, PrimaryGeneratedColumn, Unique, BeforeInsert, BeforeUpdate } from 'typeorm';
+ 
 import { Category } from './category.entity';
 import { Tag } from './tag.entity';
 import { User } from './user.entity';
+import { BlogView } from './blog-view.entity';
 
 @Entity('blog')
 @Unique(['slug']) // Enforce unique slug
@@ -36,6 +37,12 @@ export class Blog {
 
   @Column({ type: 'varchar', length: 200 })
   h1Title: string;
+
+  @Column({ default: 0 })
+  views: number; // 👈 view counter
+
+   @OneToMany(() => BlogView, (view) => view.blog)
+  blogViews: BlogView[];
 
   @Column({
     type: 'longtext',

@@ -41,6 +41,9 @@ export class BlogListDto {
   @Expose()
   slug: string;
 
+   @Expose()
+  views: number;
+
   @Expose()
   titleImage: string;
 
