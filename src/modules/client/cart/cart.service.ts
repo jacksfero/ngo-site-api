@@ -286,7 +286,7 @@ export class CartService {
     guestId?: string,
   ): Promise<Cart> {
     const cart = await this.getOrCreateCart(userId, guestId);
-    console.log('--------cart-------', cart)
+  //  console.log('--------cart-------', cart)
     const item = cart.items.find((i) => i.id === dto.itemId);
     if (!item) {
       throw new NotFoundException('Cart item not found');

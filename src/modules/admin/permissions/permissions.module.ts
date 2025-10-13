@@ -16,8 +16,8 @@ import { Permission } from '../../../shared/entities/permission.entity';
 })
 export class PermissionsModule {
   constructor() {
-    console.log('----Permission in Module-----User  :', User); // 👈 Should print the class
-    console.log('---Permission in Module------Role  :', Role);
-    console.log('-Permission in Module--------Permission in  :', Permission);
+   // console.log('----Permission in Module-----User  :', User); // 👈 Should print the class
+   // console.log('---Permission in Module------Role  :', Role);
+  //  console.log('-Permission in Module--------Permission in  :', Permission);
   }
 }

@@ -311,8 +311,8 @@ async login(
   @UseGuards(JwtAuthGuard)
   @Post('user-kyc')
   createkycDetail(@Body() dto: CreateKycDetailDto, @Req() req) {
-    console.log('JWT User:', req.user);  // <--- check if user is set
-    console.log('Body:', dto);
+  //  console.log('JWT User:', req.user);  // <--- check if user is set
+   // console.log('Body:', dto);
     return this.authService.createkycDetail(dto, req.user);
   }
 
@@ -333,8 +333,8 @@ async login(
   @UseGuards(JwtAuthGuard)
   @Post('user-bank')
   createBankDetail(@Body() dto: CreateBankDetailDto, @Req() req) {
-    console.log('JWT User:', req.user);  // <--- check if user is set
-    console.log('Body:', dto);
+   // console.log('JWT User:', req.user);  // <--- check if user is set
+   // console.log('Body:', dto);
     return this.authService.createBankDetail(dto, req.user);
   }
 

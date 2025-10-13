@@ -51,13 +51,13 @@ export class PayUMoneyService {
     // Formula: key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||salt
     const hashString = `${this.merchantKey}|${txnId}|${formattedAmount}|${productInfo}|${dto.fullName}|${dto.email}|||||||||||${this.merchantSalt}`;
 
-    console.log('HashString for verification:', hashString);
+   // console.log('HashString for verification:', hashString);
 
     // ❌ WRONG: PayU expects only SHA512 hash, not JSON format
     // PayU does NOT expect v1/v2 format - just a single SHA512 hash
     const hash = crypto.createHash('sha512').update(hashString).digest('hex');
 
-    console.log('Generated Hash:', hash);
+   // console.log('Generated Hash:', hash);
 
     return {
       gateway: 'PayUMoney',

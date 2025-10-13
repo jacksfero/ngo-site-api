@@ -200,7 +200,7 @@ export class OtpService {
       await this.otpRepository.save(otpEntity);
     }
   
-    console.log(`OTP sent to ${type}: ${identifier} => ${otp}`);
+   // console.log(`OTP sent to ${type}: ${identifier} => ${otp}`);
   //  return { success: true, message: `OTP sent to your ${type}` };
     return { success: true, message: `OTP sent to your ${otp}`, data: {
         identifier,

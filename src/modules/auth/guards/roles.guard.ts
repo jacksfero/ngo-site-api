@@ -32,7 +32,7 @@ console.log(  '--1----Role  Guard   ',      requiredRoles   );*/
 
     const request = context.switchToHttp().getRequest();
     const user: User = request.user;
-      console.log(  '----2--Role  Guard   ',      request.user   );
+     // console.log(  '----2--Role  Guard   ',      request.user   );
     if (!user) {
       throw new ForbiddenException('User not authenticated');
     }
@@ -45,7 +45,7 @@ console.log(  '--1----Role  Guard   ',      requiredRoles   );*/
 
     if (!hasRole) {
       throw new ForbiddenException(
-        `Required roles iiiiiiiii---: ${requiredRoles.join(', ')} -- ${userRoles}`,
+        `Required roles ---: ${requiredRoles.join(', ')} -- ${userRoles}`,
       );
     }
 

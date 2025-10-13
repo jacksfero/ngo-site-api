@@ -420,10 +420,10 @@ const cached = await this.cacheService.get(cacheKey);
       throw new NotFoundException('Product not found');
     }
     if (file) {
-      console.log(`file.originalname --------- `,file.originalname)
-      console.log(`file.originalname --------- `,file.buffer)
-      console.log(`file.originalname --------- `,file.mimetype)
-      console.log(`allt taxt 1 --------- `,alt_text)
+     // console.log(`file.originalname --------- `,file.originalname)
+     // console.log(`file.originalname --------- `,file.buffer)
+    //  console.log(`file.originalname --------- `,file.mimetype)
+    //  console.log(`allt taxt 1 --------- `,alt_text)
       const cleanName = sanitizeFileName(file.originalname);
       const key = `products/${Date.now()}-${cleanName}`;
       try {
@@ -436,7 +436,7 @@ const cached = await this.cacheService.get(cacheKey);
         throw new BadRequestException('Image upload failed');
       }
     }
-    console.log(`allt taxt --------- `,alt_text)
+   // console.log(`allt taxt --------- `,alt_text)
     const image = this.imageRepo.create({
       //imagePath: `/product-images/${fileName}`, // just the relative path 
       imagePath: imageurl, // just the relative path

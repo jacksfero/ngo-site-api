@@ -44,7 +44,7 @@ export class RolesService {
     const { permissionsIds, ...rest } = roleData;
     const role = this.roleRepository.create(rest);
 
-    console.log('----1--permissoin id-----', permissionsIds);
+  //  console.log('----1--permissoin id-----', permissionsIds);
 
     // Step 2: Load roles and assign
     if (permissionsIds?.length) {
@@ -52,7 +52,7 @@ export class RolesService {
         where: { id: In(permissionsIds) },
       });
 
-      console.log('--2----permissoin id-----', roles);
+     // console.log('--2----permissoin id-----', roles);
 
       role.permissions = roles;
     }
