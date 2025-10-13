@@ -84,7 +84,7 @@ if (cached) {
   });
 
  const response = new PaginationResponseDto(data, { total, page, limit  });
-        await this.cacheService.set(cacheKey, response, { ttl: 900 });
+        await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)), { ttl: 900 });
 
   return response;
   }
@@ -139,7 +139,7 @@ if (cached) {
   });
 
  const response = new PaginationResponseDto(data, { total, page, limit  });
-        await this.cacheService.set(cacheKey, response, { ttl: 900 });
+        await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)) );
 
   return response;
   }
@@ -158,7 +158,7 @@ if (cached) {
 
       if (!blog) throw new NotFoundException('Blog not found');
 
-      await this.cacheService.set(cacheKey, blog, { ttl: 600 });
+     
     }
 
     // ✅ Now blog is always defined, but add safeguard
@@ -188,9 +188,11 @@ if (cached) {
     }
 
     // ✅ Return DTO
-    return plainToInstance(BlogListDto, blog, {
+    const response = plainToInstance(BlogListDto, blog, {
       excludeExtraneousValues: true,
     });
+     await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
+     return response;
   }
  
 
@@ -250,7 +252,7 @@ const data = plainToInstance(BlogListDto, result, {
     limit,
   });
 
-   await this.cacheService.set(cacheKey, response);
+   await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
   // console.log('✅ Cache miss:', cacheKey);
   return response;
 } 
@@ -315,7 +317,7 @@ const cacheKey = 'frontend:blogtag:active';
     limit,
   });
 
-   await this.cacheService.set(cacheKey, response);
+   await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
   // console.log('✅ Cache miss:', cacheKey);
   return response;
 }
@@ -348,7 +350,7 @@ async getCategoriesWithBlogCount(): Promise<CategoryWithBlogCountDto[]> {
     excludeExtraneousValues: true,
   });
 
-     await this.cacheService.set(cacheKey, response);
+     await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
   // console.log('✅ Cache miss:', cacheKey);
   return response;
 }

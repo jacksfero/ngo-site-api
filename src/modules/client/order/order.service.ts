@@ -177,8 +177,6 @@ export class OrderService {
         });
 
         orderItems.push(orderItem);
-
-
       }
        
       // 5️⃣ Create order (FIXED ADDRESSES)
@@ -199,7 +197,6 @@ export class OrderService {
       // order.calculateTotals();
       const savedOrders = await queryRunner.manager.save(order);
       // 6️⃣ Create order items
-      
 
       order.calculateTotals();
 

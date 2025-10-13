@@ -191,7 +191,7 @@ if (cached) {
  // inventory.service.ts
  async findOne(productSlug: string): Promise<InventProductDetailResponseDto> {
 
-   const cacheKey = 'frontend:artworkdetail:active';
+   const cacheKey = `frontend:artworkdetail:active:${productSlug}`;
   
        // ✅ 1. Try cache first
      const cached = await this.cacheService.get<InventProductDetailResponseDto>(cacheKey);
@@ -283,7 +283,7 @@ if (cached) {
     { excludeExtraneousValues: true },
   );
 
-  await this.cacheService.set(cacheKey, response);
+  await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
   // console.log('✅ Cache miss:', cacheKey);
   return response;
 }
