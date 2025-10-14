@@ -37,7 +37,7 @@ export class ContentService {
         throw new NotFoundException('Currency Not Found'); // Use a specific NotFoundException if you want
       }
       // ✅ 3. Cache result for 1 hour (3600 seconds)
-  await this.cacheService.set(cacheKey, results, { ttl: 33600 });
+  await this.cacheService.set(cacheKey, results,  );
 
   return results;
       return results;
@@ -61,7 +61,7 @@ export class ContentService {
       if (!results) {
         throw new NotFoundException('policy Not Found'); // Use a specific NotFoundException if you want
       }
-       await this.cacheService.set(cacheKey, results, { ttl: 33600 });
+       await this.cacheService.set(cacheKey, results);
       return results;
     } catch (error) {
       // Optionally, log or rethrow with additional context
@@ -83,7 +83,7 @@ export class ContentService {
       if (!results) {
         throw new NotFoundException('content Not Found'); // Use a specific NotFoundException if you want
       }
-       await this.cacheService.set(cacheKey, results, { ttl: 33600 });
+       await this.cacheService.set(cacheKey, results, );
       return results;
     } catch (error) {
       // Optionally, log or rethrow with additional context

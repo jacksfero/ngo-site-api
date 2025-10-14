@@ -83,7 +83,7 @@ export class UsersService {
     }      
     });
      // ✅ 3. Store in cache for 1 hour
-  await this.cacheService.set(cacheKey, user, { ttl: 333600 });
+  await this.cacheService.set(cacheKey, user);
  
     return user;
   }
