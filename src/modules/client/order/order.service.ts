@@ -252,18 +252,18 @@ async findAll(userId: string): Promise<Order[]> {
     .where('user.id = :userId', { userId: numericUserId })
     .orderBy('order.createdAt', 'DESC')
     .limit(20)
-    .select([
-       'order.id',
-       'order.createdAt',
-       'order.totalAmount',
-       'order.status',
-      //'order.*',
-      'items.id',
-      'items.quantity',
-      'product.id',
-      'product.productTitle',     
-      'product.defaultImage',
-    ])
+    // .select([
+    //    'order.id',
+    //    'order.createdAt',
+    //    'order.totalAmount',
+    //    'order.status',
+    //   //'order.*',
+    //   'items.id',
+    //   'items.quantity',
+    //   'product.id',
+    //   'product.productTitle',     
+    //   'product.defaultImage',
+    // ])
     .getMany();
 }
 
