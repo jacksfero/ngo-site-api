@@ -45,6 +45,9 @@ export class CacheService {
       // ✅ Fix: Handle undefined ttl with default value
       //const ttl = (options?.ttl || this.defaultTtl) * 1000;
       const ttl = options?.ttl || this.defaultTtl;
+      console.log('-----ttl------',ttl)
+
+
       await this.cacheManager.set(key, value, ttl);
     } catch (error) {
       this.logger.error(`Failed to set cache key ${key}:`, error);

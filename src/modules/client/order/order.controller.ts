@@ -2,8 +2,7 @@ import { Controller, Get, Req, Post, Body, Patch, Param, Delete, ParseIntPipe, U
 import { OrderService } from './order.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { Order } from 'src/shared/entities/order.entity';
@@ -13,11 +12,11 @@ import { Order } from 'src/shared/entities/order.entity';
 export class OrderController {
   constructor(private readonly orderService: OrderService,
 
-     @InjectRepository(Order)
-        private orderRepo: Repository<Order>,
-  ) {}
+    @InjectRepository(Order)
+    private orderRepo: Repository<Order>,
+  ) { }
 
- 
+
   @Post('checkout')
   async checkout(
     @Req() req,
@@ -61,57 +60,57 @@ export class OrderController {
       );
     }
   }
- 
-   // Admin only
-   @Patch(':id/status')
-   //@Roles('admin') // Uncomment when you have role-based auth
-   async updateStatus(
-     @Param('id', ParseIntPipe) id: number,
-     @Body() dto: UpdateOrderStatusDto,
-   ) {
-     try {
-       return await this.orderService.updateStatus(id, dto);
-     } catch (error) {
-       throw new HttpException(
-         `Failed to update order status: ${error.message}`,
-         HttpStatus.BAD_REQUEST
-       );
-     }
-   }
 
-
-@Post(':orderId/cancel-items')
-async cancelItems(
-  @Param('orderId') orderId: number,
-  @Body('itemIds') itemIds: number[],
-  @Req() req: any
-) {
-  const userId = req.user?.sub;
-  return this.orderService.cancelOrderItems(orderId, itemIds, userId);
-}
-@Post(':orderId/cancel')
-async cancelOrder(
-  @Param('orderId') orderId: number,
-  @Req() req: any
-) {
-  const userId = req.user?.sub;
-
-  // 1️⃣ Fetch the order with all items
-  const order = await this.orderRepo.findOne({
-    where: { id: orderId },
-    relations: ['items'],
-  });
-
-  if (!order) {
-    throw new Error('Order not found');
+  // Admin only
+  @Patch(':id/status')
+  //@Roles('admin') // Uncomment when you have role-based auth
+  async updateStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateOrderStatusDto,
+  ) {
+    try {
+      return await this.orderService.updateStatus(id, dto);
+    } catch (error) {
+      throw new HttpException(
+        `Failed to update order status: ${error.message}`,
+        HttpStatus.BAD_REQUEST
+      );
+    }
   }
 
-  // 2️⃣ Extract all item IDs
-  const itemIds = order.items.map((i) => i.id);
 
-  // 3️⃣ Reuse existing partial cancel service
-  return this.orderService.cancelOrderItems(orderId, itemIds, userId);
-}
+  @Post(':orderId/cancel-items')
+  async cancelItems(
+    @Param('orderId') orderId: number,
+    @Body('itemIds') itemIds: number[],
+    @Req() req: any
+  ) {
+    const userId = req.user?.sub;
+    return this.orderService.cancelOrderItems(orderId, itemIds, userId);
+  }
+  @Post(':orderId/cancel')
+  async cancelOrder(
+    @Param('orderId') orderId: number,
+    @Req() req: any
+  ) {
+    const userId = req.user?.sub;
+
+    // 1️⃣ Fetch the order with all items
+    const order = await this.orderRepo.findOne({
+      where: { id: orderId },
+      relations: ['items'],
+    });
+
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    // 2️⃣ Extract all item IDs
+    const itemIds = order.items.map((i) => i.id);
+
+    // 3️⃣ Reuse existing partial cancel service
+    return this.orderService.cancelOrderItems(orderId, itemIds, userId);
+  }
 
 
 

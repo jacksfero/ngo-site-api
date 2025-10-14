@@ -190,7 +190,7 @@ if (cached) {
     const response = plainToInstance(BlogListDetailDto, blog, {
       excludeExtraneousValues: true,
     });
-     //await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
+    await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
      return response;
   }
  

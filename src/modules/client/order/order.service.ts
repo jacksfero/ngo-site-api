@@ -23,7 +23,7 @@ export class OrderService {
     @InjectRepository(OrderItem)
     private orderItemRepo: Repository<OrderItem>,
 
-     @InjectRepository(Payment)
+    @InjectRepository(Payment)
     private paymentRepo: Repository<Payment>,
 
     @InjectRepository(Cart)
@@ -38,7 +38,7 @@ export class OrderService {
     @InjectRepository(Inventory)
     private inventoryRepo: Repository<Inventory>,
 
-     @InjectRepository(Shipping)
+    @InjectRepository(Shipping)
     private shippingRepo: Repository<Shipping>,
 
     private dataSource: DataSource, // ✅ For transactions
@@ -138,7 +138,7 @@ export class OrderService {
         }
 
         const shiping = await queryRunner.manager.findOne(Shipping, {
-           where: { id: inventory.shippingWeight.id }
+          where: { id: inventory.shippingWeight.id }
         });
         if (!shiping) {
           throw new BadRequestException(
@@ -178,16 +178,16 @@ export class OrderService {
 
         orderItems.push(orderItem);
       }
-       
+
       // 5️⃣ Create order (FIXED ADDRESSES)
       const order = queryRunner.manager.create(Order, {
         user: { id: numericUserId } as User,
-       items: orderItems,
+        items: orderItems,
         subtotal: total,
         totalAmount: total,
-         country: cart.shippingCountry,
-         exchangeRate:cart.exchangeRate,
-         currency:cart.currency,
+        country: cart.shippingCountry,
+        exchangeRate: cart.exchangeRate,
+        currency: cart.currency,
         shippingAddress: { id: shippingAddressId } as UsersAddress,  // Use actual entity
         billingAddress: { id: billingAddressId } as UsersAddress,    // Use actual entity
         status: OrderStatus.PENDING,
@@ -237,8 +237,6 @@ export class OrderService {
       console.log('🔚 Query runner released');
     }
   }
-
-
 
 
   async findAll(userId: string): Promise<Order[]> {
@@ -291,65 +289,65 @@ export class OrderService {
     return this.orderRepo.save(order);
   }
 
-async cancelOrderItems(orderId: number, itemIds: number[] | number, userId: number) {
- 
- // 🔹 Ensure itemIds is always an array
-  if (!Array.isArray(itemIds)) {
-    itemIds = [Number(itemIds)];
+  async cancelOrderItems(orderId: number, itemIds: number[] | number, userId: number) {
+
+    // 🔹 Ensure itemIds is always an array
+    if (!Array.isArray(itemIds)) {
+      itemIds = [Number(itemIds)];
+    }
+
+    const order = await this.orderRepo.findOne({
+      where: { id: orderId },
+      relations: ['items', 'payments'],
+    });
+    if (!order) throw new Error('Order not found');
+
+    const itemsToCancel = order.items.filter((i) =>
+      itemIds.includes(i.id),
+    );
+
+    if (itemsToCancel.length === 0)
+      throw new Error('No valid items to cancel');
+
+    // Calculate refund amount
+    const refundAmount = itemsToCancel.reduce((sum, item) => sum + Number(item.price), 0);
+
+    // Find successful payment
+    const payment = order.payments.find((p) => p.status === PaymentStatus.SUCCESS);
+    if (!payment) throw new Error('No payment found for refund');
+
+    // Refund using Razorpay
+    // const refund = await this.razorpayService.refundPayment(payment.gatewayPaymentId, refundAmount);
+
+    // Update items
+    for (const item of itemsToCancel) {
+      item.status = OrderItemStatus.REFUNDED;
+      item.cancelledAt = new Date();
+      //item.refundId = refund.id;
+    }
+    await this.orderItemRepo.save(itemsToCancel);
+
+    // Update order status
+    const allCancelled = order.items.every(
+      (i) => i.status === OrderItemStatus.REFUNDED || i.status === OrderItemStatus.CANCELLED,
+    );
+    order.status = allCancelled ? OrderStatus.REFUNDED : OrderStatus.PARTIALLY_CANCELLED;
+    await this.orderRepo.save(order);
+
+    // Update payment status (optional)
+    payment.status = allCancelled ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
+    await this.paymentRepo.save(payment);
+
+    return {
+      success: true,
+      refundedAmount: refundAmount,
+      //  refundId: refund.id,
+      orderStatus: order.status,
+      message: allCancelled
+        ? 'Full order refunded successfully.'
+        : 'Selected items refunded successfully.',
+    };
   }
-  
-  const order = await this.orderRepo.findOne({
-    where: { id: orderId },
-    relations: ['items', 'payments'],
-  });
-  if (!order) throw new Error('Order not found');
-
-  const itemsToCancel = order.items.filter((i) =>
-    itemIds.includes(i.id),
-  );
-
-  if (itemsToCancel.length === 0)
-    throw new Error('No valid items to cancel');
-
-  // Calculate refund amount
-  const refundAmount = itemsToCancel.reduce((sum, item) => sum + Number(item.price), 0);
-
-  // Find successful payment
-  const payment = order.payments.find((p) => p.status === PaymentStatus.SUCCESS);
-  if (!payment) throw new Error('No payment found for refund');
-
-  // Refund using Razorpay
- // const refund = await this.razorpayService.refundPayment(payment.gatewayPaymentId, refundAmount);
-
-  // Update items
-  for (const item of itemsToCancel) {
-    item.status = OrderItemStatus.REFUNDED;
-    item.cancelledAt = new Date();
-    //item.refundId = refund.id;
-  }
-  await this.orderItemRepo.save(itemsToCancel);
-
-  // Update order status
-  const allCancelled = order.items.every(
-    (i) => i.status === OrderItemStatus.REFUNDED || i.status === OrderItemStatus.CANCELLED,
-  );
-  order.status = allCancelled ? OrderStatus.REFUNDED : OrderStatus.PARTIALLY_CANCELLED;
-  await this.orderRepo.save(order);
-
-  // Update payment status (optional)
-  payment.status = allCancelled ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
-  await this.paymentRepo.save(payment);
-
-  return {
-    success: true,
-    refundedAmount: refundAmount,
-  //  refundId: refund.id,
-    orderStatus: order.status,
-    message: allCancelled
-      ? 'Full order refunded successfully.'
-      : 'Selected items refunded successfully.',
-  };
-}
 
 }
 
