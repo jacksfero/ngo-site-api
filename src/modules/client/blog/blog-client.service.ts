@@ -153,7 +153,7 @@ if (cached) {
     if (!blog) {
       blog = await this.blogRepo.findOne({
         where: { slug, status: true },
-        relations: ['category', 'tags'],
+        relations: ['category', 'tags', 'author.profileImage', 'author.aboutDetails'],
       });
 
       if (!blog) throw new NotFoundException('Blog not found');
@@ -191,7 +191,7 @@ if (cached) {
     const response = plainToInstance(BlogListDto, blog, {
       excludeExtraneousValues: true,
     });
-     await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
+     //await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
      return response;
   }
  

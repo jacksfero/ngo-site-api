@@ -23,13 +23,32 @@ export class CategoryDto {
   @Expose()
   slug: string;
 }
-
+@Exclude()
+export class AboutDto {
+  @Expose()
+  about: string;
+}
+@Exclude()
+export class ProfileImgDto {
+  @Expose()
+  imageUrl: string;
+}
 @Exclude()
 export class AuthorDto {
-  @Expose()
-  username: string;
-}
+  // @Expose()
+  // id: number;
 
+   @Expose()
+  username: string;
+
+ @Expose()
+ @Type(() => AboutDto)
+  aboutDetails: AboutDto; 
+
+ @Expose()
+ @Type(() => ProfileImgDto)
+  profileImage: ProfileImgDto; 
+}
 @Exclude()
 export class BlogListDto {
   @Expose()
