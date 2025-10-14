@@ -32,19 +32,14 @@ export class InventProductService {
 
     const { page, limit, search,isActive, categoryId, artistId,select, 
       styleId, subjectId, orientationId, sizeId,mediumId,surfaceId,
-      affordable_art,eliteChoice,new_arrival,discount   } = paginationDto;
-    //  let categoryId?:number ;
-  //  console.log('cateid-----------',categoryId);
-  //  console.log('categoryId----------', categoryId, typeof categoryId);
-  //  console.log('limit-----------',limit);
-  //  console.log('search-----------',search);
+      affordable_art,eliteChoice,new_arrival,discount,minPrice,
+    maxPrice, sortPrice,   } = paginationDto;
+    
     const skip = (page - 1) * limit;
 
-    const cacheKey = `frontend:Artwor:All:${JSON.stringify(paginationDto)}`;
-const cached = await this.cacheService.get(cacheKey);
-if (cached) {
-  return cached as PaginationResponseDto<InventProdListDto>;
-}
+     const cacheKey = `frontend:Artwork:All:${JSON.stringify(paginationDto)}`;
+  const cached = await this.cacheService.get(cacheKey);
+  if (cached) return cached as PaginationResponseDto<InventProdListDto>;
 
     const qb = this.inventoryRepo.createQueryBuilder('inventory')
     .leftJoinAndSelect('inventory.product', 'product')
@@ -61,20 +56,19 @@ if (cached) {
     .andWhere('product.is_active = :isActive', { isActive:  ProductStatus.ACTIVE })
 
       // ✅ OPTIONAL: Only join many-to-many relations if they're needed for filtering
-  if (subjectId) {
-    qb.leftJoinAndSelect('product.subjects', 'subject');
-  }
-  
-  if (styleId) {
-    qb.leftJoinAndSelect('product.styles', 'style');
-  }
+    // ✅ Add optional joins
+  if (subjectId) qb.leftJoinAndSelect('product.subjects', 'subject');
+  if (styleId) qb.leftJoinAndSelect('product.styles', 'style');
 
-    if (search) {
-      qb.andWhere('product.productTitle LIKE :search OR tag.name LIKE :search OR artist.username LIKE :search', {
-        search: `%${search}%`,
-      });
-    }
-
+  // ✅ Search filter
+  if (search) {
+    qb.andWhere(`
+      product.productTitle LIKE :search 
+      OR tag.name LIKE :search 
+      OR artist.username LIKE :search
+    `, { search: `%${search}%` });
+  }
+   // ✅ Various filters
     if (orientationId) {
        qb.andWhere('product.orientation_id = :orientationId', { orientationId });
     }
@@ -116,6 +110,22 @@ if (cached) {
     if (discount === 1) {
       qb.andWhere('inventory.discount > 0 ');       
     }
+     // ✅ PRICE RANGE FILTER
+  if (minPrice && maxPrice) {
+    qb.andWhere('inventory.price BETWEEN :minPrice AND :maxPrice', { minPrice, maxPrice });
+  } else if (minPrice) {
+    qb.andWhere('inventory.price >= :minPrice', { minPrice });
+  } else if (maxPrice) {
+    qb.andWhere('inventory.price <= :maxPrice', { maxPrice });
+  }
+   // ✅ PRICE SORTING
+  if (sortPrice === 'low') {
+    qb.orderBy('inventory.price', 'ASC');
+  } else if (sortPrice === 'high') {
+    qb.orderBy('inventory.price', 'DESC');
+  } else {
+    qb.orderBy('inventory.updatedAt', 'DESC'); // default sort (latest)
+  }
   
  // ✅ Define default fields (always selected)
  const defaultInventoryFields = ['id', 'status', 'price', 'discount','gstSlot','shippingSlot','updatedAt'];

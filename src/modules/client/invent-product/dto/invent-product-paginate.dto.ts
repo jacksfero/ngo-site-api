@@ -1,4 +1,4 @@
-import { IsOptional,Min,IsInt,IsNumber, IsBoolean, IsString } from 'class-validator';
+import { IsOptional,Min,IsIn,IsInt,IsNumber, IsBoolean, IsString } from 'class-validator';
 import { Transform,Type } from 'class-transformer';
 import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
 
@@ -68,15 +68,18 @@ export class InventProdPaginatDto extends PaginationBaseDto {
   @IsInt()
   mediumId?: number;
 
- /* @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  packingmodeId?: number;
+  // existing fields...
+  @IsOptional()
+  @IsNumber()
+  minPrice?: number;
 
   @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  commissiontypeId?: number; */
+  @IsNumber()
+  maxPrice?: number;
+
+   @IsOptional()
+  @IsIn(['low', 'high'])
+  sortPrice?: 'low' | 'high';
   
   @IsOptional()
   @Type(() => Number)
@@ -102,13 +105,5 @@ export class InventProdPaginatDto extends PaginationBaseDto {
   @Type(() => String)
   select?: string; // comma separated fields
 
-
- /* @IsOptional()
-  @IsBoolean()
-  @Transform(({ value }) => value === 'true' || value === true)
-  is_verified?: boolean;
-
-  @IsOptional()
-  @IsString()
-  role?: string;*/
+ 
 }
