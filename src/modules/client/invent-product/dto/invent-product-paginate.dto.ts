@@ -71,10 +71,12 @@ export class InventProdPaginatDto extends PaginationBaseDto {
   // existing fields...
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)  // This transforms string to number
   minPrice?: number;
 
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)  // This transforms string to number
   maxPrice?: number;
 
    @IsOptional()
