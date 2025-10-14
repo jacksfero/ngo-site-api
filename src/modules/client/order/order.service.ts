@@ -257,7 +257,7 @@ async findAll(userId: string): Promise<Order[]> {
        'order.createdAt',
        'order.totalAmount',
        'order.status',
-      'order.*',
+      //'order.*',
       'items.id',
       'items.quantity',
       'product.id',
