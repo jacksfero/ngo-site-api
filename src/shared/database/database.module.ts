@@ -25,7 +25,9 @@ import { DataSource } from 'typeorm';
           extra: {
             connectionLimit: 10,
             connectTimeout: 10000,
-            keepAlive: true,
+           // keepAlive: true,
+             waitForConnections: true,
+            queueLimit: 0,   
           },
           // ✅ fix: NestJS expects boolean | 'all' | ['query', 'error', ...]
           logging: ['error', 'warn'] as any,
