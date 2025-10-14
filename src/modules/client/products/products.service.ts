@@ -47,7 +47,7 @@ export class ProductsService {
   ) {}
   async findAll(paginationDto: PaginationDto): Promise<PaginationResponseDto<ProductListItemDto>> {
     const { page = 1, limit = 20, search } = paginationDto;
-     const cacheKey = `frontend:Artwork:${JSON.stringify(paginationDto)}`;
+     const cacheKey = `frontend:Artwork:prod:all:${JSON.stringify(paginationDto)}`;
      const cached = await this.cacheService.get(cacheKey);
          if (cached) {
            return cached as PaginationResponseDto<ProductListItemDto>;
@@ -85,7 +85,7 @@ export class ProductsService {
 
    // return new PaginationResponseDto(data, { total, page, limit });
       const response = new PaginationResponseDto(data, { total, page, limit });
-    await this.cacheService.set(cacheKey, response);
+    await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
     return response;
   }
   async findAll_bk(paginationDto: PaginationDto): Promise<PaginationResponseDto<ProductListItemDto>> {
@@ -176,7 +176,7 @@ export class ProductsService {
       excludeExtraneousValues: true,
     });
     // ✅ 3. Cache result for 1 hour (3600 seconds)
-  await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+  await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
 
   return response;
   }
@@ -198,7 +198,7 @@ export class ProductsService {
       excludeExtraneousValues: true,
     });
      // ✅ 3. Cache result for 1 hour (3600 seconds)
-  await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+  await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)), { ttl: 3600 });
 
   return response;
   }
@@ -228,7 +228,7 @@ export class ProductsService {
        excludeExtraneousValues: true,
      });
        // ✅ 3. Cache result for 1 hour (3600 seconds)
-  await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+  await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
 
   return response;
   }
@@ -254,7 +254,7 @@ export class ProductsService {
       excludeExtraneousValues: true,
     });
       // ✅ 3. Cache result for 1 hour (3600 seconds)
-  await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+  await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)), { ttl: 3600 });
 
   return response;
   }
@@ -282,7 +282,7 @@ export class ProductsService {
     const response = plainToInstance(SubjectResponseDto, surfaces, {
        excludeExtraneousValues: true,
      });
-      await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+      await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)), { ttl: 3600 });
 
   return response;
   }
@@ -301,7 +301,7 @@ export class ProductsService {
     const response =  plainToInstance(SurfaceResponseDto, style, {
       excludeExtraneousValues: true,
     });
-    await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+    await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)), { ttl: 3600 });
 
   return response;
   }
@@ -327,7 +327,7 @@ export class ProductsService {
    const response =  plainToInstance(MediumResponseDto, surfaces, {
       excludeExtraneousValues: true,
     });
-     await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+     await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)), { ttl: 3600 });
 
   return response;
   }
@@ -347,7 +347,7 @@ export class ProductsService {
      const response =  plainToInstance(MediumResponseDto, style, {
       excludeExtraneousValues: true,
     });
-    await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+    await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)), { ttl: 3600 });
 
   return response;
   }
@@ -366,7 +366,7 @@ export class ProductsService {
      const response =  plainToInstance(SubjectResponseDto, style, {
       excludeExtraneousValues: true,
     });
-await this.cacheService.set(cacheKey, response, { ttl: 3600 });
+await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)), { ttl: 3600 });
 
   return response;
       

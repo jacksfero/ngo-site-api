@@ -40,7 +40,7 @@ export class InventProductService {
   //  console.log('search-----------',search);
     const skip = (page - 1) * limit;
 
-    const cacheKey = `frontend:ArtworkByArtist:${JSON.stringify(paginationDto)}`;
+    const cacheKey = `frontend:Artwor:All:${JSON.stringify(paginationDto)}`;
 const cached = await this.cacheService.get(cacheKey);
 if (cached) {
   return cached as PaginationResponseDto<InventProdListDto>;
@@ -183,7 +183,7 @@ if (cached) {
    // return new PaginationResponseDto<InventProdListDto>(data, { total, page, limit  });
   const response = new PaginationResponseDto<InventProdListDto>(data, { total, page, limit  });
     
-    await this.cacheService.set(cacheKey, response);
+    await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
   // console.log('✅ Cache miss:', cacheKey);
   return response;
   }
@@ -447,7 +447,7 @@ let selectedFields: string[] = [];
    const response = new PaginationResponseDto<InventProdListDto>(data, { total, page, limit });
 
  
-await this.cacheService.set(cacheKey, response);
+await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
   // console.log('✅ Cache miss:', cacheKey);
   return response;
 }
