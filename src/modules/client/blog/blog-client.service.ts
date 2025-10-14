@@ -157,8 +157,7 @@ if (cached) {
       });
 
       if (!blog) throw new NotFoundException('Blog not found');
-
-     
+ 
     }
 
     // ✅ Now blog is always defined, but add safeguard
