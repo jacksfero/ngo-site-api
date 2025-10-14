@@ -251,7 +251,7 @@ async findAll(userId: string): Promise<Order[]> {
     .leftJoinAndSelect('order.user', 'user')
     .where('user.id = :userId', { userId: numericUserId })
     .orderBy('order.createdAt', 'DESC')
-    .limit(20)
+   // .limit(20)
     // .select([
     //    'order.id',
     //    'order.createdAt',
