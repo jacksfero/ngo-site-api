@@ -238,19 +238,36 @@ export class OrderService {
     }
   }
 
-
-  async findAll(userId: string): Promise<Order[]> {
-    const numericUserId = parseInt(userId, 10);
-    if (isNaN(numericUserId)) {
-      throw new BadRequestException('Invalid user ID');
-    }
-
-    return this.orderRepo.find({
-      where: { user: { id: numericUserId } },
-      relations: ['items', 'items.product', 'user'],
-      order: { createdAt: 'DESC' },
-    });
+async findAll(userId: string): Promise<Order[]> {
+  const numericUserId = parseInt(userId, 10);
+  if (isNaN(numericUserId)) {
+    throw new BadRequestException('Invalid user ID');
   }
+
+  return this.orderRepo
+    .createQueryBuilder('order')
+    .leftJoinAndSelect('order.items', 'items')
+    .leftJoinAndSelect('items.product', 'product')
+    .leftJoinAndSelect('order.user', 'user')
+    .where('user.id = :userId', { userId: numericUserId })
+    .orderBy('order.createdAt', 'DESC')
+    .limit(20)
+    .select([
+       'order.id',
+       'order.createdAt',
+       'order.totalAmount',
+       'order.status',
+      'order.*',
+      'items.id',
+      'items.quantity',
+      'product.id',
+      'product.productTitle',     
+      'product.defaultImage',
+    ])
+    .getMany();
+}
+
+
 
 
   async findOne(userId: string, orderId: number): Promise<Order> {

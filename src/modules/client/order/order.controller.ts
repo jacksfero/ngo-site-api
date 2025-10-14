@@ -1,4 +1,4 @@
-import { Controller, Get, Req, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Req, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards, HttpException, HttpStatus, BadRequestException } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
@@ -35,18 +35,21 @@ export class OrderController {
   }
 
 
-  @Get()
-  async getOrders(@Req() req) {
-    try {
-      const userId = req.user.sub.toString();
-      return await this.orderService.findAll(userId);
-    } catch (error) {
-      throw new HttpException(
-        `Failed to fetch orders: ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
+ @Get()
+async getOrders(@Req() req) {
+  try {
+    const userId = req.user?.sub?.toString();
+    if (!userId) throw new BadRequestException('User not found in token');
+    const orders = await this.orderService.findAll(userId);
+    return { success: true, data: orders };
+  } catch (error) {
+    throw new HttpException(
+      `Failed to fetch orders: ${error.message}`,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
+}
+
 
   @Get(':id')
   async getOrder(@Req() req, @Param('id', ParseIntPipe) id: number) {

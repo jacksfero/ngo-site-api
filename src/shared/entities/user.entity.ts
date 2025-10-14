@@ -45,7 +45,7 @@ export class User {
 @Column({ type: 'varchar', length: 255, nullable: true, select: false })
 password: string | null;
 
-  @ManyToMany(() => Role, (role) => role.users, { eager: true })
+  @ManyToMany(() => Role, (role) => role.users, { eager: false })
   @JoinTable({
     name: 'user_roles',
     joinColumn: { name: 'user_id', referencedColumnName: 'id' },
@@ -68,23 +68,23 @@ password: string | null;
   @OneToMany(() => ExhibitionProduct, (map) => map.user)
   displayMappings: ExhibitionProduct[];
 
-  @Column({ type: 'boolean', nullable: true })
+  @Column({ type: 'boolean', nullable: true , select: false})
   is_verified: boolean;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', default: false , select: false})
   status: boolean;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', default: false , select: false})
   featured_artist: boolean;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', default: false , select: false})
   homePageDisplay: boolean;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', default: false , select: false})
   profileEdit: boolean;
 
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true , select: false})
   adminRemark: string;
 
   // 🟢 Add relation to Artist test Type
