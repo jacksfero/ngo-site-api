@@ -7,7 +7,7 @@ import { plainToInstance } from 'class-transformer';
  
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
-import { BlogListDto } from './dto/blog-list.dto';
+import { BlogListDto,BlogListDetailDto } from './dto/blog-list.dto';
 import { CategoryWithBlogCountDto } from './dto/category-with-count.dto';
 import { Category } from '../../../shared/entities/category.entity';
 import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
@@ -145,7 +145,7 @@ if (cached) {
   }
 
  
-   async getBlogBySlug(slug: string, viewerIdentifier: string): Promise<BlogListDto> {
+   async getBlogBySlug(slug: string, viewerIdentifier: string): Promise<BlogListDetailDto> {
     const cacheKey = `frontend:blog:${slug}`;
     let blog = await this.cacheService.get<Blog>(cacheKey);
 
@@ -187,7 +187,7 @@ if (cached) {
     }
 
     // ✅ Return DTO
-    const response = plainToInstance(BlogListDto, blog, {
+    const response = plainToInstance(BlogListDetailDto, blog, {
       excludeExtraneousValues: true,
     });
      //await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));

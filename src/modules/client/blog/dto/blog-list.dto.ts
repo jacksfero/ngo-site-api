@@ -23,18 +23,24 @@ export class CategoryDto {
   @Expose()
   slug: string;
 }
+
+
 @Exclude()
 export class AboutDto {
   @Expose()
   about: string;
 }
+
+
 @Exclude()
 export class ProfileImgDto {
   @Expose()
   imageUrl: string;
 }
+
+
 @Exclude() 
-export class AuthorDto {
+export class AuthorDetailDto {
   // @Expose()
   // id: number;
 
@@ -49,6 +55,18 @@ export class AuthorDto {
  @Type(() => ProfileImgDto)
   profileImage: ProfileImgDto; 
 }
+
+@Exclude() 
+export class AuthorDto {
+  
+   @Expose()
+  username: string;
+ 
+}
+
+
+
+
 @Exclude()
 export class BlogListDto {
   @Expose()
@@ -106,6 +124,69 @@ export class BlogListDto {
   @Expose()
   @Type(() => AuthorDto)
   author?: AuthorDto;
+
+  @Expose()
+  @Type(() => TagDto)
+  tags?: TagDto[];
+}
+
+
+export class BlogListDetailDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  title: string;
+
+  @Expose()
+  slug: string;
+
+   @Expose()
+  views: number;
+
+  @Expose()
+  titleImage: string;
+
+  @Expose()
+  h1Title: string;
+
+ /* @Expose()
+  blogContent: string;*/
+
+ 
+  @Expose()
+  get contentSnippet(): string {
+    if (!this.blogContent) return '';
+    return this.blogContent.length > 15
+      ? this.blogContent.substring(0, 15) + '...'
+      : this.blogContent;
+  } 
+ 
+  @Expose()
+  blogContent?: string; // keep original for mapping
+
+  @Expose()
+  keywordsTag: string;
+
+  @Expose()
+  descriptionTag: string;
+
+  @Expose()
+  optionalTitle: string;
+
+  @Expose()
+  createdAt: Date;
+
+  @Expose()
+  scheduledPublishDate: Date;
+
+  @Expose()
+  @Type(() => CategoryDto)
+  category?: CategoryDto;
+
+  @Expose()
+  @Type(() => AuthorDetailDto)
+  author?: AuthorDetailDto;
 
   @Expose()
   @Type(() => TagDto)
