@@ -1,6 +1,8 @@
 // dto/order-item.dto.ts
 import { Exclude, Expose, Type } from 'class-transformer';
+import { IsEnum } from 'class-validator';
 import { ProductDto } from '../../cart/dto/cart-item-list.dto';
+import { OrderItemStatus } from 'src/shared/entities/order-item.entity';
 
 @Exclude()
 export class OrderItemDto {
@@ -17,7 +19,11 @@ export class OrderItemDto {
   @Expose()
   price: number;
 
- 
+  @IsEnum(OrderItemStatus)
+  @Expose()
+  status: OrderItemStatus;
+
+
     @Expose()
   total  : number;
 
