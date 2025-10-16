@@ -1,3 +1,42 @@
+
+// If you must keep custom providers, use this safe version:
+import { DataSource } from 'typeorm';
+import { Logger } from '@nestjs/common';
+
+export async function connectWithRetry(dataSource: DataSource, maxRetries = 3): Promise<void> {
+  const logger = new Logger('DatabaseConnect');
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await dataSource.initialize();
+      logger.log('✅ Database connected successfully');
+      return;
+    } catch (error) {
+      logger.warn(`❌ Database connection attempt ${attempt} failed: ${error.message}`);
+      
+      if (attempt === maxRetries) {
+        logger.error('❌ All database connection attempts failed');
+        throw error;
+      }
+      
+      // Wait before retry
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
+  }
+}
+
+// Remove patchQueryRunner as it can cause connection leaks
+
+
+
+
+
+
+
+
+
+
+/*
 import { DataSource } from 'typeorm';
 import { Logger } from '@nestjs/common';
 
@@ -44,3 +83,4 @@ export function patchQueryRunner(dataSource: DataSource) {
     }
   };
 }
+*/

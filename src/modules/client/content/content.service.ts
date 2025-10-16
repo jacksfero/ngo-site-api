@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException,Logger } from '@nestjs/common';
 import { CreateContentDto } from './dto/create-content.dto';
 import { UpdateContentDto } from './dto/update-content.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,7 +11,7 @@ import { CacheService } from 'src/core/cache/cache.service';
 
 @Injectable()
 export class ContentService {
-   
+   private readonly logger = new Logger(ContentService.name);
   constructor(
     private cacheService: CacheService,
 
@@ -61,7 +61,7 @@ export class ContentService {
       if (!results) {
         throw new NotFoundException('policy Not Found'); // Use a specific NotFoundException if you want
       }
-       await this.cacheService.set(cacheKey, results);
+         this.cacheService.set(cacheKey, results);
       return results;
     } catch (error) {
       // Optionally, log or rethrow with additional context
@@ -69,26 +69,35 @@ export class ContentService {
     }
   }
 
-  async getActiveContent(id:number) {
+async getActiveContent(id: number) {
+    const cacheKey = `frontent:content:active:${id}`;
+    
     try {
-       const cacheKey = `frontent:contnt:active: ${id}`;
-      const cached = await this.cacheService.get (cacheKey);
-        if (cached ) {
-          return cached;
-        }
-      const results = await this.contentRepo.findOne({
-        where: { status: true,id:id },
-        select: ['id', 'title', 'remarks', 'contents', ],
-      });
-      if (!results) {
-        throw new NotFoundException('content Not Found'); // Use a specific NotFoundException if you want
+      const cached = await this.cacheService.get(cacheKey);
+      if (cached) {
+        return cached;
       }
-       await this.cacheService.set(cacheKey, results, );
-      return results;
-    } catch (error) {
-      // Optionally, log or rethrow with additional context
-      throw new Error(`Error fetching content: ${error.message}`);
+    } catch (cacheError) {
+      this.logger.warn(`Cache failed for ${cacheKey}, falling back to DB`);
+      // Continue to database fallback
     }
+
+    // Let database errors propagate naturally
+    const results = await this.contentRepo.findOne({
+      where: { status: true, id },
+      select: ['id', 'title', 'remarks', 'contents'],
+    });
+
+    if (!results) {
+      throw new NotFoundException('Content Not Found');
+    }
+
+    // Cache in background, don't await (fire and forget)
+    this.cacheService.set(cacheKey, results).catch(err => {
+      this.logger.warn(`Failed to cache content ${id}`, err);
+    });
+
+    return results;
   }
   
 
