@@ -8,12 +8,15 @@ import { BLOG_LIMIT,BLOG_MAX_LIMIT,BLOG_PAGE } from 'src/shared/config/paginatio
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ContactPaginationDto } from './dto/contact-pagination.dto';
 import { ContactListDto } from './dto/contact-list.dto';
+import { RequirePermissions } from 'src/modules/auth/decorators/permissions.decorator';
+import { PaginationClinetPipe } from 'src/shared/pipes/pagination-client.pipe';
 
 @Controller()
 export class ContactUsController {
   constructor(private readonly contactusService: ContactUsService) {}
 
   @Post()
+
   create(@Body() createContactusDto: CreateContactUsDto) {
     return this.contactusService.create(createContactusDto);
   }
@@ -26,8 +29,9 @@ export class ContactUsController {
 // }
 
 @Get()
+ @RequirePermissions('read_contactus')
 async findAll(
-  @Query(new PaginationPipe(BLOG_LIMIT, BLOG_MAX_LIMIT, BLOG_PAGE))
+  @Query(new PaginationClinetPipe(BLOG_LIMIT, BLOG_MAX_LIMIT, BLOG_PAGE))
   paginationDto: ContactPaginationDto
 ): Promise<PaginationResponseDto<ContactListDto>> {
   return this.contactusService.findAll(paginationDto);
@@ -36,6 +40,7 @@ async findAll(
 
 
   @Get(':id')
+  @RequirePermissions('read_contactus')
   findOne(@Param('id') id: string) {
     return this.contactusService.findOne(+id);
   }
@@ -46,6 +51,7 @@ async findAll(
   }
 
   @Delete(':id')
+  @RequirePermissions('delete_contactus')
   remove(@Param('id') id: string) {
     return this.contactusService.remove(+id);
   }

@@ -29,26 +29,7 @@ export  class UserDto {
 
 
 
-export class CartDto {
-  @Expose()
-  id: number;
 
-   @Expose()
-  createdAt: Date;
-
-  @Expose()
-  @Type(() => UserDto)
-  user: UserDto;
-
-
-//  @Expose()
-//   @Type(() => CartItemListDto)
-//   items: CartItemListDto;
-
-
-   @Expose()
-  guestId: string;
-}
 
 
 export class CartItemListDto {
@@ -65,9 +46,30 @@ export class CartItemListDto {
   @Type(() => ProductDto)
   product: ProductDto;
 
-    @Expose()
-   @Type(() => CartDto)
-    cart: CartDto;
+  //   @Expose()
+  //  @Type(() => CartDto)
+  //   cart: CartDto;
  
  
+}
+
+export class CartDto {
+  @Expose()
+  id: number;
+
+   @Expose()
+  createdAt: Date;
+
+  @Expose()
+  @Type(() => UserDto)
+  user: UserDto;
+
+
+   @Expose()
+    @Type(() => CartItemListDto)
+    items: CartItemListDto;
+
+
+   @Expose()
+  guestId: string;
 }

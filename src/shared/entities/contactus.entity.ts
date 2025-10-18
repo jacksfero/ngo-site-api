@@ -7,25 +7,25 @@ export class ContactUs {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({ nullable: true})
     name: string;
 
-    @Column()
+    @Column({ nullable: true})
     phonecode: string;
 
-    @Column()
+    @Column({ nullable: true})
     mobile: string;
 
     @Column()
     email: string;
 
-    @Column('text')
+    @Column('text',{ nullable: true})
     message: string;
 
     @Column({ type: 'enum', enum: ContactUsType })
     type: ContactUsType;
 
-    @Column()
+    @Column({ nullable: true})
     subject: string;
 
    @ManyToOne(() => Product, { eager: true, nullable: true, onDelete: 'SET NULL' })

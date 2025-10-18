@@ -7,7 +7,10 @@ import { ContactUs } from 'src/shared/entities/contactus.entity';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { ContactPaginationDto } from './dto/contact-pagination.dto';
+import { ContactListDto } from './dto/contact-list.dto';
 //import { MailService } from 'src/shared/mail/mail.service';
+import { CacheService } from 'src/core/cache/cache.service';
  
 
 @Injectable()
@@ -15,6 +18,8 @@ export class ContactUsService {
 
 
   constructor(
+      private cacheService: CacheService,
+
     @InjectRepository(ContactUs)
     private contactRepo: Repository<ContactUs>,
 
@@ -46,34 +51,61 @@ export class ContactUsService {
  
 
   async findAll(
-  paginationDto: PaginationDto,
-): Promise<PaginationResponseDto<CreateContactUsDto>> {
-  const { page = 1, limit = 10, search } = paginationDto;
+  paginationDto: ContactPaginationDto,
+): Promise<PaginationResponseDto<ContactListDto>> {
+  const { page ,type, limit, search } = paginationDto;
   const skip = (page - 1) * limit;
-  const searchTerm = search?.toLowerCase() || '';
 
-  const whereClause = searchTerm
-    ? [
-        { name: Like(`%${searchTerm}%`) },
-        { email: Like(`%${searchTerm}%`) },
-        { subject: Like(`%${searchTerm}%`) },
-      ]
-    : {};
-
-  const [result, total] = await this.contactRepo.findAndCount({
-    where: whereClause,
-    take: limit,
-    skip,
-    order: { createdAt: 'DESC' },
+   // ✅ Generate unique cache key based on all parameters
+  const cacheKey = this.cacheService.generateKey(
+    'contactslist',    
+    JSON.stringify({ page, type, limit, search })
+  );
+  // ✅ Check cache first
+  const cached = await this.cacheService.get<PaginationResponseDto<ContactListDto>>(cacheKey);
+  if (cached) {
+    console.log('✅ Returning cached contacts data');
+   // return cached;
+  }
+  const queryBuilder = this.contactRepo.createQueryBuilder('contact')
+                      .leftJoinAndSelect('contact.product','product');
+    // Build WHERE conditions
+  if (search) {
+    queryBuilder.andWhere(
+      `(
+        LOWER(contact.name) LIKE LOWER(:search) OR 
+        LOWER(contact.email) LIKE LOWER(:search) OR 
+        LOWER(contact.subject) LIKE LOWER(:search)
+      )`,
+      { search: `%${search}%` }
+    );
+  }
+   if (type) {
+    queryBuilder.andWhere('contact.type = :type', { type });
+  }
+  
+  const [result, total] = await queryBuilder
+    .orderBy('contact.createdAt', 'DESC')
+    .skip(skip)
+    .take(limit)
+    .getManyAndCount();
+ //   console.log('SQL:', queryBuilder.getSql());
+//console.log('Parameters:', queryBuilder.getParameters());
+  //  console.log('Raw result:', JSON.stringify(result, null, 2));
+console.log('aaaaaaaaaaaa');
+ const data = plainToInstance(ContactListDto, result, {
+    excludeExtraneousValues: true,
   });
 
- const data = plainToInstance(CreateContactUsDto, result); // returns CreateContactUsDto[]
-
-  return new PaginationResponseDto<CreateContactUsDto>(data, {
+const  response = new PaginationResponseDto<ContactListDto>(data, {
     total,
     page,
     limit,
   });
+   // ✅ Cache the response with reasonable TTL
+  await this.cacheService.set(cacheKey, response); // 5 minutes
+
+  return response;
 }
 
 

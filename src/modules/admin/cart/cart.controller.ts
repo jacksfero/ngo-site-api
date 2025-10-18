@@ -19,7 +19,7 @@ export class CartAdminController {
   async listAllCarts(
     @Query(new PaginationClinetPipe(PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE))
     paginationDto: CartPaginationDto
-  ): Promise<PaginationResponseDto<CartItemListDto>>  {
+  ): Promise<PaginationResponseDto<CartDto>>  {
     return await this.cartService.findAllCartsForAdmin(paginationDto);
   }
 

@@ -23,8 +23,7 @@ export class CartService {
      private cacheService: CacheService,
   ) {}
 
- 
-  /*async findAllCartsForAdmin111(
+ async findAllCartsForAdmin(
   paginationDto: CartPaginationDto,
 ): Promise<PaginationResponseDto<CartDto>> {
   const { page, limit, search, status } = paginationDto;
@@ -42,62 +41,44 @@ export class CartService {
   const query = this.cartRepo
     .createQueryBuilder('cart')
     .leftJoinAndSelect('cart.user', 'user')
+    // ✅ LEFT JOIN ensures carts without items are still returned
     .leftJoinAndSelect('cart.items', 'items')
     .leftJoinAndSelect('items.product', 'product')
     .where('cart.isCheckedOut = :isCheckedOut', { isCheckedOut: false })
     .orderBy('cart.createdAt', 'DESC')
     .skip(skip)
     .take(limit);
-console.log('Generated SQL Query:', query.getSql());
-  // Enhanced search for both user types
+
   if (search) {
     query.andWhere(
-      `(user.email LIKE :search 
-        OR user.username LIKE :search 
-        OR cart.guestId LIKE :search
-        OR product.productTitle LIKE :search)`,
+      '(user.email LIKE :search OR user.fullName LIKE :search OR product.name LIKE :search)',
       { search: `%${search}%` },
     );
   }
 
-  if (status !== undefined) {
-    query.andWhere('cart.status = :status', { status });
-  }
+  const [result, total] = await query.getManyAndCount();
 
-  const [carts, total] = await query.getManyAndCount();
+  // ✅ No longer throw an error if no items exist
+  // Admin might still want to see empty carts
+  // if (!result.length) {
+  //   throw new NotFoundException('No cart items found matching your criteria');
+  // }
 
-  if (!carts.length) {
-    throw new NotFoundException('No carts found matching your criteria');
-  }
-
-  const totalPages = Math.ceil(total / limit);
-  if (page > totalPages && totalPages > 0) {
-    throw new BadRequestException(`Page ${page} does not exist. Total pages: ${totalPages}`);
-  }
-
-  // // 🔹 Transform data with user type detection
-  // const transformedCarts = carts.map(cart => ({
-  //   ...cart,
-  //   userType: cart.user ? 'registered' : 'guest',
-  //   itemsCount: cart.items.length,
-  //   isEmpty: cart.items.length === 0,
-  //   totalValue: cart.items.reduce((sum, item) => 
-  //     sum + (item.quantity * (item.product?.price || 0)), 0
-  //   ),
-  // }));
-
-  const data = plainToInstance(CartDto, carts, {
+  const data = plainToInstance(CartDto, result, {
     excludeExtraneousValues: true,
   });
 
   const response = new PaginationResponseDto(data, { total, page, limit });
+
   await this.cacheService.set(cacheKey, response, { ttl: 300 });
 
   return response;
-}*/
+}
 
 
- async findAllCartsForAdmin(
+
+
+ async findAllCartsForAdmin_bk(
   paginationDto: CartPaginationDto,
 ): Promise<PaginationResponseDto<CartItemListDto>> {
   const { page, limit, search, status } = paginationDto;
