@@ -92,7 +92,7 @@ export class ContactUsService {
  //   console.log('SQL:', queryBuilder.getSql());
 //console.log('Parameters:', queryBuilder.getParameters());
   //  console.log('Raw result:', JSON.stringify(result, null, 2));
-console.log('aaaaaaaaaaaa');
+//console.log('aaaaaaaaaaaa');
  const data = plainToInstance(ContactListDto, result, {
     excludeExtraneousValues: true,
   });
