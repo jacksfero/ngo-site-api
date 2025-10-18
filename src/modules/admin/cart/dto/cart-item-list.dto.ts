@@ -25,7 +25,11 @@ export  class UserDto {
   mobile: string;
 }
 
-class CartDto {
+
+
+
+
+export class CartDto {
   @Expose()
   id: number;
 
@@ -35,6 +39,12 @@ class CartDto {
   @Expose()
   @Type(() => UserDto)
   user: UserDto;
+
+
+//  @Expose()
+//   @Type(() => CartItemListDto)
+//   items: CartItemListDto;
+
 
    @Expose()
   guestId: string;
@@ -55,12 +65,9 @@ export class CartItemListDto {
   @Type(() => ProductDto)
   product: ProductDto;
 
-  @Expose()
-  @Type(() => CartDto)
-  cart: CartDto;
+    @Expose()
+   @Type(() => CartDto)
+    cart: CartDto;
  
  
 }
-
-
-
