@@ -19,23 +19,40 @@ import { DatabaseHealthService } from './database.health.service';
           username: configService.get<string>('DB_USERNAME'),
           password: configService.get<string>('DB_PASSWORD'),
           database: configService.get<string>('DB_NAME'),
-          synchronize: false,
+          synchronize: true,
           autoLoadEntities: true,
           entityPrefix: 'my_',
+            // ✅ Valid connection timeouts
+          connectTimeout: 30000,      // 30s to establish connection
+          acquireTimeout: 30000,      // 30s to acquire from pool
           
           // Connection pool settings to prevent leaks
           extra: {
-            connectionLimit: 8,
-            acquireTimeout: 30000,
-            idleTimeout: 60000, // Close idle connections after 60s
-            timeout: 30000,
+          //  connectionLimit: 8,
+           // acquireTimeout: 30000,
+           // idleTimeout: 60000, // Close idle connections after 60s
+           // timeout: 30000,
             charset: 'utf8mb4',
             multipleStatements: false,
+             acquireTimeoutMillis: 30000,  // ✅ Wait max 30s for connection
+            idleTimeoutMillis: 60000,     // ✅ Close idle after 60s
+            timeout: 30000,               // ✅ This might be valid in some contexts
+             connectionLimit: 8,
+            waitForConnections: true,
+            queueLimit: 0,
+           // acquireTimeoutMillis: 30000,  // MySQL2 specific
+           // idleTimeoutMillis: 60000,     // MySQL2 specific
+          //  charset: 'utf8mb4',
+          //  multipleStatements: false,
+            timezone: 'Z',
+            decimalNumbers: true,
           },
-          
+           // ✅ Connection-level timeouts (valid options)
+         
           logging: ['error'],
           retryAttempts: 3,
           retryDelay: 3000,
+          
         };
       },
       
