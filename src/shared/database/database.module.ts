@@ -48,7 +48,6 @@ import { DatabaseHealthService } from './database.health.service';
             decimalNumbers: true,
           },
            // ✅ Connection-level timeouts (valid options)
-         
           logging: ['error'],
           retryAttempts: 3,
           retryDelay: 3000,
