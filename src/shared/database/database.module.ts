@@ -34,12 +34,12 @@ import { DatabaseHealthService } from './database.health.service';
            // timeout: 30000,
             charset: 'utf8mb4',
             multipleStatements: false,
-             acquireTimeoutMillis: 30000,  // ✅ Wait max 30s for connection
-            idleTimeoutMillis: 60000,     // ✅ Close idle after 60s
-            timeout: 30000,               // ✅ This might be valid in some contexts
+           //  acquireTimeoutMillis: 30000,  // ✅ Wait max 30s for connection
+//idleTimeoutMillis: 60000,     // ✅ Close idle after 60s
+           // timeout: 30000,               // ✅ This might be valid in some contexts
              connectionLimit: 8,
-            waitForConnections: true,
-            queueLimit: 0,
+             waitForConnections: true,
+             queueLimit: 0,
            // acquireTimeoutMillis: 30000,  // MySQL2 specific
            // idleTimeoutMillis: 60000,     // MySQL2 specific
           //  charset: 'utf8mb4',
