@@ -1,4 +1,4 @@
-import { Module, Logger, OnModuleInit } from '@nestjs/common';
+import { Module, Logger, OnModuleInit, Catch, ExceptionFilter,ArgumentsHost } from '@nestjs/common';
  
 
 import { AppController } from './app.controller';
@@ -9,13 +9,7 @@ import { AuthModule } from './modules/auth/auth.module';
   
 import { AdminModule } from './modules/admin/admin.module';
 import { ClientModule } from './modules/client/client.module';
-import { APP_GUARD } from '@nestjs/core';
-import { RolesSeed } from './shared/database/seeds/roles.seed';
-import { PermissionsGuard } from './modules/auth/guards/permissions.guard';
  
-import { PublicGuard } from './core/guards/public.guard';
-import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard'; 
-//import { MailModule } from './shared/mail/mail.module';
  
 import { SharedModule } from './shared/shared.module';
 import { UnifiedCacheModule } from './core/cache/cache.module';
@@ -70,7 +64,32 @@ import razorpayConfig from './shared/config/razor.config';
   ],
 })
 export class AppModule {}
-  
+  @Catch()
+export class GlobalExceptionFilter implements ExceptionFilter {
+  catch(exception: unknown, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse();
+    const request = ctx.getRequest();
+
+    console.error('🚨 Global Error:', {
+      url: request.url,
+      method: request.method,
+      timestamp: new Date().toISOString(),
+      error: exception,
+      stack: exception instanceof Error ? exception.stack : 'No stack'
+    });
+
+    // Check for circular reference errors
+    if (exception instanceof Error && 
+        (exception.message.includes('circular') || 
+         exception.stack?.includes('TransformOperationExecutor'))) {
+      console.error('🔴 CIRCULAR REFERENCE DETECTED in:', request.url);
+      console.error('Route:', request.route?.path);
+    }
+
+    // Your normal error handling...
+  }
+}
   /*
 export class AppModule   {
    

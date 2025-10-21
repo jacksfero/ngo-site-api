@@ -137,7 +137,7 @@ export class OtpService {
       );
    
     }
-    await this.cacheManager.set(ipKey, ipCount + 1, 86400);
+ //   await this.cacheManager.set(ipKey, ipCount + 1, 86400);
   
     // Find user by identifier
     /*** For registration********** */

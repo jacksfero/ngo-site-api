@@ -27,10 +27,15 @@ export class ContactListDto {
    @Expose()
   subject: string;
  
+  //  @Expose()
+  // @Type(() => ProductListDto)
+  // product: ProductListDto;
    @Expose()
-  @Type(() => ProductListDto)
-  product: ProductListDto;
+  product: {
+    id: number;
+    productTitle: string;
+  } | null;
 
    @Expose()
-  createdAt: string;
+  createdAt: Date;
 }

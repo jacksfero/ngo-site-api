@@ -47,10 +47,93 @@ export class ContactUsService {
 });*/
   return contact;
 }
- 
- 
+ async findAll(
+  paginationDto: ContactPaginationDto,
+): Promise<PaginationResponseDto<ContactListDto>> {
+  const { page, type, limit, search } = paginationDto;
+  const skip = (page - 1) * limit;
 
-  async findAll(
+  const cacheKey = this.cacheService.generateKey(
+    'contactslist',    
+    JSON.stringify({ page, type, limit, search })
+  );
+
+  const cached = await this.cacheService.get<PaginationResponseDto<ContactListDto>>(cacheKey);
+  if (cached) {
+    console.log('✅ Returning cached contacts data');
+    return cached;
+  }
+
+  const queryBuilder = this.contactRepo.createQueryBuilder('contact')
+    .leftJoinAndSelect('contact.product', 'product');
+
+  if (search) {
+    queryBuilder.andWhere(
+      `(
+        LOWER(contact.name) LIKE LOWER(:search) OR 
+        LOWER(contact.email) LIKE LOWER(:search) OR 
+        LOWER(contact.subject) LIKE LOWER(:search)
+      )`,
+      { search: `%${search}%` }
+    );
+  }
+
+  if (type) {
+    queryBuilder.andWhere('contact.type = :type', { type });
+  }
+
+  const [result, total] = await queryBuilder
+    .orderBy('contact.createdAt', 'DESC')
+    .skip(skip)
+    .take(limit)
+    .getManyAndCount();
+
+  // ✅ FIXED: Manual transformation to avoid circular references
+  const data = this.transformContactsToDto(result);
+
+  const response = new PaginationResponseDto<ContactListDto>(data, {
+    total,
+    page,
+    limit,
+  });
+
+  await this.cacheService.set(cacheKey, response, { ttl: 300 });
+
+  return response;
+}
+
+// ✅ Safe transformation method
+private transformContactsToDto(contacts: ContactUs[]): ContactListDto[] {
+  return contacts.map(contact => {
+    const dto = new ContactListDto();
+    
+    // Basic contact fields
+   // dto.id = contact.id;
+    dto.name = contact.name;
+    dto.phonecode = contact.phonecode;
+    dto.mobile = contact.mobile;
+    dto.email = contact.email;
+    dto.message = contact.message;
+    dto.type = contact.type;
+    dto.subject = contact.subject;
+    dto.createdAt = contact.createdAt;
+   // dto.updatedAt = contact.updatedAt;
+    
+    // ✅ Safe product transformation
+    if (contact.product) {
+      dto.product = {
+        id: contact.product.id,
+        productTitle: `${contact.product.productTitle} (${contact.product.id})` // formatted title
+      };
+    } else {
+      dto.product = null;
+    }
+    
+    return dto;
+  });
+}
+ 
+  async findAllsssssss(
   paginationDto: ContactPaginationDto,
 ): Promise<PaginationResponseDto<ContactListDto>> {
   const { page ,type, limit, search } = paginationDto;

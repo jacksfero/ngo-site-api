@@ -1,6 +1,6 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
-import { AppModule } from './app.module';
+import { AppModule,GlobalExceptionFilter } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as cookieParser from 'cookie-parser';
 import { ParsePrimitivesPipe } from './core/pipes/parse-boolean.pipe';
@@ -10,6 +10,10 @@ async function bootstrap() {
 
   app.set('trust proxy', true);
   app.use(cookieParser());
+
+
+  app.useGlobalFilters(new GlobalExceptionFilter());
+
 
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
   app.setGlobalPrefix('api');
