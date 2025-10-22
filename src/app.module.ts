@@ -1,6 +1,5 @@
 // src/app.module.ts
 import { Module } from '@nestjs/common';
- 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -27,15 +26,10 @@ import razorpayConfig from './shared/config/razor.config';
     ClientModule,
     SharedModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController], // ✅ Make sure AppController is here
   providers: [
-    AppService,
+    AppService, // ✅ Make sure AppService is here
     ConfigService,
-    // ❌ REMOVE THIS: Global exception filter is now registered in main.ts
-    // {
-    //   provide: APP_FILTER,
-    //   useClass: GlobalExceptionFilter,
-    // },
   ],
 })
 export class AppModule {}

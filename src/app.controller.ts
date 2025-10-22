@@ -13,7 +13,8 @@ export class AppController {
 
   // ✅ Handle HEAD requests for health checks
   @Head()
-  headCheck(): void {
-    return; // Empty response for health checks
+  headCheck() {
+    // Empty response for health checks (load balancers, monitoring)
+    return;
   }
 }
