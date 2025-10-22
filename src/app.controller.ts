@@ -1,4 +1,3 @@
-// src/app.controller.ts
 import { Controller, Get, Head } from '@nestjs/common';
 import { AppService } from './app.service';
 
@@ -6,15 +5,25 @@ import { AppService } from './app.service';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
+  // For local health check
   @Get()
-  getHello() {
+  getRoot() {
     return this.appService.getHello();
   }
 
-  // ✅ Handle HEAD requests for health checks
   @Head()
-  headCheck() {
-    // Empty response for health checks (load balancers, monitoring)
+  headRoot() {
+    return;
+  }
+
+  // For API prefix health check
+  @Get('api')
+  getApiHello() {
+    return this.appService.getHello();
+  }
+
+  @Head('api')
+  headApi() {
     return;
   }
 }
