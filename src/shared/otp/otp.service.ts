@@ -325,7 +325,7 @@ export class OtpService {
 
   return { 
     success: true, 
-    message: `OTP sent to your ${type}`, 
+    message: `OTP sent to your ${type} --   ${otp}  `, 
     data: { identifier, type, userType } 
   };
 }
