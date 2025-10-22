@@ -1,9 +1,11 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
-import { AppModule,GlobalExceptionFilter } from './app.module';
+import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as cookieParser from 'cookie-parser';
 import { ParsePrimitivesPipe } from './core/pipes/parse-boolean.pipe';
+ import { GlobalExceptionFilter } from './core/filters/global-exception.filter';
+
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
