@@ -591,7 +591,7 @@ export class AuthService {
     roles: user.roles?.map((r) => r.name),
     permissions: 'No permission', // optional
   };
-
+//console.log('-----payload--------', payload)
   // 3️⃣ Return response with optional cart info
   return {
     access_token: this.jwtService.sign(payload),
@@ -704,13 +704,14 @@ export class AuthService {
     if (!result.success || !result.user) {
       throw new UnauthorizedException('Invalid OTP or user not found');
     }
+   // console.log('-----result--------',result)
 
     return this.login(result.user);
   }
 
   async findByEmail(email: string) {
     return this.userRepository.findOne({
-      where: { email },
+      where: { email }, relations: ['roles', 'roles.permissions'],
       select: ['id', 'email', 'password', 'mobile', 'is_verified', 'username']
     });
   }

@@ -49,7 +49,7 @@ export class OtpService {
     
     const record = await this.otpRepository.findOne({
       where: { identifier, type,userType },
-      relations: ['user'], // Ensure user is loaded
+      relations: ['user','user.roles'], // Ensure user is loaded
     });
   
     if (!record) {
