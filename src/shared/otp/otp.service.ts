@@ -246,41 +246,44 @@ export class OtpService {
   const otp = this.generateOtpCode();
   const expiresAt = addMinutes(new Date(), 10);
   
-  // ✅ FIXED: Use 2 minutes cooldown instead of 30 seconds
-  const cooldownPeriod = 2 * 60 * 1000; // 2 minutes in milliseconds
-  const cooldownThreshold = new Date(Date.now() - cooldownPeriod);
+  // ✅ FIXED: Use 2 minutes cooldown instead of 30 seconds 
+  const COOLDOWN_MINUTES = 2; // 2 minutes cooldown
+  const COOLDOWN_MS = COOLDOWN_MINUTES * 60 * 1000; // Convert to milliseconds
 
   // ✅ FIXED: Find the most recent OTP for this identifier
+  // ✅ FIXED: Find the most recent OTP (regardless of time)
   const recentOtp = await this.otpRepository.findOne({
-    where: { 
-      identifier, 
-      type, 
-      userType,
-      updatedAt: MoreThan(cooldownThreshold) // OTPs updated in last 2 minutes
-    },
+    where: { identifier, type, userType },
     order: { updatedAt: 'DESC' }
   });
 
   // ✅ FIXED: Check if there's a recent OTP within cooldown period
   if (recentOtp) {
-    const timeSinceLastOtp = Date.now() - recentOtp.updatedAt.getTime();
-    const secondsLeft = Math.ceil((cooldownPeriod - timeSinceLastOtp) / 1000);
-    const minutesLeft = Math.ceil(secondsLeft / 60);
+     const now = new Date();
+    const lastOtpTime = recentOtp.updatedAt;
+    const timeDiffMs = now.getTime() - lastOtpTime.getTime();
 
-    this.logger.warn(`OTP cooldown active: ${secondsLeft} seconds remaining for ${identifier}`);
-    
+      this.logger.debug(`Time check - Now: ${now}, Last OTP: ${lastOtpTime}, Diff: ${timeDiffMs}ms`);
+      // ✅ FIXED: Only enforce cooldown if within cooldown period
+    if (timeDiffMs < COOLDOWN_MS) {
+      const secondsLeft = Math.ceil((COOLDOWN_MS - timeDiffMs) / 1000);
+      const minutesLeft = Math.ceil(secondsLeft / 60);
+
+      this.logger.warn(`OTP cooldown active: ${secondsLeft} seconds remaining for ${identifier}`);
+      
     throw new BadRequestException(
       `Please wait ${minutesLeft} minute(s) before requesting another OTP.`
     );
   }
-
-  const tenMinutesAgo = subMinutes(new Date(), 10);
+  }
+    const tenMinutesAgo = subMinutes(new Date(), 10);
   const existingOtp = await this.otpRepository.findOne({ 
     where: { identifier, type, userType } 
   });
 
   if (existingOtp) {
     // ✅ FIXED: Check attempts within last 10 minutes
+     
     if (isAfter(existingOtp.updatedAt, tenMinutesAgo) && existingOtp.attempts >= 3) {
       throw new HttpException(
         'Too many OTP requests. Try again later',
@@ -300,10 +303,11 @@ export class OtpService {
     }
     
     // ✅ FIXED: Reset attempts if last attempt was more than 10 minutes ago
+      // Reset attempts if last attempt was more than 10 minutes ago
     existingOtp.attempts = isAfter(existingOtp.updatedAt, tenMinutesAgo)
       ? existingOtp.attempts + 1
       : 1;
-
+     existingOtp.updatedAt = new Date(); // ✅ Ensure updatedAt is current
     await this.otpRepository.save(existingOtp);
   } else {
     // Create new OTP
@@ -321,7 +325,7 @@ export class OtpService {
   }
 
   // ✅ FIXED: Increment IP counter
-  await this.cacheManager.set(ipKey, ipCount + 1, 86400);
+ // await this.cacheManager.set(ipKey, ipCount + 1, 86400);
 
   return { 
     success: true, 
