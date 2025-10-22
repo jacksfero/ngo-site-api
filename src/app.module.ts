@@ -1,10 +1,8 @@
-// app.module.ts
-import { Module, Logger } from '@nestjs/common';
-import { APP_FILTER } from '@nestjs/core';
-
+// src/app.module.ts
+import { Module } from '@nestjs/common';
+ 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { GlobalExceptionFilter } from './core/filters/global-exception.filter';  // Move filter to separate file
 
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
@@ -16,14 +14,12 @@ import { configurationCache } from './shared/config/configuration.cache';
 import payuConfig from './shared/config/payu.config';
 import paypalConfig from './shared/config/paypal.config';
 import razorpayConfig from './shared/config/razor.config';
-import { HealthController } from './health.controller';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configurationCache, payuConfig, paypalConfig, razorpayConfig],
-      // envFilePath: ['.env', '.env.development', '.env.production'], // Uncomment if needed
     }),
     UnifiedCacheModule.registerAsync(),
     AuthModule,  
@@ -31,15 +27,15 @@ import { HealthController } from './health.controller';
     ClientModule,
     SharedModule,
   ],
-  controllers: [AppController,HealthController],
+  controllers: [AppController],
   providers: [
     AppService,
     ConfigService,
-    // ✅ Register global exception filter properly
-    {
-      provide: APP_FILTER,
-      useClass: GlobalExceptionFilter,
-    },
+    // ❌ REMOVE THIS: Global exception filter is now registered in main.ts
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: GlobalExceptionFilter,
+    // },
   ],
 })
 export class AppModule {}

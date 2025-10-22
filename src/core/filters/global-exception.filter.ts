@@ -1,9 +1,11 @@
-// common/filters/global-exception.filter.ts
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
+// src/common/filters/global-exception.filter.ts
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(GlobalExceptionFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -20,12 +22,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         : 'Internal server error';
 
     // Log the error
-    console.error('🚨 Global Error:', {
+    this.logger.error('🚨 Global Error:', {
       url: request.url,
       method: request.method,
-      timestamp: new Date().toISOString(),
       status,
-      error: exception,
+      error: exception instanceof Error ? exception.message : exception,
       stack: exception instanceof Error ? exception.stack : 'No stack'
     });
 
@@ -33,7 +34,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     if (exception instanceof Error && 
         (exception.message.includes('circular') || 
          exception.stack?.includes('TransformOperationExecutor'))) {
-      console.error('🔴 CIRCULAR REFERENCE DETECTED in:', request.url);
+      this.logger.error('🔴 CIRCULAR REFERENCE DETECTED in:', request.url);
     }
 
     // Send formatted error response

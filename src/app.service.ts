@@ -1,13 +1,14 @@
-// app.service.ts
+// src/app.service.ts
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AppService {
-  getHello(): { status: string; message: string; timestamp: string } {
+  getHello() {
     return {
       status: 'OK',
-      message: 'Indiagalleria API is running!',
+      message: 'API is running successfully!',
       timestamp: new Date().toISOString(),
+      service: 'Indiagalleria Backend',
     };
   }
 }
