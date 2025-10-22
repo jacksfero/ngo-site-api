@@ -115,7 +115,7 @@ export class OtpService {
     return this.resendOtp(identifier, type, userType, ipAddress);
   }
 
- 
+ /*
     async sendOtp(
     identifier: string,
     type: OtpType,
@@ -141,7 +141,7 @@ export class OtpService {
   
     // Find user by identifier
     /*** For registration********** */
-    const user = await this.userReposs.findOne({ where: { [type]: identifier } });
+  /*  const user = await this.userReposs.findOne({ where: { [type]: identifier } });
     const isRegistrationFlow = userType !== UserType.LOGIN && userType !== UserType.FORGOT_PASSWORD;
 
       // Simplified conditions
@@ -209,8 +209,126 @@ export class OtpService {
       }, };
    // return { otp };
   }
+*/
+ async sendOtp(
+  identifier: string,
+  type: OtpType,
+  userType?: UserType,
+  ipAddress?: string,
+): Promise<ApiResponse<{ identifier: string; type: OtpType; userType?: UserType }>> {
+  if (!ipAddress) {
+    throw new BadRequestException('IP address is required.');
+  }
 
- 
+  // Rate limit: Max 50 OTPs per IP per day
+  const ipKey = `otp:ip:${ipAddress}`;
+  const ipCount = (await this.cacheManager.get<number>(ipKey)) || 0;
+  if (ipCount >= 50) {
+    throw new HttpException(
+      'Too many OTP requests from this IP today.',
+      HttpStatus.TOO_MANY_REQUESTS,
+    );
+  }
+
+  // Find user by identifier
+  const user = await this.userReposs.findOne({ where: { [type]: identifier } });
+  const isRegistrationFlow = userType !== UserType.LOGIN && userType !== UserType.FORGOT_PASSWORD;
+
+  // Simplified conditions
+  if (!user && !isRegistrationFlow) {
+    throw new NotFoundException('User not registered');
+  }
+
+  if (user && isRegistrationFlow) {
+    throw new BadRequestException('User already exists');
+  }
+
+  const otp = this.generateOtpCode();
+  const expiresAt = addMinutes(new Date(), 10);
+  
+  // ✅ FIXED: Use 2 minutes cooldown instead of 30 seconds
+  const cooldownPeriod = 2 * 60 * 1000; // 2 minutes in milliseconds
+  const cooldownThreshold = new Date(Date.now() - cooldownPeriod);
+
+  // ✅ FIXED: Find the most recent OTP for this identifier
+  const recentOtp = await this.otpRepository.findOne({
+    where: { 
+      identifier, 
+      type, 
+      userType,
+      updatedAt: MoreThan(cooldownThreshold) // OTPs updated in last 2 minutes
+    },
+    order: { updatedAt: 'DESC' }
+  });
+
+  // ✅ FIXED: Check if there's a recent OTP within cooldown period
+  if (recentOtp) {
+    const timeSinceLastOtp = Date.now() - recentOtp.updatedAt.getTime();
+    const secondsLeft = Math.ceil((cooldownPeriod - timeSinceLastOtp) / 1000);
+    const minutesLeft = Math.ceil(secondsLeft / 60);
+
+    this.logger.warn(`OTP cooldown active: ${secondsLeft} seconds remaining for ${identifier}`);
+    
+    throw new BadRequestException(
+      `Please wait ${minutesLeft} minute(s) before requesting another OTP.`
+    );
+  }
+
+  const tenMinutesAgo = subMinutes(new Date(), 10);
+  const existingOtp = await this.otpRepository.findOne({ 
+    where: { identifier, type, userType } 
+  });
+
+  if (existingOtp) {
+    // ✅ FIXED: Check attempts within last 10 minutes
+    if (isAfter(existingOtp.updatedAt, tenMinutesAgo) && existingOtp.attempts >= 3) {
+      throw new HttpException(
+        'Too many OTP requests. Try again later',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    // Update existing OTP
+    existingOtp.otp = otp;
+    existingOtp.expiresAt = expiresAt;
+    existingOtp.isVerified = false;
+    existingOtp.userType = userType;
+    existingOtp.ipAddress = ipAddress;
+    
+    if (user) {
+      existingOtp.user = user;
+    }
+    
+    // ✅ FIXED: Reset attempts if last attempt was more than 10 minutes ago
+    existingOtp.attempts = isAfter(existingOtp.updatedAt, tenMinutesAgo)
+      ? existingOtp.attempts + 1
+      : 1;
+
+    await this.otpRepository.save(existingOtp);
+  } else {
+    // Create new OTP
+    const otpEntity = this.otpRepository.create({
+      identifier,
+      type,
+      otp,
+      expiresAt,
+      attempts: 1,
+      userType,
+      user: user ?? undefined,
+      ipAddress,
+    });
+    await this.otpRepository.save(otpEntity);
+  }
+
+  // ✅ FIXED: Increment IP counter
+  await this.cacheManager.set(ipKey, ipCount + 1, 86400);
+
+  return { 
+    success: true, 
+    message: `OTP sent to your ${type}`, 
+    data: { identifier, type, userType } 
+  };
+}
   async getLatestVerifiedOtp(
     identifier: string,
     type: 'email' | 'mobile',
