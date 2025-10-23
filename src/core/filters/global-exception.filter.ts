@@ -11,9 +11,13 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    // ✅ CRITICAL: Check if headers already sent
+    // ✅ Skip for OPTIONS requests
+    if (request.method === 'OPTIONS') {
+      return response.status(200).end();
+    }
+
+    // ✅ Check if headers already sent
     if (response.headersSent) {
-      this.logger.warn('Headers already sent, skipping exception filter');
       return;
     }
 
@@ -27,32 +31,17 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         ? exception.getResponse()
         : 'Internal server error';
 
-    // Log the error
-    this.logger.error('🚨 Global Error:', {
-      url: request.url,
-      method: request.method,
-      status,
-      error: exception instanceof Error ? exception.message : exception,
-    });
-
-    // Check for circular reference errors
-    if (exception instanceof Error && 
-        (exception.message.includes('circular') || 
-         exception.stack?.includes('TransformOperationExecutor'))) {
-      this.logger.error('🔴 CIRCULAR REFERENCE DETECTED');
-    }
+    this.logger.error(`Error ${status}: ${request.method} ${request.url}`);
 
     try {
-      // ✅ Send formatted error response (ONCE)
       response.status(status).json({
         statusCode: status,
         timestamp: new Date().toISOString(),
         path: request.url,
         message: typeof message === 'string' ? message : (message as any).message,
       });
-    } catch (sendError) {
-      // ✅ If sending response fails, log but don't try to send again
-      this.logger.error('Failed to send error response:', sendError);
+    } catch (error) {
+      this.logger.error('Failed to send error response');
     }
   }
 }
