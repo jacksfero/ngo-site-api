@@ -1,4 +1,4 @@
-// src/common/filters/global-exception.filter.ts
+// src/core/filters/global-exception.filter.ts
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
 
@@ -10,6 +10,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
+
+    // ✅ CRITICAL: Check if headers already sent
+    if (response.headersSent) {
+      this.logger.warn('Headers already sent, skipping exception filter');
+      return;
+    }
 
     const status =
       exception instanceof HttpException
@@ -27,22 +33,26 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       method: request.method,
       status,
       error: exception instanceof Error ? exception.message : exception,
-      stack: exception instanceof Error ? exception.stack : 'No stack'
     });
 
     // Check for circular reference errors
     if (exception instanceof Error && 
         (exception.message.includes('circular') || 
          exception.stack?.includes('TransformOperationExecutor'))) {
-      this.logger.error('🔴 CIRCULAR REFERENCE DETECTED in:', request.url);
+      this.logger.error('🔴 CIRCULAR REFERENCE DETECTED');
     }
 
-    // Send formatted error response
-    response.status(status).json({
-      statusCode: status,
-      timestamp: new Date().toISOString(),
-      path: request.url,
-      message: typeof message === 'string' ? message : (message as any).message,
-    });
+    try {
+      // ✅ Send formatted error response (ONCE)
+      response.status(status).json({
+        statusCode: status,
+        timestamp: new Date().toISOString(),
+        path: request.url,
+        message: typeof message === 'string' ? message : (message as any).message,
+      });
+    } catch (sendError) {
+      // ✅ If sending response fails, log but don't try to send again
+      this.logger.error('Failed to send error response:', sendError);
+    }
   }
 }
