@@ -3,10 +3,21 @@ import { ExhibitionService } from './exhibition.service';
 import { CreateExhibitionDto } from './dto/create-exhibition.dto';
 import { UpdateExhibitionDto } from './dto/update-exhibition.dto';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
+import { ExhibitionDetailDto } from './dto/exhibition-detail.dto';
 
 @Controller()
 export class ExhibitionController {
   constructor(private readonly exhibitionService: ExhibitionService) {}
+
+
+
+ // ✅ Get currently live exhibitions
+  @Get('status/live')
+  async findLive(): Promise<ExhibitionDetailDto[]> {
+    return this.exhibitionService.findLiveExhibitions();
+  }
+
+
 
   @Get()
 findAllPublic(@Query() paginationDto: PaginationDto) {
@@ -19,6 +30,8 @@ nextonlineExhi(@Param('id', ParseIntPipe) id: number) {
  // console.log('id-------------',id)
   return this.exhibitionService.nextonlineExhi(id);
 }
+
+
 
 
 @Get('exhi/:id')

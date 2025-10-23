@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { LessThan, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { Exhibition } from 'src/shared/entities/exhibition.entity';
 import { CreateExhibitionDto } from './dto/create-exhibition.dto';
 import { UpdateExhibitionDto } from './dto/update-exhibition.dto';
@@ -73,25 +73,7 @@ export class ExhibitionService {
      await this.cacheService.set(cacheKey, result);
     return result;
   }
-  async nextonlineExhi_BKA(id: number) {
-    const exhibition = await this.exhibitionRepo
-      .createQueryBuilder('exhibition')
-      .leftJoinAndSelect('exhibition.displayMappings', 'exhprod')
-      .leftJoinAndSelect('exhprod.product', 'product')
-      .leftJoinAndSelect('product.category', 'category')
-      .leftJoinAndSelect('product.artist', 'artist')
-      .leftJoinAndSelect('artist.profileImage', 'proimg')
-      .where('exhibition.id = :exhibitionId', { exhibitionId: id })
-
-
-      .getOne();
-
-    //if (!exhibition.length) throw new NotFoundException('Exhibition not found');
-
-
-
-    return exhibition;
-  }
+  
 
   async nextonlineExhi(id: number) {
 
@@ -181,6 +163,49 @@ export class ExhibitionService {
     await this.cacheService.set(cacheKey, dto);
     return dto;
   }
+
+  // ✅ Get currently live exhibitions
+  // ✅ Get currently live exhibitions (returns array)
+async findLiveExhibitions(): Promise<ExhibitionDetailDto[]> {
+  const cacheKey = 'frontend:exhibitions:live';
+  const cached = await this.cacheService.get<ExhibitionDetailDto[]>(cacheKey);
+  if (cached) return cached;
+
+  const now = new Date();
+  const exhibitions = await this.exhibitionRepo.find({
+    where: {
+      status: true,
+      dateStart: LessThanOrEqual(now),
+      dateEnd: MoreThanOrEqual(now),
+    },
+    order: { dateStart: 'ASC' },
+    relations: [
+      'displayMappings',
+      'displayMappings.product',
+      'displayMappings.product.category',
+      'displayMappings.product.artist',
+      'displayMappings.product.medium',
+      'displayMappings.product.surface',
+      'displayMappings.product.artist.profileImage'
+    ],
+  });
+ // console.log(exhibitions,'ddddddddddddddddddd')
+  // ✅ Return empty array instead of throwing error
+  if (!exhibitions.length) {
+    return [];
+  }
+
+  const dtos = exhibitions.map(exhibition => {
+    const dto = plainToInstance(ExhibitionDetailDto, exhibition);
+    dto.displayMappings = exhibition.displayMappings.map(mapping =>
+      plainToInstance(ProductListItemDto, mapping.product, { excludeExtraneousValues: true }),
+    );
+    return dto;
+  });
+
+  await this.cacheService.set(cacheKey, dtos);
+  return dtos;
+}
 
 
 
