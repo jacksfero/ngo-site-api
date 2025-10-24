@@ -92,8 +92,11 @@ password: string | null;
   @JoinColumn({ name: 'artist_type_id' })
   artistType: ArtistType | null;
 
-  //  @Column({ name: 'artist_type_id', nullable: true })
-  //  artist_type_id: number;
+  @Column({ type: 'boolean', default: true , select: false})
+  termscondition: boolean;
+
+   @Column({ type: 'boolean', default: true , select: false})
+  isSubscribe: boolean;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
   createdBy: string;

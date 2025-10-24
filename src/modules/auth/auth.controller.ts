@@ -177,20 +177,17 @@ async login(
   async changePassword(@Req() req, @Body() dto: ChangePasswordDto) {
     return this.authService.changePassword(req.user.sub.toString(), dto);
   }
-
-
-  @UseGuards(JwtAuthGuard)
+ 
+  
+ @Public()
 @Post('logout')
-  async logout(@Req() req: Request, @Res() res: Response) {
-    // ✅ Clear cookies
-    res.clearCookie('access_token', { httpOnly: true, sameSite: 'lax' });
-    res.clearCookie('guest_id', { httpOnly: true, sameSite: 'lax' });
-   // localStorage.removeItem('token'); // clear JWT
+async logout(@Res() res: Response) {
+  res.clearCookie('access_token');
+  res.clearCookie('guest_id');
+  return res.json({ message: 'Logged out successfully' });
+}
 
-    // (Optional) You could also invalidate the JWT in a DB/Redis blacklist if required.
-
-    return res.json({ message: 'Logged out successfully.' });
-  }
+   
 
   @Public()
   @Post('send-otp-cart')

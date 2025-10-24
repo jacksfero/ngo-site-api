@@ -11,6 +11,17 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
+     // ✅ Skip for logout endpoint to avoid 401 errors
+  if (request.url.includes('/auth/logout')) {
+    return response.status(200).json({
+      success: true,
+      message: 'Logged out successfully'
+    });
+  }
+
+  // ... rest of your exception handling
+ 
+
     // ✅ Skip for OPTIONS requests
     if (request.method === 'OPTIONS') {
       return response.status(200).end();
