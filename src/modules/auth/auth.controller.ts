@@ -152,7 +152,7 @@ async login(
     return this.authService.loginWithOtp(dto);
   }
 
-  @Public()
+ @Public()
   @Post('forgot-password')
   async forgotPassword(@Body() dto: SendOtpDto, @Ip() ipAddress?: string) {
     return this.authService.sendResetPasswordOtp(dto, ipAddress);
@@ -479,13 +479,7 @@ async logout(@Res() res: Response) {
     return this.authService.addToWishlist(req.user, createWishlistDto);
   }
 
-  // @UseGuards(JwtAuthGuard)
-  // @Get('wishlist')
-  // findAllWishList( @Req() req) {
-  //   //  return this.globalVar;
-  //   //console.log('---glooooo------' + this.globalVar);
-  //   return this.authService.getUserWishlist(req.user.sub.toString());
-  // }
+ 
 
   @UseGuards(JwtAuthGuard)
   @Get('wishlist')
