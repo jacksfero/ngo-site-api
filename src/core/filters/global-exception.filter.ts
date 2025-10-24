@@ -1,5 +1,5 @@
 // src/core/filters/global-exception.filter.ts
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger, NotFoundException } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 @Catch()
@@ -11,16 +11,13 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-     // ✅ Skip for logout endpoint to avoid 401 errors
-  if (request.url.includes('/auth/logout')) {
-    return response.status(200).json({
-      success: true,
-      message: 'Logged out successfully'
-    });
-  }
-
-  // ... rest of your exception handling
- 
+    // ✅ Skip for logout endpoint to avoid 401 errors
+    if (request.url.includes('/auth/logout')) {
+      return response.status(200).json({
+        success: true,
+        message: 'Logged out successfully'
+      });
+    }
 
     // ✅ Skip for OPTIONS requests
     if (request.method === 'OPTIONS') {
@@ -30,6 +27,18 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     // ✅ Check if headers already sent
     if (response.headersSent) {
       return;
+    }
+
+    // Handle 404 errors specifically
+    if (this.isNotFoundException(exception)) {
+      this.logger.warn(`Route not found: ${request.method} ${request.url}`);
+      
+      return response.status(HttpStatus.NOT_FOUND).json({
+        statusCode: HttpStatus.NOT_FOUND,
+        timestamp: new Date().toISOString(),
+        path: request.url,
+        message: 'Route not found',
+      });
     }
 
     const status =
@@ -42,7 +51,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         ? exception.getResponse()
         : 'Internal server error';
 
-    this.logger.error(`Error ${status}: ${request.method} ${request.url}`);
+    // Log as error only for server errors (5xx), warn for client errors (4xx)
+    if (status >= 500) {
+      this.logger.error(`Error ${status}: ${request.method} ${request.url}`, exception instanceof Error ? exception.stack : '');
+    } else {
+      this.logger.warn(`Client error ${status}: ${request.method} ${request.url}`);
+    }
 
     try {
       response.status(status).json({
@@ -54,5 +68,18 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     } catch (error) {
       this.logger.error('Failed to send error response');
     }
+  }
+
+  private isNotFoundException(exception: unknown): boolean {
+    if (exception instanceof NotFoundException) {
+      return true;
+    }
+    
+    // Check if it's a 404 error from the underlying platform
+    if (exception instanceof HttpException && exception.getStatus() === 404) {
+      return true;
+    }
+    
+    return false;
   }
 }
