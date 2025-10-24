@@ -29,18 +29,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       return;
     }
 
-    // Handle 404 errors specifically
-    if (this.isNotFoundException(exception)) {
-      this.logger.warn(`Route not found: ${request.method} ${request.url}`);
-      
-      return response.status(HttpStatus.NOT_FOUND).json({
-        statusCode: HttpStatus.NOT_FOUND,
-        timestamp: new Date().toISOString(),
-        path: request.url,
-        message: 'Route not found',
-      });
-    }
-
     const status =
       exception instanceof HttpException
         ? exception.getStatus()
@@ -51,10 +39,22 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         ? exception.getResponse()
         : 'Internal server error';
 
+    // ✅ FIXED: Only log as 404 if it's actually a NotFoundException
+    if (status === 404) {
+      this.logger.warn(`Route not found: ${request.method} ${request.url}`);
+      
+      return response.status(HttpStatus.NOT_FOUND).json({
+        statusCode: HttpStatus.NOT_FOUND,
+        timestamp: new Date().toISOString(),
+        path: request.url,
+        message: 'Route not found',
+      });
+    }
+
     // Log as error only for server errors (5xx), warn for client errors (4xx)
     if (status >= 500) {
       this.logger.error(`Error ${status}: ${request.method} ${request.url}`, exception instanceof Error ? exception.stack : '');
-    } else {
+    } else if (status >= 400) {
       this.logger.warn(`Client error ${status}: ${request.method} ${request.url}`);
     }
 
@@ -64,22 +64,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         timestamp: new Date().toISOString(),
         path: request.url,
         message: typeof message === 'string' ? message : (message as any).message,
+        ...(typeof message === 'object' && { details: message }),
       });
     } catch (error) {
       this.logger.error('Failed to send error response');
     }
-  }
-
-  private isNotFoundException(exception: unknown): boolean {
-    if (exception instanceof NotFoundException) {
-      return true;
-    }
-    
-    // Check if it's a 404 error from the underlying platform
-    if (exception instanceof HttpException && exception.getStatus() === 404) {
-      return true;
-    }
-    
-    return false;
   }
 }
