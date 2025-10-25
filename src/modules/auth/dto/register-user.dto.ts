@@ -1,6 +1,6 @@
 // src/auth/dto/register-user.dto.ts
 
-import { IsEmail, IsOptional, IsMobilePhone, IsString, MinLength } from 'class-validator';
+import { IsEmail,IsBoolean, IsOptional, IsMobilePhone, IsString, MinLength } from 'class-validator';
 import { IsValidPassword } from 'src/core/decorators/password.decorator';
 
 export class RegisterUserDto {
@@ -10,6 +10,10 @@ export class RegisterUserDto {
   @IsEmail()
   email: string;
 
+  @IsString() // or @IsMobilePhone('en-IN')
+  phonecode: string;
+  
+  
   @IsMobilePhone() // or @IsMobilePhone('en-IN')
   mobile: string;
 
@@ -21,6 +25,16 @@ export class RegisterUserDto {
   @IsOptional()
   @IsString()
   userType?: string; // e.g. "artist", "seller", "buyer"
+
+
+ @IsBoolean()
+  @IsOptional()
+  termscondition?: boolean;
+
+ @IsBoolean()
+  @IsOptional()
+  isSubscribe?: boolean;
+
 
   @IsOptional()
   @IsString()

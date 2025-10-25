@@ -326,7 +326,7 @@ export class AuthService {
   // src/auth/auth.service.ts
 
   async registerUser(dto: RegisterUserDto) {
-    const { email, mobile, password, username, userType } = dto;
+    const { email,isSubscribe,termscondition, mobile, password, username, userType } = dto;
 
 
     const existingByEmail = await this.findByEmail(
@@ -368,7 +368,9 @@ export class AuthService {
     const user = this.userRepository.create({
       username,
       email,
-      mobile,
+      mobile, 
+       termscondition,
+      isSubscribe,
       status: true, is_verified: true,
       password: await bcrypt.hash(password, 10),
       roles: [role], // assign role in array for ManyToMany

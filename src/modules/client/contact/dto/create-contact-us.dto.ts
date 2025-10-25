@@ -1,5 +1,5 @@
 import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { ContactUsType } from 'src/modules/admin/contactus/enums/contact-us-type.enum';
+import { ContactUsType, Art_Type } from 'src/modules/admin/contactus/enums/contact-us-type.enum';
 
 export class CreateContactUsDto {
   @IsString()
@@ -23,6 +23,10 @@ export class CreateContactUsDto {
 
   @IsEnum(ContactUsType)
   type: ContactUsType;
+
+  @IsOptional()
+  @IsEnum(Art_Type)
+  art_type?: Art_Type;
 
   @IsString()
   @IsNotEmpty()

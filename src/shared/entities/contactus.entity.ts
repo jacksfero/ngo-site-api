@@ -1,4 +1,4 @@
-import { ContactUsType } from 'src/modules/admin/contactus/enums/contact-us-type.enum';
+import { ContactUsType,Art_Type } from 'src/modules/admin/contactus/enums/contact-us-type.enum';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn, ManyToOne } from 'typeorm';
 import { Product } from './product.entity';
 
@@ -25,8 +25,13 @@ export class ContactUs {
     @Column({ type: 'enum', enum: ContactUsType })
     type: ContactUsType;
 
+      @Column({ type: 'enum', enum: Art_Type, default: Art_Type.DEFAULT })
+    art_type: Art_Type;
+
     @Column({ nullable: true})
     subject: string;
+
+  
 
    @ManyToOne(() => Product, { eager: true, nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'product_id' })

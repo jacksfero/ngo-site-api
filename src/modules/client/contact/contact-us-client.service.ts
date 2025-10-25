@@ -5,6 +5,7 @@ import { ContactUs } from 'src/shared/entities/contactus.entity';
 import { CreateContactUsDto } from './dto/create-contact-us.dto';
 import { MailService } from 'src/shared/mail/mail.service';
 import { CreateNewsletterDto } from './dto/newsletter.contact.dto';
+import { ContactUsType } from 'src/modules/admin/contactus/enums/contact-us-type.enum';
 
 @Injectable()
 export class ContactUsClientService {
@@ -15,9 +16,7 @@ export class ContactUsClientService {
   ) {}
 
   async submitContactForm(dto: CreateContactUsDto): Promise<ContactUs> {
-    // const contact = this.contactUsRepo.create(dto);
-    // const saved = await this.contactUsRepo.save(contact);
-
+    
      const contact = this.contactUsRepo.create({
   ...dto,
   ...(dto.productId ? { product: { id: dto.productId } } : {}), // ✅ omit if not present
@@ -65,7 +64,13 @@ export class ContactUsClientService {
     // const contact = this.contactUsRepo.create(dto);
     // const saved = await this.contactUsRepo.save(contact);
 
-     const contact = this.contactUsRepo.create(dto);
+    const contact = this.contactUsRepo.create({
+    type: ContactUsType.NEWSLETTER,
+  
+    email: dto.email,
+    
+    // ... other fields
+  });
 
  const saved =  await this.contactUsRepo.save(contact);
 

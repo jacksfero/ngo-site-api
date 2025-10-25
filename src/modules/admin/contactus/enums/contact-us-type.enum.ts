@@ -5,3 +5,11 @@ export enum ContactUsType {
   CONTACT_ART = 'contact_art',
   NEWSLETTER = 'newsletter',
 }
+
+export enum Art_Type {
+  ARTIST = 'artist',
+  ART_COLLECTOR = 'art_collerctor',
+  DEFAULT = 'general',
+  
+}
+
