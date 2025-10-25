@@ -48,8 +48,8 @@ export class InventProductService {
     .leftJoinAndSelect('product.surface', 'surface')
     .leftJoinAndSelect('product.medium', 'medium')
     .leftJoinAndSelect('product.tags', 'tag')
-    // .leftJoinAndSelect('product.subjects', 'subject') // manytomany
-    // .leftJoinAndSelect('product.styles', 'style')
+    .leftJoinAndSelect('product.subjects', 'subject') // manytomany
+     .leftJoinAndSelect('product.styles', 'style')
     .leftJoinAndSelect('inventory.shippingWeight', 'shipping')
     .where('inventory.status = :status', { status:true })
     //.andWhere('product.is_active = :isActive', { isActive: "Active" });
@@ -57,8 +57,8 @@ export class InventProductService {
 
       // ✅ OPTIONAL: Only join many-to-many relations if they're needed for filtering
     // ✅ Add optional joins
-  if (subjectId) qb.leftJoinAndSelect('product.subjects', 'subject');
-  if (styleId) qb.leftJoinAndSelect('product.styles', 'style');
+ // if (subjectId) qb.leftJoinAndSelect('product.subjects', 'subject');
+//  if (styleId) qb.leftJoinAndSelect('product.styles', 'style');
 
   // ✅ Search filter
   if (search) {
@@ -133,6 +133,8 @@ export class InventProductService {
  const defaultArtistFields = ['id', 'username'];
  const defaultCategoryFields = ['id', 'name'];
  const defaultSurfaceFields = ['id', 'surfaceName'];
+ const defaultStyleFields = ['id', 'title', 'description'];
+ const defaultSubjectFields = ['id', 'subject', 'description'];
  const defaultMediumFields = ['id', 'name'];
  const defaultShippingFields = ['weightSlot', 'costINR', 'CostOthers'];
 
@@ -164,6 +166,10 @@ export class InventProductService {
       
       // Default artist fields (always included)
       ...defaultCategoryFields.map(field => `category.${field}`),
+
+        ...defaultStyleFields.map(field => `style.${field}`),
+
+         ...defaultSubjectFields.map(field => `subject.${field}`),
 
       // Default artist fields (always included)
       ...defaultArtistFields.map(field => `artist.${field}`),

@@ -32,6 +32,29 @@ export class CategoryDto {
   @Expose()
   name: string;
 }
+ export class SubjectDto {
+   @Expose()
+   id: number;
+
+  @Expose()
+  subject: string;
+
+   @Expose()
+  description: string;
+}
+ 
+ 
+
+export class styleDto {
+   @Expose()
+   id: number;
+
+  @Expose()
+  title: string;
+
+  @Expose()
+  description: string;
+}
  
 
 
@@ -43,8 +66,7 @@ export class ProductInvtDto {
 
   @Expose()
   productTitle: string;
-
-   
+ 
 
   @Expose()
   slug: string;
@@ -79,6 +101,15 @@ export class ProductInvtDto {
   @Type(() => SurfaceDto)
   surface: SurfaceDto;
 
+   @Expose()
+  @Type(() => SubjectDto)
+  subjects: SubjectDto;
+
+
+   @Expose()
+  @Type(() => styleDto)
+  styles: styleDto;
+
   @Expose()
   @Type(() => MediumDto)
   medium: MediumDto;
@@ -86,15 +117,7 @@ export class ProductInvtDto {
   @Expose()
   @Type(() => ArtistDto)
   artist: ArtistDto;
-
-  // // ✅ If you just need artistId
-  // @Expose()
-  // get artistId(): number {
-  //   return this.artist?.id ?? null;
-  // }
-
-  // Optional: full artist details
-
+ 
 }
 
 
