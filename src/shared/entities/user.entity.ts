@@ -68,10 +68,10 @@ password: string | null;
   @OneToMany(() => ExhibitionProduct, (map) => map.user)
   displayMappings: ExhibitionProduct[];
 
-  @Column({ type: 'boolean', nullable: true , select: false})
+  @Column({ type: 'boolean', nullable: true ,  })
   is_verified: boolean;
 
-  @Column({ type: 'boolean', default: false , select: false})
+  @Column({ type: 'boolean', default: false ,  })
   status: boolean;
 
   @Column({ type: 'boolean', default: false , select: false})
