@@ -1093,6 +1093,11 @@ export class AuthService {
     } if (updateProductDto.created_in !== undefined) {
       product.created_in = updateProductDto.created_in;
     }
+    if (updateProductDto.remark_to_artist !== undefined) {
+      product.remark_to_artist = updateProductDto.remark_to_artist;
+    }
+
+
     product.category = { id: updateProductDto.category_id } as Productcategory;
     product.packingMode = { id: updateProductDto.packingModeId } as PackingModeEntity;
     product.commissionType = { id: updateProductDto.commissionTypeId } as CommissionType;
@@ -1100,6 +1105,23 @@ export class AuthService {
     product.size = { id: updateProductDto.size_id } as Size;
 
     product.orientation = { id: updateProductDto.orientation_id } as Orientation;
+
+     // subjects
+  if (updateProductDto.subjectsIds !== undefined) {
+    product.subjects =
+      updateProductDto.subjectsIds.length > 0
+        ? await this.subjectRepo.findBy({ id: In(updateProductDto.subjectsIds) })
+        : [];
+  }
+  // styles
+  if (updateProductDto.stylesIds !== undefined) {
+    product.styles =
+      updateProductDto.stylesIds.length > 0
+        ? await this.styleRepo.findBy({ id: In(updateProductDto.stylesIds) })
+        : [];
+  }
+
+
 
     return this.productRepository.save(product);
   }
