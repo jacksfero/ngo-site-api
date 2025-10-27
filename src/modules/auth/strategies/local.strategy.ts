@@ -15,7 +15,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
       passwordField: 'password',
     });
 
-    //console.log('✅ LocalStrategy initialized with AuthService:--------', !!authService);
+    console.log('✅ LocalStrategy initialized with AuthService:--------', !!authService);
   }
  
   async validate(loginId: string, password: string): Promise<any> {

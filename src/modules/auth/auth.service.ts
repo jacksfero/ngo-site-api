@@ -74,8 +74,8 @@ import { slugify } from 'src/shared/utils/slugify';
 import { Cart } from 'src/shared/entities/cart.entity';
 import { MailService } from 'src/shared/mail/mail.service';
 
-import { REQUEST } from '@nestjs/core';
-import { Request } from 'express';
+// import { REQUEST } from '@nestjs/core';
+  import { Request } from 'express';
 
 
 
@@ -86,7 +86,7 @@ export class AuthService {
 
     private readonly mailService: MailService,
 
-     @Inject(REQUEST) private readonly request: Request,
+  //   @Inject(REQUEST) private readonly request: Request,
 
     private usersService: UsersService,
     private jwtService: JwtService,
@@ -554,30 +554,23 @@ export class AuthService {
   }
 
 
-  async login(user: User ) {
+  async login(user: User, req?: Request) {
   if (!user) {
     this.logger?.warn?.('Login failed: user is undefined');
     throw new UnauthorizedException('Invalid login request');
   }
 
-  const guestCartId = this.request.cookies?.['guestCartId']; // ✅ Direct access
+  const guestCartId = req?.cookies?.['guestCartId']; // ✅ Safe access with optional chaining
 
-//  console.log('user id--------------',user);
-//   console.log('guestCartIdss id--------------',guestCartId);
-//   console.log('guset id--------------',guestCartId);
-
-  // 1️⃣ Merge guest cart (optional)
   let mergedCart: Cart | undefined;
   if (guestCartId) {
     const guestCart = await this.cartRepo.findOne({
       where: { guestId: guestCartId },
-      relations: ['items', 'items.product'], // include product if needed
+      relations: ['items', 'items.product'],
     });
 
     if (guestCart) {
-      // re-assign cart to logged-in user
       guestCart.user = user;
-     // guestCart.guestId = null; // remove guest reference
       mergedCart = await this.cartRepo.save(guestCart);
 
       this.logger?.log?.(
@@ -586,20 +579,18 @@ export class AuthService {
     }
   }
 
-  // 2️⃣ Prepare JWT payload
   const payload: JwtPayload = {
     sub: user.id,
     username: user.username,
     roles: user.roles?.map((r) => r.name),
-    permissions: 'No permission', // optional
   };
-//console.log('-----payload--------', payload)
-  // 3️⃣ Return response with optional cart info
+
   return {
     access_token: this.jwtService.sign(payload),
-    ...(mergedCart ? { cart: mergedCart } : {}), // only include if merged
+    ...(mergedCart ? { cart: mergedCart } : {}),
   };
 }
+
   async sendResetPasswordOtp(dto: SendOtpDto, ipAddress?: string) {
     // const { identifier, type, userType  } = dto;
     const { identifier, type, userType } = dto;
@@ -708,7 +699,7 @@ export class AuthService {
     }
    // console.log('-----result--------',result)
 
-    return this.login(result.user);
+    return this.login(result.user );
   }
 
   async findByEmail(email: string) {
