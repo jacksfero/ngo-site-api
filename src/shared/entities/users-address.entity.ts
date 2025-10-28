@@ -38,15 +38,15 @@ export class UsersAddress {
   @Column()
   pin: string;
 
-  /* @Column()
-   aadhar: string;*/
-
+    @Column({ type: 'varchar', length: 50, nullable: true })
+  phonecode: string;
+ 
   @Column()
   contact: string;
 
-  /* @Column()
-   GSTIN: string;*/
-
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  phonecode_other: string;
+ 
   @Column()
   other_phone: string;
 
