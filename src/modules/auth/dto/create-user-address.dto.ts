@@ -22,9 +22,16 @@ export class CreateUserAddressDto {
   @IsString()
   @Length(4, 10)
   pin: string;
+
+  @IsString()
+  phonecode: string;
         
   @IsString()
   contact: string;
+  
+  @IsOptional()
+  @IsString()
+  phonecode_other?: string;
  
   @IsOptional()
   @IsString()

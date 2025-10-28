@@ -139,12 +139,9 @@ export class CartService {
 
   return response;
 }
-
-
-
-
+ 
   async deleteCart(id: number): Promise<{ message: string }> {
-  const cart = await this.cartItemRepo.findOne({
+  const cart = await this.cartRepo.findOne({
     where: { id },
     //relations: ['items'],
   });
@@ -152,10 +149,15 @@ export class CartService {
   if (!cart) {
     throw new Error('Cart Item not found');
   }
+  
+try {
+    await this.cartRepo.remove(cart);
 
-  await this.cartItemRepo.remove(cart);
+    return { message: `Cart Item #${id} deleted successfully` };
+  } catch (error) {
+    throw new BadRequestException('Error deleting Cart');
+  }
 
-  return { message: `Cart Item #${id} deleted successfully` };
 }
 
 

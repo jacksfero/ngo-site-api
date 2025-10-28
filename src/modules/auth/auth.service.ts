@@ -839,16 +839,25 @@ export class AuthService {
     return toUserAddressResponse(withUser);
   }
 
-  async removeAddress(id: number, user: any): Promise<void> {
-    const userId = user.sub.toString();
-    const address = await this.addressRepo.findOne({
-      where: { id: id, user: { id: userId }, }
-    });
-    if (!address) {
-      throw new NotFoundException('Address not found');
-    }
-    await this.addressRepo.remove(address);
+ async removeAddress(id: number, user: any): Promise<{ message: string }> {
+  const userId = user.sub.toString();
+  const address = await this.addressRepo.findOne({
+    where: { id: id, user: { id: userId } }
+  });
+  
+  if (!address) {
+    throw new NotFoundException('Address not found');
   }
+  
+  try {
+    await this.addressRepo.remove(address);
+    return {
+      message: 'Address deleted successfully',
+    };
+  } catch (error) {
+    throw new BadRequestException('Error deleting address');
+  }
+}
 
 
   async createkycDetail(dto: CreateKycDetailDto, users: any) {
