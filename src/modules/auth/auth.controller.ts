@@ -66,10 +66,7 @@ export class AuthController {
   /**
      * Step 1: Start Registration - Send OTP
      * POST /auth/start-registration
-     */
-
-
-
+     */ 
   @Public()
   @Post('start-email-verification')
   startEmail(@Body() dto: StartEmailVerificationDto, @Req() req: ExpressRequest) {
@@ -91,13 +88,7 @@ export class AuthController {
     const ipAddress = req.ip;
     return this.authService.resendOtp(dto, ipAddress);
   }
-  /*
-  @Post('resend-verification')
-  resendOtp(@Body() dto: ResendOtpDto, @Req() req: Request) {
-    const ipAddress = req.ip;
-    return this.authService.resendOtp(dto, ipAddress);
-  }*/
-
+ 
 
   @Public()
   @Post('verify-otp')
@@ -124,11 +115,10 @@ async login(
     throw new UnauthorizedException('User not found in request');
   }
 
-  const guestId = req.cookies?.['guestCartId'];
+  const result = await this.authService.login(req.user as User, req); // ✅ pass req
 
-  const result = await this.authService.login(req.user as User);
-
-  if (guestId) {
+  // clear guestCartId cookie if exists
+  if (req.cookies?.['guestCartId']) {
     res.clearCookie('guestCartId', { httpOnly: true, sameSite: 'lax' });
   }
 
@@ -147,7 +137,6 @@ async login(
   async otpLogin(@Body() dto: VerifyOtpDto,
 
 ) {
-
    //  const guestId = req.cookies?.['guestCartId'];
     return this.authService.loginWithOtp(dto);
   }
@@ -201,8 +190,18 @@ async logout(@Res() res: Response) {
     return await this.authService.cartLogin(identifier, ipAddress);
   }
 
-
-
+    @Public()
+  @Post('send-otp-contact')
+  async sendOtpContact(@Body('identifier') identifier: string, 
+  @Req() req: ExpressRequest,
+  
+) {
+  let guestId = req.cookies?.['guestCartId'];
+    // Extract IP if you want to track OTP abuse attempts
+    const ipAddress = req.ip || (req.headers['x-forwarded-for'] as string) || undefined;
+    return await this.authService.ContactLogin(identifier, ipAddress);
+  }
+ 
 
   @Public()
   @Post('register-cart-login')
@@ -464,9 +463,7 @@ async logout(@Res() res: Response) {
     return this.authService.deleteProductImage(imageId);
   }
 
-
-
-
+ 
   /*************End User address Section */
   /*************Start User WishList Section */
   @UseGuards(JwtAuthGuard)

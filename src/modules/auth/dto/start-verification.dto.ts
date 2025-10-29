@@ -14,6 +14,7 @@ export enum UserType {
     LOGIN = 'login',
     BUYER = 'buyer',
   FORGOT_PASSWORD = 'forgot_password',
+   CONTACTUS = 'contactus',
   // Add as needed
 }
 

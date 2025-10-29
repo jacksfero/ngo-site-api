@@ -467,8 +467,7 @@ export class AuthService {
       // ✅ Set userType depending on existence
       if (user) {
         userType = UserType.LOGIN;  
-        
-        
+         
         // Existing user
       } else {
         userType = UserType.BUYER;    // New cart user
@@ -482,6 +481,47 @@ export class AuthService {
         throw new UnauthorizedException('Invalid credentials for cart login');
       }
       throw new BadRequestException('Authentication failed for cart login');
+    }
+  }
+
+  async ContactLogin(identifier: string,  ipAddress?: string) {
+    if (!identifier) {
+      throw new BadRequestException('Email or mobile must be provided.');
+    }
+
+    try {
+      let user: User | null = null;
+      let type: OtpType;
+      let userType: UserType;
+
+      // Detect identifier type
+      if (this.isValidEmail(identifier)) {
+        type = OtpType.EMAIL;     // ✅ enum value
+        user = await this.findByEmail(identifier);
+      } else if (this.isValidMobile(identifier)) {
+        type = OtpType.MOBILE;    // ✅ enum value
+        user = await this.findByMobile(identifier);
+      } else {
+        throw new BadRequestException('Invalid identifier format');
+      }
+      // ✅ Set userType depending on existence
+      // if (user) {
+      //   userType = UserType.LOGIN;  
+         
+      //   // Existing user
+      // } else {
+      //   userType = UserType.CONTACTUS;    // New cart user
+      // }
+      userType = UserType.CONTACTUS; 
+      // Send OTP
+      return await this.otpService.sendOtp(identifier, type, userType, ipAddress);
+
+
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof UnauthorizedException) {
+        throw new UnauthorizedException('Invalid credentials for  Contact OTP API ');
+      }
+      throw new BadRequestException('Authentication failed for Contact OTP API   ');
     }
   }
 
