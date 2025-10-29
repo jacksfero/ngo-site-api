@@ -23,18 +23,11 @@ export class InventProductService {
     private readonly inventoryRepo: Repository<Inventory>,
 
      @InjectRepository(Currency)
-    private readonly currencyRepo: Repository<Currency>,
+    private readonly currencyRepos: Repository<Currency>,
 
   ) {}
  
 
-async getCurrencyRate(code?: string): Promise<number> {
-  const currencyCode = code ?? 'INR'; // fallback if undefined
-  const rate = await this.currencyRepo.findOne({
-    where: { currency: currencyCode, status: true },
-  });
-  return rate?.value ?? 1;
-}
 
  
 async findAll(
@@ -178,7 +171,14 @@ if (sortPrice === 'low') {
   return response;
 } 
 
-  
+  async getCurrencyRate(code?: string): Promise<number> {
+  const currencyCode = code ?? 'INR'; // fallback if undefined
+  const rate = await this.currencyRepos.findOne({
+    where: { currency: currencyCode, status: true },
+  });
+  return rate?.value ?? 1;
+}
+
 
   async findAll_bk(
     paginationDto: InventProdPaginatDto,
