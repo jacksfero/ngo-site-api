@@ -11,6 +11,7 @@ import { InventProdListDto } from './dto/invent-prod-list.dto';
 import { InventProductDetailResponseDto } from './dto/invent-product-detail-response.dto';
 import { ProductStatus } from 'src/shared/entities/product.entity';
 import { CacheService } from 'src/core/cache/cache.service';
+import { Currency } from 'src/shared/entities/currency.entity';
 
 
 @Injectable()
@@ -20,7 +21,21 @@ export class InventProductService {
     private cacheService: CacheService,
     @InjectRepository(Inventory)
     private readonly inventoryRepo: Repository<Inventory>,
+
+     @InjectRepository(Currency)
+    private readonly currencyRepo: Repository<Currency>,
+
   ) {}
+ 
+
+async getCurrencyRate(code?: string): Promise<number> {
+  const currencyCode = code ?? 'INR'; // fallback if undefined
+  const rate = await this.currencyRepo.findOne({
+    where: { currency: currencyCode, status: true },
+  });
+  return rate?.value ?? 1;
+}
+
  
 async findAll(
   paginationDto: InventProdPaginatDto,
@@ -108,18 +123,21 @@ async findAll(
 
   // ✅ Currency conversion rates
   const conversionRates = { INR: 1, USD: 0.067, EUR: 0.061 };
-const rate = conversionRates[currency || 'INR'];
+//const rate = conversionRates[currency || 'INR'];
+const rate = await this.getCurrencyRate(currency);
 
   // ✅ Compute displayPrice properly
-const computed = result.map((inventory) => {
+let computed = result.map((inventory) => {
   const basePrice = Number(inventory.price || 0);
   const gst = Number(inventory.gstSlot || 0);
   const discount = Number(inventory.discount || 0);
   const shipping = Number(inventory.shippingWeight?.costINR || 0);
 
   // calculate total price in INR
-  const finalINR = basePrice + gst + shipping - discount;
-  const displayPrice = Number((finalINR * rate).toFixed(2));
+ // const finalINR = basePrice + gst + shipping - discount;
+ const finaldiscount = basePrice  - (basePrice*(discount/100));
+   const finalINR = (finaldiscount  + (finaldiscount*(gst/100)));
+  const displayPrice = Number((finalINR / rate).toFixed(2));
 
   return {
     ...inventory,
@@ -127,6 +145,14 @@ const computed = result.map((inventory) => {
     currency: currency || 'INR', // include currency for frontend
   };
 });
+
+  // --- Filter by minPrice / maxPrice ---
+  if (minPrice !== undefined) {
+    computed = computed.filter((item) => item.displayPrice >= minPrice);
+  }
+  if (maxPrice !== undefined) {
+    computed = computed.filter((item) => item.displayPrice <= maxPrice);
+  }
 
   // ✅ Sort in memory by computed displayPrice
 let sortedData = computed;
