@@ -11,7 +11,7 @@ export class UserAddressResponseDto {
   country: string;
   pin: string;
   isDefault: boolean;
- // aadhar: string;
+   phonecode: string;  phonecode_other: string;
   contact: string;
   //GSTIN: string;
   other_phone: string;

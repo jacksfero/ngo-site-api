@@ -85,9 +85,7 @@ export class AuthService {
   constructor(
 
     private readonly mailService: MailService,
-
-  //   @Inject(REQUEST) private readonly request: Request,
-
+ 
     private usersService: UsersService,
     private jwtService: JwtService,
     private readonly s3service: S3Service,
@@ -254,7 +252,7 @@ export class AuthService {
       relations: ['profileImage'], // 👈 add relations if you need
     });
  
-     // Send welcome email
+ //    Send welcome email
 //   await this.mailService.sendTemplateEmail({
 //   to: 'jayprakash005@gmail.com',
 //   cc: ['info@indigalleria.com'],
@@ -1326,7 +1324,8 @@ export function toUserAddressResponse(address: UsersAddress): UserAddressRespons
     country: address.country,
     pin: address.pin,
     isDefault: address.isDefault,
-    // aadhar: address.aadhar,
+     phonecode: address.phonecode,
+      phonecode_other: address.phonecode_other,
     contact: address.contact,
     // GSTIN: address.GSTIN,
     other_phone: address.other_phone,
