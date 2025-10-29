@@ -135,7 +135,6 @@ if (sortPrice === 'low') {
 } else if (sortPrice === 'high') {
   sortedData = computed.sort((a, b) => b.displayPrice - a.displayPrice);
 }
-
   // ✅ Apply pagination after sorting
  const paginatedData = sortedData.slice(skip, skip + limit);
 
