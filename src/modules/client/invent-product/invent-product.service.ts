@@ -103,26 +103,28 @@ async findAll(
   qb.orderBy('inventory.updatedAt', 'DESC');
 
   // ✅ Execute query
-  const [result, total] = await qb.take(limit).skip(skip).getManyAndCount();
+  //const [result, total] = await qb.take(limit).skip(skip).getManyAndCount();
+  const [result, total] = await qb.getManyAndCount();
 
   // ✅ Currency conversion rates
   const conversionRates = { INR: 1, USD: 0.067, EUR: 0.061 };
-  const rate = conversionRates[currency || 'INR'];
+const rate = conversionRates[currency || 'INR'];
 
   // ✅ Compute displayPrice properly
-  const computed = result.map((inventory) => {
+const computed = result.map((inventory) => {
   const basePrice = Number(inventory.price || 0);
   const gst = Number(inventory.gstSlot || 0);
   const discount = Number(inventory.discount || 0);
   const shipping = Number(inventory.shippingWeight?.costINR || 0);
 
+  // calculate total price in INR
   const finalINR = basePrice + gst + shipping - discount;
   const displayPrice = Number((finalINR * rate).toFixed(2));
 
-  // ✅ must RETURN the object (previously missing)
   return {
     ...inventory,
     displayPrice,
+    currency: currency || 'INR', // include currency for frontend
   };
 });
 
@@ -135,17 +137,17 @@ if (sortPrice === 'low') {
 }
 
   // ✅ Apply pagination after sorting
-  const paginatedData = sortedData.slice(skip, skip + limit);
+ const paginatedData = sortedData.slice(skip, skip + limit);
 
   const data = plainToInstance(InventProdListDto, paginatedData, {
-    excludeExtraneousValues: true,
-  });
+  excludeExtraneousValues: true,
+});
 
-  const response = new PaginationResponseDto<InventProdListDto>(data, {
-    total,
-    page,
-    limit,
-  });
+ const response = new PaginationResponseDto<InventProdListDto>(data, {
+  total,
+  page,
+  limit,
+});
 
   await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
   return response;
