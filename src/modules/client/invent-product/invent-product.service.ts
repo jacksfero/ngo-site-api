@@ -21,11 +21,139 @@ export class InventProductService {
     @InjectRepository(Inventory)
     private readonly inventoryRepo: Repository<Inventory>,
   ) {}
+ 
+async findAll(
+  paginationDto: InventProdPaginatDto,
+): Promise<PaginationResponseDto<InventProdListDto>> {
+  const {
+    page,
+    limit,
+    search,
+    isActive,
+    categoryId,
+    artistId,
+    select,
+    styleId,
+    subjectId,
+    orientationId,
+    sizeId,
+    mediumId,
+    surfaceId,
+    affordable_art,
+    eliteChoice,
+    new_arrival,
+    discount,
+    minPrice,
+    maxPrice,
+    sortPrice,
+    currency,
+  } = paginationDto;
 
+  const skip = (page - 1) * limit;
+  const cacheKey = `frontend:Artwork:All:${JSON.stringify(paginationDto)}`;
+  const cached = await this.cacheService.get(cacheKey);
+  if (cached) return cached as PaginationResponseDto<InventProdListDto>;
+
+  const qb = this.inventoryRepo.createQueryBuilder('inventory')
+    .leftJoinAndSelect('inventory.product', 'product')
+    .leftJoinAndSelect('product.artist', 'artist')
+    .leftJoinAndSelect('product.category', 'category')
+    .leftJoinAndSelect('product.surface', 'surface')
+    .leftJoinAndSelect('product.medium', 'medium')
+    .leftJoinAndSelect('product.tags', 'tag')
+    .leftJoinAndSelect('product.subjects', 'subject')
+    .leftJoinAndSelect('product.styles', 'style')
+    .leftJoinAndSelect('inventory.shippingWeight', 'shipping')
+    .where('inventory.status = :status', { status: true })
+    .andWhere('product.is_active = :isActive', { isActive: ProductStatus.ACTIVE });
+
+  // ✅ Search
+  if (search) {
+    qb.andWhere(
+      `(product.productTitle LIKE :search 
+        OR tag.name LIKE :search 
+        OR artist.username LIKE :search)`,
+      { search: `%${search}%` },
+    );
+  }
+
+  // ✅ Filtering
+  if (orientationId) qb.andWhere('product.orientation_id = :orientationId', { orientationId });
+  if (surfaceId) qb.andWhere('product.surface_id = :surfaceId', { surfaceId });
+  if (mediumId) qb.andWhere('product.medium_id = :mediumId', { mediumId });
+  if (sizeId) qb.andWhere('product.size_id = :sizeId', { sizeId });
+  if (subjectId) qb.andWhere('subject.id = :subjectId', { subjectId });
+  if (styleId) qb.andWhere('style.id = :styleId', { styleId });
+  if (categoryId) qb.andWhere('product.category_id = :categoryId', { categoryId });
+  if (artistId) qb.andWhere('product.artist_id = :artistId', { artistId });
+  if (new_arrival) qb.andWhere('product.new_arrival = :new_arrival', { new_arrival });
+  if (eliteChoice) qb.andWhere('product.eliteChoice = :eliteChoice', { eliteChoice });
+  if (affordable_art) qb.andWhere('product.affordable_art = :affordable_art', { affordable_art });
+  if (discount === 1) qb.andWhere('inventory.discount > 0');
+
+  // ✅ Price range filter
+  if (minPrice && maxPrice)
+    qb.andWhere('inventory.price BETWEEN :minPrice AND :maxPrice', { minPrice, maxPrice });
+  else if (minPrice)
+    qb.andWhere('inventory.price >= :minPrice', { minPrice });
+  else if (maxPrice)
+    qb.andWhere('inventory.price <= :maxPrice', { maxPrice });
+
+  // ✅ Default sorting
+  qb.orderBy('inventory.updatedAt', 'DESC');
+
+  // ✅ Execute query
+  const [result, total] = await qb.take(limit).skip(skip).getManyAndCount();
+
+  // ✅ Currency conversion rates
+  const conversionRates = { INR: 1, USD: 0.067, EUR: 0.061 };
+  const rate = conversionRates[currency || 'INR'];
+
+  // ✅ Compute displayPrice properly
+  const computed = result.map((inventory) => {
+  const basePrice = Number(inventory.price || 0);
+  const gst = Number(inventory.gstSlot || 0);
+  const discount = Number(inventory.discount || 0);
+  const shipping = Number(inventory.shippingWeight?.costINR || 0);
+
+  const finalINR = basePrice + gst + shipping - discount;
+  const displayPrice = Number((finalINR * rate).toFixed(2));
+
+  // ✅ must RETURN the object (previously missing)
+  return {
+    ...inventory,
+    displayPrice,
+  };
+});
+
+  // ✅ Sort in memory by computed displayPrice
+let sortedData = computed;
+if (sortPrice === 'low') {
+  sortedData = computed.sort((a, b) => a.displayPrice - b.displayPrice);
+} else if (sortPrice === 'high') {
+  sortedData = computed.sort((a, b) => b.displayPrice - a.displayPrice);
+}
+
+  // ✅ Apply pagination after sorting
+  const paginatedData = sortedData.slice(skip, skip + limit);
+
+  const data = plainToInstance(InventProdListDto, paginatedData, {
+    excludeExtraneousValues: true,
+  });
+
+  const response = new PaginationResponseDto<InventProdListDto>(data, {
+    total,
+    page,
+    limit,
+  });
+
+  await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
+  return response;
+} 
 
   
 
-  async findAll(
+  async findAll_bk(
     paginationDto: InventProdPaginatDto,
   ): Promise<PaginationResponseDto<InventProdListDto>> {
     // let categoryId?:number ;
@@ -33,7 +161,7 @@ export class InventProductService {
     const { page, limit, search,isActive, categoryId, artistId,select, 
       styleId, subjectId, orientationId, sizeId,mediumId,surfaceId,
       affordable_art,eliteChoice,new_arrival,discount,minPrice,
-    maxPrice, sortPrice,   } = paginationDto;
+    maxPrice, sortPrice,currency   } = paginationDto;
     
     const skip = (page - 1) * limit;
 
@@ -120,9 +248,9 @@ export class InventProductService {
   }
    // ✅ PRICE SORTING
   if (sortPrice === 'low') {
-    qb.orderBy('inventory.price', 'ASC');
+  //  qb.orderBy('inventory.price', 'ASC');
   } else if (sortPrice === 'high') {
-    qb.orderBy('inventory.price', 'DESC');
+    //qb.orderBy('inventory.price', 'DESC');
   } else {
     qb.orderBy('inventory.updatedAt', 'DESC'); // default sort (latest)
   }
@@ -190,11 +318,42 @@ export class InventProductService {
     //qb.skip((page - 1) * limit).take(limit);
   
     const [result, total] = await qb.take(limit).skip(skip).getManyAndCount();
-  
- 
-    const data = plainToInstance(InventProdListDto, result, {
-      excludeExtraneousValues: true,
-    });
+
+    // ✅ Step 3: Compute display price dynamically (Option 1)
+    const conversionRates = { INR: 1, USD: 0.067, EUR: 0.061 };
+    const rate = conversionRates[paginationDto.currency || 'INR'];
+
+    const computed = result.map((inventory) => {
+  const basePrice = Number(inventory.price || 0);
+  const gst = Number(inventory.gstSlot || 0); // optional
+  const discount = Number(inventory.discount || 0);
+  const shipping = inventory.shippingWeight?.costINR || 0;
+
+   // Example: apply GST, shipping, and discount
+  const finalINR = basePrice + gst + shipping - discount;
+  const displayPrice = Number((finalINR * rate).toFixed(2));
+ });
+
+
+ // ✅ Step 4: Sort by display price if requested
+let sortedData = computed;  
+/*
+if (sortPrice === 'low') {
+  sortedData = computed.sort((a, b) => a.displayPrice - b.displayPrice);
+} else if (sortPrice === 'high') {
+  sortedData = computed.sort((a, b) => b.displayPrice - a.displayPrice);
+}*/
+
+const paginatedData = sortedData.slice(skip, skip + limit);
+
+
+    // const data = plainToInstance(InventProdListDto, result, {
+    //   excludeExtraneousValues: true,
+    // });
+    const data = plainToInstance(InventProdListDto, paginatedData, {
+  excludeExtraneousValues: true,
+});
+    
   
    // return new PaginationResponseDto<InventProdListDto>(data, { total, page, limit  });
   const response = new PaginationResponseDto<InventProdListDto>(data, { total, page, limit  });

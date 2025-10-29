@@ -82,7 +82,11 @@ export class InventProdPaginatDto extends PaginationBaseDto {
    @IsOptional()
   @IsIn(['low', 'high'])
   sortPrice?: 'low' | 'high';
-  
+
+     @IsOptional()
+  @IsIn(['INR', 'USD'])
+  currency?: 'INR' | 'USD' | 'EUR';
+ 
   @IsOptional()
   @Type(() => Number)
   @IsInt()
