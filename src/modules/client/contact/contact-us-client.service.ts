@@ -24,7 +24,7 @@ export class ContactUsClientService {
      const contact = this.contactUsRepo.create({
   ...dto,
    ...(dto.productName ? { productName: dto.productName } : {}),
-   ...(dto.productId ? { productId: dto.productId } : {}),
+   ...(dto.productId ? { product_id: dto.productId } : {}),
  // ...(dto.productId ? { product: { id: dto.productId } } : {}), // ✅ omit if not present
 });
 
