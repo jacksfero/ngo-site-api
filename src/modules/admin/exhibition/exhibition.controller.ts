@@ -67,7 +67,7 @@ export class ExhibitionController {
   }
 
   @Delete('unmap/:mappingId')
-      @RequirePermissions('delete_exhibition')
+      @RequirePermissions('delete_exhibition_artwork')
   unmapProduct(@Param('mappingId') mappingId: number) {
     return this.exhibitionService.removeProductMapping(mappingId);
   }
