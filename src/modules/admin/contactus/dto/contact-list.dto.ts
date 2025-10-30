@@ -9,6 +9,15 @@ export class ContactListDto {
   @Expose()
   name: string;
 
+    @Expose()
+  id: number;
+
+  @Expose()
+  productName: string;
+
+    @Expose()
+  product_id: number;
+
    @Expose()
   phonecode: string;
 
@@ -27,15 +36,8 @@ export class ContactListDto {
    @Expose()
   subject: string;
  
-  //  @Expose()
-  // @Type(() => ProductListDto)
-  // product: ProductListDto;
-   @Expose()
-  product: {
-    id: number;
-    productTitle: string;
-  } | null;
-
+ 
+   
    @Expose()
   createdAt: Date;
 }

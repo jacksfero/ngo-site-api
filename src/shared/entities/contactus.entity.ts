@@ -35,9 +35,8 @@ export class ContactUs {
     productName: string;
 
 
-   @ManyToOne(() => Product, { eager: true, nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'product_id' })
-  product: Product;
+   @Column({ nullable: true})
+  product_id: number;
   
  @Column({ type: 'varchar', length: 50, nullable: true })
   updatedBy: string;

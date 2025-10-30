@@ -174,8 +174,6 @@ images: ProductImage[];
   @OneToMany(() => ExhibitionProduct, (map) => map.product)
   displayMappings: ExhibitionProduct[];
 
-@OneToOne(() => ContactUs, (contactUs) => contactUs.product)
-contact: ContactUs;
  
 @OneToOne(() => Inventory, (inventory) => inventory.product, { cascade: true })
 productInventory: Inventory;

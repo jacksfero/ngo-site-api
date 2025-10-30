@@ -31,9 +31,11 @@ type: ContactUsType;
 
  
 
-@IsOptional()
-@IsNumber()
-productId: number;
+ @IsOptional()
+  productId?: number;
+
+  @IsOptional()
+  productName?: string;
 
  
 }

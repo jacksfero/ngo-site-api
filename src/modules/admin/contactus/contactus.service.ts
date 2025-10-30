@@ -29,7 +29,8 @@ export class ContactUsService {
  async create(dto: CreateContactUsDto) {
  const contact = this.contactRepo.create({
   ...dto,
-  ...(dto.productId ? { product: { id: dto.productId } } : {}), // ✅ omit if not present
+    ...(dto.productName ? { productName: dto.productName } : {}),
+   ...(dto.productId ? { productId: dto.productId } : {}),
 });
 
   await this.contactRepo.save(contact);
@@ -64,8 +65,8 @@ export class ContactUsService {
     return cached;
   }
 
-  const queryBuilder = this.contactRepo.createQueryBuilder('contact')
-    .leftJoinAndSelect('contact.product', 'product');
+  const queryBuilder = this.contactRepo.createQueryBuilder('contact');
+   // .leftJoinAndSelect('contact.product', 'product');
 
   if (search) {
     queryBuilder.andWhere(
@@ -108,7 +109,9 @@ private transformContactsToDto(contacts: ContactUs[]): ContactListDto[] {
     const dto = new ContactListDto();
     
     // Basic contact fields
-   // dto.id = contact.id;
+    dto.id = contact.id;
+     dto.product_id = contact.product_id;
+      dto.productName = contact.productName;
     dto.name = contact.name;
     dto.phonecode = contact.phonecode;
     dto.mobile = contact.mobile;
@@ -120,14 +123,14 @@ private transformContactsToDto(contacts: ContactUs[]): ContactListDto[] {
    // dto.updatedAt = contact.updatedAt;
     
     // ✅ Safe product transformation
-    if (contact.product) {
-      dto.product = {
-        id: contact.product.id,
-        productTitle: `${contact.product.productTitle} (${contact.product.id})` // formatted title
-      };
-    } else {
-      dto.product = null;
-    }
+    // if (contact.product) {
+    //   dto.product = {
+    //     id: contact.product.id,
+    //     productTitle: `${contact.product.productTitle} (${contact.product.id})` // formatted title
+    //   };
+    // } else {
+    //   dto.product = null;
+    // }
     
     return dto;
   });
