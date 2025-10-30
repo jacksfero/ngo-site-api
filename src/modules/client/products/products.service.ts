@@ -205,7 +205,7 @@ export class ProductsService {
 
   async getActiveProdSurfaceList(slug: string):  Promise<SurfaceResponseDto[]>  {
 
-    const cacheKey = 'frontend:surface:active';
+    const cacheKey = `frontend:surface:active:${slug}`;
       const cached = await this.cacheService.get<SurfaceResponseDto[]>(cacheKey);
       if (cached && cached.length) {
         return cached;
@@ -234,7 +234,7 @@ export class ProductsService {
   }
   async getActiveProdStyleList(slug: string): Promise<StyleResponseDto[]> {
 
-    const cacheKey = 'frontend:Style:active';
+    const cacheKey = `frontend:Style:active:${slug}`;
       const cached = await this.cacheService.get<StyleResponseDto[]>(cacheKey);
       if (cached && cached.length) {
         return cached;
@@ -261,7 +261,7 @@ export class ProductsService {
   
    
   async getActiveProdSubjectList(slug: string):  Promise<SubjectResponseDto[]>  {
-     const cacheKey = 'frontend:Subject:active';
+     const cacheKey = `frontend:Subject:active:${slug}`;
       const cached = await this.cacheService.get<SubjectResponseDto[]>(cacheKey);
       if (cached && cached.length) {
         return cached;
@@ -307,7 +307,7 @@ export class ProductsService {
   }
 
   async getActiveProdMediumList(slug: string):  Promise<MediumResponseDto[]> {
-     const cacheKey = 'frontend:Medium:active';
+     const cacheKey = `frontend:Medium:active:${slug}`;
       const cached = await this.cacheService.get<MediumResponseDto[]>(cacheKey);
       if (cached && cached.length) {
         return cached;
