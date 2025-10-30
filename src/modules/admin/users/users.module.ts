@@ -13,15 +13,9 @@ import { ArtistType } from 'src/shared/entities/artist-type.entity';
 import { UserProfileImage } from 'src/shared/entities/user-profile-image.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, UserProfileImage, ArtistType, Role, Permission,UsersAbout,UsersAddress,BankDetail,KycDetails])],
+  imports: [TypeOrmModule.forFeature([User, UserProfileImage, ArtistType, Role, Permission, UsersAbout, UsersAddress, BankDetail, KycDetails])],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService],
 })
-export class UsersModule {
- /* constructor() {
-    console.log('----User in Module-----User  :', User); // 👈 Should print the class
-    console.log('---User in Module------Role  :', Role);
-    console.log('-User in Module--------Permission in  :', Permission);
-  }*/
-}
+export class UsersModule {}

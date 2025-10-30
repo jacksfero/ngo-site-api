@@ -31,7 +31,9 @@ export class ContactUs {
     @Column({ nullable: true})
     subject: string;
 
-  
+    @Column({ nullable: true})
+    productName: string;
+
 
    @ManyToOne(() => Product, { eager: true, nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'product_id' })

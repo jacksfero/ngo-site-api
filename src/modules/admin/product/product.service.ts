@@ -27,10 +27,14 @@ import { Orientation } from 'src/shared/entities/orientation.entity';
 import { Surface } from 'src/shared/entities/surface.entity';
 import { Medium } from 'src/shared/entities/medium.entity';
 import { Tag } from 'src/shared/entities/tag.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ProductCreatedPayload } from 'src/shared/events/interfaces/event-payload.interface';
 
 @Injectable()
 export class ProductService {
   constructor(
+    private readonly eventEmitter: EventEmitter2,
+
      private cacheService: CacheService,
 
     private readonly s3service: S3Service,
@@ -286,12 +290,30 @@ if (updateProductDto.medium_id !== undefined) {
        (product as any)[field] = this.convertToBoolean(updateProductDto[field]);
     }
   }
-
+try {
      const productss = await this.productRepository.save(product);
 
-     await this.cacheService.deletePattern('Admin:Artwork:*');
+    // await this.cacheService.deletePattern('Admin:Artwork:*');
 
-  return productss;
+   
+   const payload: ProductCreatedPayload = {
+  to: 'jayprakash005@gmail.com',  
+  subject: `Your product "${product.productTitle}" has been updated 🖼️`, 
+  context: {
+    ...product,
+    message: 'Your product details were successfully updated.',
+  },
+  productId:  `IG${product.id}`,
+  productName: product.productTitle,  
+  testingNote: 'Testing product update flow',
+};
+
+this.eventEmitter.emit('product.created', payload);
+    return productss;
+     } catch (error) {
+    throw new BadRequestException('Error updating product');
+  }
+   
   }
 
 

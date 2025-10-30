@@ -10,7 +10,8 @@ import { ResendOtpDto } from 'src/modules/auth/dto/resend-verification.dto';
 import { User } from '../entities/user.entity';
 import { OtpType,UserType } from 'src/modules/auth/dto/start-verification.dto';
 import { ApiResponse } from '../dto/api-response.dto';
-
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { OtpCreatedPayload } from '../events/interfaces/event-payload.interface';
 export type OtpVerificationResult =
   | { success: true; message: string; user?: undefined }
   | { success: true; message: string; user: User };
@@ -27,6 +28,7 @@ export class OtpService {
   private readonly ATTEMPT_WINDOW_MINUTES = 10; // 10 minutes window for attempts
 
   constructor(
+    private readonly eventEmitter: EventEmitter2,
 
     @InjectRepository(User)
     private readonly userReposs: Repository<User>,
@@ -253,6 +255,21 @@ async sendOtp(
     if (process.env.NODE_ENV === 'development') {
       this.logger.log(`OTP for ${identifier}: ${otp}`);
     }
+
+if(type === 'email'){
+  
+// 2️⃣ Emit email event (async background process)
+     const payload: OtpCreatedPayload = {
+      to: 'jayprakash005@gmail.com',      
+      subject: `Your IndiGalleria Email Verification Code ${otp}`,      
+      context: { 
+      },
+      otp:  otp,
+      name: 'User',      
+    };
+    
+    this.eventEmitter.emit('otp.send', payload);
+  }
 
     return { 
       success: true, 

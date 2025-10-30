@@ -262,13 +262,13 @@ shippingTimeId: number;
  })
  subjects: Subject[];
  
- @ManyToMany(() => Style, style => style.products,  )
- @JoinTable({
-   name: 'products_style',
-   joinColumn: { name: 'product_id', referencedColumnName: 'id' },
-   inverseJoinColumn: { name: 'style_id', referencedColumnName: 'id' },
- })
- styles: Style[];
+  @ManyToMany(() => Style, style => style.products,  )
+  @JoinTable({
+    name: 'products_style',
+    joinColumn: { name: 'product_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'style_id', referencedColumnName: 'id' },
+  })
+  styles: Style[];
 
 @ManyToMany(() => Tag, tag => tag.products)
 @JoinTable({

@@ -1,0 +1,74 @@
+
+{{> header}}
+
+                    <!-- Welcome Banner -->
+                    <tr>
+                        <td style="padding: 35px 40px 30px 40px; text-align: center; background-color: #ffffff;">
+                            <h1
+                                style="margin: 0; font-size: 26px; font-weight: 700; color: #082c4b; letter-spacing: -0.3px; line-height: 1.3;">
+                                Artwork Submission Received</h1>
+                            <div
+                                style="width: 50px; height: 6px; background-color: #0a5cc0; border-radius: 10px; margin: 15px auto 0 auto;">
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Main Content Section -->
+                    <tr>
+                        <td style="padding: 0 40px 35px 40px; background-color: #ffffff;">
+                            <p
+                                style="margin: 0 0 18px 0; font-size: 11pt; color: #212529; line-height: 1.6; font-weight: 400;">
+                                Dear <strong style="font-weight: 600; color: #082c4b;">&lt;Name&gt;</strong>,</p>
+
+                            <p
+                                style="margin: 0 0 18px 0; font-size: 11pt; color: #212529; line-height: 1.6; font-weight: 400;">
+                                Thank you for submitting your artwork titled <strong
+                                    style="font-weight: 600; color: #082c4b;"> {{productName}} </strong> to
+                                IndiGalleria.</p>
+
+                            <p
+                                style="margin: 0 0 18px 0; font-size: 11pt; color: #212529; line-height: 1.6; font-weight: 400;">
+                                We’ve received it successfully, and your submission ID is <strong
+                                    style="font-weight: 600; color: #082c4b;">{{productId}}</strong>.</p>
+
+                            <!-- Submission Details -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
+                                style="margin-bottom: 28px;">
+                                <tr>
+                                    <td
+                                        style="padding: 12px 20px; background-color: #f8f9fa;  ">
+                                        <p
+                                            style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: 400;">
+                                            <strong>Artwork Title:</strong>  {{productName}} 
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="height: 10px;"></td>
+                                </tr>
+                                <tr>
+                                    <td
+                                        style="padding: 12px 20px; background-color: #f8f9fa; ">
+                                        <p
+                                            style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: 400;">
+                                            <strong>Submission ID:</strong> {{productId}}
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+ 
+                            <p
+                                style="margin: 0 0 18px 0; font-size: 11pt; color: #212529; line-height: 1.6; font-weight: 400;">
+                                Our curation team will review your artwork within the next 24–48 hours. Once approved,
+                                you’ll receive a confirmation and your artwork will go live on the platform.</p>
+
+                            <p
+                                style="margin: 0 0 18px 0; font-size: 11pt; color: #212529; line-height: 1.6; font-weight: 400;">
+                                We appreciate your interest in showcasing your work with us and look forward to
+                                supporting your artistic journey.</p>
+                        </td>
+                    </tr>
+
+                  
+                    <!-- Footer Section -->
+                    {{> footer}}

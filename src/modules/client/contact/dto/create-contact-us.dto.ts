@@ -34,4 +34,7 @@ export class CreateContactUsDto {
 
   @IsOptional()
   productId?: number;
+
+  @IsOptional()
+  productName?: string;
 }
