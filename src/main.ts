@@ -8,6 +8,8 @@ import { ParsePrimitivesPipe } from './core/pipes/parse-boolean.pipe';
 import { GlobalExceptionFilter } from './core/filters/global-exception.filter';
 import { Request, Response, NextFunction } from 'express';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+//import { setGlobalEmitter } from './shared/events/emitters/global-emitter';
 
 async function bootstrap() {
   try {
@@ -16,6 +18,9 @@ async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule, {
       bufferLogs: true,
     });
+
+    //  const emitter = app.get(EventEmitter2);
+    //  setGlobalEmitter(emitter);
 
     // ✅ Trust proxy
     app.set('trust proxy', true);
