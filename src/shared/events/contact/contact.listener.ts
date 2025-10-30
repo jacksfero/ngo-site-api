@@ -20,10 +20,10 @@ export class ContactListener {
     //  const subject_admin = `Price Request - ${payload.productName} (Artwork ID: IG${payload.productId})`; 
     //  const to = payload.to as string;
     //  const admin = 'info@indigalleria.com';
- const template_client = 'Contact_for_this_Art_Auto_Mailer_to_Client';     
-     const template_admin = 'Contact_for_this_Art_Auto_Mailer_to_IndiGalleria'; 
-     const subject_client = `Thank You for Your Artwork Inquiry - Untitled-638 | IndiGalleria`; 
-     const subject_admin = `Artwork Inquiry - Untitled-638 (Artwork ID: IG638)`; 
+ const template_client = 'Contactus_Mailer_to_Client';     
+     const template_admin = 'Contactus_Mailer_to_IndiGalleria'; 
+     const subject_client = `Thank You for Reaching Out – IndiGalleria`; 
+     const subject_admin = `New Contact Us Submission from ${payload.name}`; 
      const to = payload.to as string;
       const admin = 'info@indigalleria.com';  
       // const to = payload.testingNote;
