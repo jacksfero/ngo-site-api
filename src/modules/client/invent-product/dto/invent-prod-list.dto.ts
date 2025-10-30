@@ -164,6 +164,15 @@ export class InventProdListDto {
   @Expose()
   termsAndConditions: string;
 
+   @Expose()
+  finaldiscountamount: number;
+
+  @Expose()
+  displayPrice: number;
+
+  @Expose()
+  currency: string;
+
   @Expose()
   updatedAt: Date;
 }
