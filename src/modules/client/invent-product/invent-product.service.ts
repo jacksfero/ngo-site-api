@@ -130,8 +130,8 @@ let computed = result.map((inventory) => {
  // const finalINR = basePrice + gst + shipping - discount;
  const finaldiscount = basePrice  - (basePrice*(discount/100));
    const finalINR = (finaldiscount  + (finaldiscount*(gst/100)));
-  const finaldiscountamount = (basePrice  + (basePrice*(gst/100)));
-
+  const  discountamount = (basePrice  + (basePrice*(gst/100)));
+ const finaldiscountamount = Number((discountamount / rate).toFixed(2));
   const displayPrice = Number((finalINR / rate).toFixed(2));
 
   return {
