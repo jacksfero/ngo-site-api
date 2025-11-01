@@ -12,6 +12,7 @@ import { ContentModule } from './content/content.module';
  
 import { ClientTestimonialModule } from './testimonial/client-testimonial.module';
 import { ContactUsClientModule } from './contact/contact-us-client.module';
+import { ClientVideoModule } from './video/video.module';
 
 
 @Module({
@@ -22,7 +23,7 @@ import { ContactUsClientModule } from './contact/contact-us-client.module';
     ExhibitionModule,
     InventProductModule,
     CartModule,ClientTestimonialModule,
-    OrderModule,ContentModule,ContactUsClientModule,
+    OrderModule,ContentModule,ContactUsClientModule,ClientVideoModule,
     RouterModule.register([
       {
         path: 'client', // Prefix for all child routes
@@ -36,6 +37,7 @@ import { ContactUsClientModule } from './contact/contact-us-client.module';
           { path: 'content', module: ContentModule }, 
            { path: 'testimonials', module: ClientTestimonialModule },
              { path:'contact-us', module: ContactUsClientModule },
+               { path:'videos', module: ClientVideoModule },
         ],
       }, 
     ]),
