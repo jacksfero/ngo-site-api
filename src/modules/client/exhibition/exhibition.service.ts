@@ -8,9 +8,10 @@ import { UpdateExhibitionDto } from './dto/update-exhibition.dto';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ExhibitionListItemDto } from './dto/exhibition-list-item.dto';
-import { ExhibitionDetailDto } from './dto/exhibition-detail.dto';
-import { ProductListItemDto } from '../products/dto/product-list-item.dto';
+import { ExhibitionDetailDto,ExhibitionDetailDtos } from './dto/exhibition-detail.dto';
+import { ExhiProductListItemDto, ProductListItemDto } from '../products/dto/product-list-item.dto';
 import { CacheService } from 'src/core/cache/cache.service';
+import { Currency } from 'src/shared/entities/currency.entity';
 
 
 @Injectable()
@@ -20,6 +21,9 @@ export class ExhibitionService {
 
     @InjectRepository(Exhibition)
     private exhibitionRepo: Repository<Exhibition>,
+ 
+    @InjectRepository(Currency)
+    private readonly currencyRepo: Repository<Currency>,
 
   ) {}
  
@@ -166,10 +170,10 @@ export class ExhibitionService {
 
   // ✅ Get currently live exhibitions
   // ✅ Get currently live exhibitions (returns array)
-async findLiveExhibitions(): Promise<ExhibitionDetailDto[]> {
+async findLiveExhibitions(currency?: string): Promise<ExhibitionDetailDtos[]> {
   const cacheKey = 'frontend:exhibitions:live';
-  const cached = await this.cacheService.get<ExhibitionDetailDto[]>(cacheKey);
-  if (cached) return cached;
+  const cached = await this.cacheService.get<ExhibitionDetailDtos[]>(cacheKey);
+  //if (cached) return cached;
 
   const now = new Date();
   const exhibitions = await this.exhibitionRepo.find({
@@ -182,31 +186,66 @@ async findLiveExhibitions(): Promise<ExhibitionDetailDto[]> {
     relations: [
       'displayMappings',
       'displayMappings.product',
-      'displayMappings.product.category',
+      'displayMappings.product.productInventory',
+       'displayMappings.product.category',
       'displayMappings.product.artist',
       'displayMappings.product.medium',
       'displayMappings.product.surface',
-      'displayMappings.product.artist.profileImage'
+       'displayMappings.product.artist.profileImage'
     ],
   });
- // console.log(exhibitions,'ddddddddddddddddddd')
+  console.log('-----------------------',JSON.stringify(exhibitions)); 
+  //process.exit();
   // ✅ Return empty array instead of throwing error
   if (!exhibitions.length) {
     return [];
   }
+  const rate = await this.getExhCurrencyRate(currency);
 
   const dtos = exhibitions.map(exhibition => {
-    const dto = plainToInstance(ExhibitionDetailDto, exhibition);
-    dto.displayMappings = exhibition.displayMappings.map(mapping =>
-      plainToInstance(ProductListItemDto, mapping.product, { excludeExtraneousValues: true }),
-    );
-    return dto;
-  });
+  const dto = plainToInstance(ExhibitionDetailDtos, exhibition);
 
-  await this.cacheService.set(cacheKey, dtos);
+  dto.displayMappings = exhibition.displayMappings.map(mapping => {
+    const basePrice = mapping.product.productInventory?.price ?? 0;
+    const discount = mapping.product.productInventory?.discount ?? 0;
+    const gst = mapping.product.productInventory?.gstSlot ?? 0;
+
+    // 🧮 Final discounted and GST-applied price
+    const finalDiscount = basePrice - (basePrice * (discount / 100));
+    const finalINR = finalDiscount + (finalDiscount * (gst / 100));
+    const discountAmount = basePrice + (basePrice * (gst / 100));
+
+    // 🪙 Currency conversion
+    const displayPrice = Number((finalINR / rate).toFixed(2));
+    const finalDiscountAmount = Number((discountAmount / rate).toFixed(2));
+// ✅ Merge calculated fields into product DTO
+    const productDto =    plainToInstance(ExhiProductListItemDto,
+      { 
+         ...mapping.product,
+       // basePrice,               // added
+        displayPrice,            // added
+        finalDiscountAmount,     // added
+        currency: currency || 'INR',
+
+
+      },
+      
+       { excludeExtraneousValues: true },
+   );
+    return productDto;
+  });
+  return dto;
+});
+ // await this.cacheService.set(cacheKey, dtos);
   return dtos;
 }
 
-
+ async getExhCurrencyRate(code?: string): Promise<number> {
+  const currencyCode = code ?? 'INR'; // fallback if undefined
+  const rate = await this.currencyRepo.findOne({
+    where: { currency: currencyCode, status: true },
+  });
+  return rate?.value ?? 1;
+}
 
 }

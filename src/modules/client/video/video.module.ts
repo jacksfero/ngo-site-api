@@ -12,9 +12,5 @@ import { Video } from 'src/shared/entities/video.entity';
   controllers: [ClientVideoController],
 })
 export class ClientVideoModule {
-
-    constructor(
-
-         
-    ){console.log('vvvvvvvvvvvvvvvvv----------------------');}
+ 
 }
