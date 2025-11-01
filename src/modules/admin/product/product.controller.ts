@@ -26,7 +26,7 @@ export class ProductController {
   constructor(private readonly productService: ProductService) { }
 
   @Get('list')
-  @RequirePermissions('read_artwork')
+   @RequirePermissions('read_artwork')
   async getProductList(): Promise<ProductListDto[]> {
     return this.productService.getProductList();
   }
@@ -53,7 +53,7 @@ export class ProductController {
   }
 
   @Get(':id')
-  @RequirePermissions('read_artwork')
+   @RequirePermissions('read_artwork')
   findOne(@Param('id') id: string) {
     return this.productService.findOne(+id);
   }

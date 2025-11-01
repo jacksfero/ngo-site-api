@@ -71,8 +71,9 @@ async findAll(
     .leftJoinAndSelect('product.tags', 'tag')
     .leftJoinAndSelect('product.subjects', 'subject')
     .leftJoinAndSelect('product.styles', 'style')
-    .leftJoinAndSelect('inventory.shippingWeight', 'shipping')
-    .where('inventory.status = :status', { status: true })
+    .leftJoinAndSelect('inventory.shippingWeight', 'shipping')     
+    .where("inventory.quantity > :quantity", { quantity: 0 })
+    .andWhere('inventory.status = :status', { status: true })
     .andWhere('product.is_active = :isActive', { isActive: ProductStatus.ACTIVE });
 
   // ✅ Search
