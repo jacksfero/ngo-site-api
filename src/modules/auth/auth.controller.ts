@@ -365,8 +365,16 @@ async logout(@Res() res: Response) {
     // console.log('✅ Controller reached');
     //  console.log('AddressType:', addressType);
     //  console.log('JWT User:', req.user);
-
+ 
     return this.authService.findAllForUserAddress(addressType, req.user);
+  }
+
+   @UseGuards(JwtAuthGuard)
+  @Get('user-address/:id')
+  findOneAddress(@Param('id') id: number,  @Req() req) {
+    // console.log('update JWT User:', req.user);  // <--- check if user is set
+    // console.log('update Body:', dto);
+    return this.authService.findOneAddress(id,  req.user);
   }
 
   @UseGuards(JwtAuthGuard)

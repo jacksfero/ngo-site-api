@@ -833,7 +833,25 @@ export class AuthService {
     return toUserAddressResponse(withUser);
   }
 
+  async findOneAddress(
+    id: number, user: any
+  ): Promise<UserAddressResponseDto> {
+    const userId = user.sub.toString();
+    const addresses = await this.addressRepo.findOne({
+      where: {
+         id: id,
+        user: { id: userId },
+      },
+      relations: ['user'],
+    });
 
+    if (!addresses) {
+      throw new NotFoundException(`User Address not found for type: `);
+    }
+
+    return toUserAddressResponse(addresses);
+
+  }
   // ✅ FIND ALL
   async findAllForUserAddress(
     addressType: AddressType, user: any
@@ -1367,7 +1385,8 @@ export function toUserAddressResponse(address: UsersAddress): UserAddressRespons
      phonecode: address.phonecode,
       phonecode_other: address.phonecode_other,
     contact: address.contact,
-    // GSTIN: address.GSTIN,
+    pan_gstin: address.pan_gstin,
+     trade_name: address.trade_name,
     other_phone: address.other_phone,
     createdAt: address.createdAt,
     updatedAt: address.updatedAt,

@@ -41,6 +41,14 @@ export class CreateUserAddressDto {
   @IsString()
   name?: string;
 
+   @IsOptional()
+  @IsString()
+  pan_gstin?: string;
+
+   @IsOptional()
+  @IsString()
+  trade_name?: string;
+
   @IsOptional()
   isDefault?: boolean;
 }

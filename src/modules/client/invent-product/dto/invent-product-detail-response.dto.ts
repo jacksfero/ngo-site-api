@@ -3,91 +3,104 @@ import { Expose, Type } from 'class-transformer';
 import { IsEnum } from 'class-validator';
 import { ProductStatus } from 'src/shared/entities/product.entity';
 export class InventoryDto {
-    @Expose()
-    id: number;
-  
-    @Expose()
-    discount: number;
-  
-    @Expose()
-    price: number;
+  @Expose()
+  id: number;
 
-    @Expose()
-    gstSlot: number;
-    
-    @Expose()
-    termsAndConditions: string;
+  @Expose()
+  discount: number;
 
-    @Expose()
-    shippingSlot: number;
-  }
+  @Expose()
+  price: number;
 
-  export class ArtistDto {
-    @Expose()
-    id: number;
-  
-    @Expose()
-    username: string;  // or artistName, depending on your entity
-    
-  }
+  @Expose()
+  gstSlot: number;
+
+  @Expose()
+  termsAndConditions: string;
+
+  @Expose()
+  shippingSlot: number;
+
+  /** ✅ New computed fields for display */
+  @Expose()
+  basePrice: number; // original price before tax/discount
+
+  @Expose()
+  finaldiscountamount: number; // actual discount amount applied
+
+  @Expose()
+  displayPrice: number; // final price shown after discount + gst + shipping
+
+  @Expose()
+  currency: string; // INR, USD, etc.
+}
+
+export class ArtistDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  username: string;  // or artistName, depending on your entity
+
+}
 
 export class ImageDto {
-    @Expose()
-    id: number;
-  
-    @Expose()
-    imagePath: string;
- 
-  }
-   export class SizeDto {
-    @Expose()
-    id: number;
-  
-    @Expose()
-    name: string;
-  }
-  export class SurfaceDto {
-    @Expose()
-    id: number;
-  
-    @Expose()
-    surfaceName: string;
-  }
-  export class MediumDto {
-    @Expose()
-    id: number;
-  
-    @Expose()
-    name: string;
-  }
+  @Expose()
+  id: number;
 
-  export class PackingModeDto {
-    @Expose()
-    id: number;
-  
-    @Expose()
-    name: string;
-  }
-  
-  export class CategoryDto {
-    @Expose()
-    id: number;
-  
-    @Expose()
-    name: string;
-  }
+  @Expose()
+  imagePath: string;
+
+}
+export class SizeDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  name: string;
+}
+export class SurfaceDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  surfaceName: string;
+}
+export class MediumDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  name: string;
+}
+
+export class PackingModeDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  name: string;
+}
+
+export class CategoryDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  name: string;
+}
 
 export class InventProductDetailResponseDto {
   @Expose()
   id: number;
 
   @Expose()
-  productTitle: string; 
-  
+  productTitle: string;
+
   @Expose()
   defaultImage: string;
-  
-  
+
+
   @Expose()
   printing_rights: boolean;
 
@@ -99,7 +112,7 @@ export class InventProductDetailResponseDto {
 
   @Expose()
   price_on_demand: boolean;
-  
+
   @Expose()
   weight: string;
 
@@ -116,21 +129,20 @@ export class InventProductDetailResponseDto {
   @IsEnum(ProductStatus, { each: true }) // validate against enum
   is_active: ProductStatus;
 
-@Expose()
-created_in: string;
+  @Expose()
+  created_in: string;
 
-@Expose()
-original_painting: boolean;
+  @Expose()
+  original_painting: boolean;
 
-@Expose()
-negotiable: boolean;
-@Expose()
-refundable: boolean;
-@Expose()
-certificate: boolean;
-@Expose()
-conditions: string;
-
+  @Expose()
+  negotiable: boolean;
+  @Expose()
+  refundable: boolean;
+  @Expose()
+  certificate: boolean;
+  @Expose()
+  conditions: string;
 
   @Expose()
   @Type(() => SizeDto)

@@ -13,7 +13,8 @@ export class UserAddressResponseDto {
   isDefault: boolean;
    phonecode: string;  phonecode_other: string;
   contact: string;
-  //GSTIN: string;
+  pan_gstin: string;
+  trade_name: string;
   other_phone: string;
   createdAt: Date;
   updatedAt: Date;

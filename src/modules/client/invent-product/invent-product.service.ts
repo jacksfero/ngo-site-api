@@ -115,7 +115,7 @@ async findAll(
   const [result, total] = await qb.getManyAndCount();
 
   // ✅ Currency conversion rates
-  const conversionRates = { INR: 1, USD: 0.067, EUR: 0.061 };
+ // const conversionRates = { INR: 1, USD: 0.067, EUR: 0.061 };
 //const rate = conversionRates[currency || 'INR'];
 const rate = await this.getCurrencyRate(currency);
 
@@ -174,13 +174,7 @@ if (sortPrice === 'low') {
   return response;
 } 
 
-  async getCurrencyRate(code?: string): Promise<number> {
-  const currencyCode = code ?? 'INR'; // fallback if undefined
-  const rate = await this.currencyRepos.findOne({
-    where: { currency: currencyCode, status: true },
-  });
-  return rate?.value ?? 1;
-}
+ 
 
 
   async findAll_bk(
@@ -394,9 +388,12 @@ const paginatedData = sortedData.slice(skip, skip + limit);
   }
 
  // inventory.service.ts
- async findOne(productSlug: string): Promise<InventProductDetailResponseDto> {
+ async findOne(productSlug: string,
+currency?: string,  
 
-   const cacheKey = `frontend:artworkdetail:active:${productSlug}`;
+ ): Promise<InventProductDetailResponseDto> {
+
+   const cacheKey = `frontend:artworkdetail:active:${productSlug}:${currency || 'INR'}`;
   
        // ✅ 1. Try cache first
      const cached = await this.cacheService.get<InventProductDetailResponseDto>(cacheKey);
@@ -479,11 +476,50 @@ const paginatedData = sortedData.slice(skip, skip + limit);
       throw new NotFoundException(`Product with slug "${productSlug}" not found or out of stock`);
     }
 
+//const rate = conversionRates[currency || 'INR'];
+const rate = await this.getCurrencyRate(currency);
+
+ 
+  // ✅ 4. Compute display and discount values
+  const basePrice = inventory.price ?? 0;
+  const discount = inventory.discount ?? 0;
+  const gst = inventory.gstSlot ?? 0;
+
+  // final discounted amount
+ const finaldiscount = basePrice  - (basePrice*(discount/100));
+   const finalINR = (finaldiscount  + (finaldiscount*(gst/100)));
+  const  discountamount = (basePrice  + (basePrice*(gst/100)));
+ const finaldiscountamount = Number((discountamount / rate).toFixed(2));
+  const displayPrice = Number((finalINR / rate).toFixed(2));
+
+  // price after discount
+  //const afterDiscount = basePrice - finalDiscountAmount;
+
+  // add tax & shipping (simple example)
+  //const gst = inventory.gstSlot ?? 0;
+ // const shipping = inventory.shippingSlot ?? 0;
+
+  //const displayPriceInINR = afterDiscount + gst + shipping;
+
+  // convert to selected currency
+ // const displayPrice = displayPriceInINR * rate;
+
+
+
   const response = plainToInstance(
     InventProductDetailResponseDto,
     {
       ...inventory.product,
-      inventories: [inventory],
+      inventories: [ 
+        {
+        ...inventory,
+          displayPrice,
+          finaldiscountamount,          
+          currency: currency || 'INR',
+
+        }
+
+      ],
     },
     { excludeExtraneousValues: true },
   );
@@ -657,6 +693,22 @@ await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
   return response;
 }
   
+
+
+ async getCurrencyRate(code?: string): Promise<number> {
+  const currencyCode = code ?? 'INR'; // fallback if undefined
+  const rate = await this.currencyRepos.findOne({
+    where: { currency: currencyCode, status: true },
+  });
+  return rate?.value ?? 1;
+}
+
+
+
+
+
+
+
 }
 
 

@@ -29,8 +29,8 @@ export class ContactUsClientService {
 });
 
  const saved =  await this.contactUsRepo.save(contact);
-  dto.productName = 'Testing Product';
- dto.productId = 6;
+ // dto.productName = 'Testing Product';
+// dto.productId = 6;
  // dto.email = 'jayprakash005@gmail.com';
     // ✅ Email to Admin
     try {
@@ -41,7 +41,7 @@ export class ContactUsClientService {
             },
           name: dto.name,
           to: dto.email,
-          mobile: dto.mobile,
+          mobile: `${dto.phonecode} ${dto.mobile}`,
           message: dto.message,
           type: dto.type,    
           productName:dto.productName,

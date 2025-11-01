@@ -50,6 +50,12 @@ export class UsersAddress {
   @Column()
   other_phone: string;
 
+    @Column({ length: 50,nullable: true })
+  pan_gstin: string;
+
+  @Column({nullable: true})
+  trade_name: string;
+
   @Column({ type: 'varchar', length: 50, nullable: true })
   createdBy: string;
 
