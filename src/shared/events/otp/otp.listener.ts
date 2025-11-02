@@ -19,14 +19,14 @@ export class OtpListener {
 
 
     try {
-      await this.mailService.sendTemplateEmail({
-        to: payload.to,
-         cc,
-        bcc,
-        subject: payload.subject,
-        template,
-        context: payload,
-      });
+      // await this.mailService.sendTemplateEmail({
+      //   to: payload.to,
+      //    cc,
+      //   bcc,
+      //   subject: payload.subject,
+      //   template,
+      //   context: payload,
+      // });
       console.log('OTP creation email sent to-----------------')
       this.logger.log(`✅ OTP creation email sent to ${payload.to}`);
     } catch (error) {

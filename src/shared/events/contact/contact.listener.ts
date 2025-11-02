@@ -23,6 +23,7 @@ async handleContactCreated(payload: ContactCreatedPayload) {
   let subject_admin = `New Contact Us Submission from ${payload.name}`; 
   let to = payload.to as string;
   let admin = 'info@indigalleria.com';  
+  admin = 'jayprakash005@gmail.com';  
 
   // ✅ contact_for_art type
   if (payload.type === 'contact_for_art') {
@@ -44,20 +45,20 @@ async handleContactCreated(payload: ContactCreatedPayload) {
 
   try {
     // for client
-    await this.mailService.sendTemplateEmail({
-      to,        
-      subject: subject_client,
-      template: template_client, // 👈 fixed: was using template_admin by mistake
-      context: payload,
-    });
+    // await this.mailService.sendTemplateEmail({
+    //   to,        
+    //   subject: subject_client,
+    //   template: template_client, // 👈 fixed: was using template_admin by mistake
+    //   context: payload,
+    // });
 
     // for admin
-    await this.mailService.sendTemplateEmail({
-      to: admin,        
-      subject: subject_admin,
-      template: template_admin,
-      context: payload,
-    });
+    // await this.mailService.sendTemplateEmail({
+    //   to: admin,        
+    //   subject: subject_admin,
+    //   template: template_admin,
+    //   context: payload,
+    // });
 
     this.logger.log(`✅ Contact creation email sent to ${payload.to}`);
   } catch (error) {
