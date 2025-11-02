@@ -484,20 +484,22 @@ export class AuthService {
     }
   }
 
-  async ContactLogin(identifier: string,  ipAddress?: string) {
+  async ContactSendOTP(identifier: string,  ipAddress?: string) {
     if (!identifier) {
       throw new BadRequestException('Email or mobile must be provided.');
     }
-
+ console.log('----send otp to contact---2222222222---')
     try {
       let user: User | null = null;
       let type: OtpType;
-      let userType: UserType;
-
+      let userType: UserType; 
       // Detect identifier type
       if (this.isValidEmail(identifier)) {
+ 
         type = OtpType.EMAIL;     // ✅ enum value
         user = await this.findByEmail(identifier);
+         console.log(type,'-----send otp to contact---3333333--',identifier)
+
       } else if (this.isValidMobile(identifier)) {
         type = OtpType.MOBILE;    // ✅ enum value
         user = await this.findByMobile(identifier);
@@ -513,9 +515,13 @@ export class AuthService {
       //   userType = UserType.CONTACTUS;    // New cart user
       // }
       userType = UserType.CONTACTUS; 
-      // Send OTP
-      return await this.otpService.sendOtp(identifier, type, userType, ipAddress);
 
+       console.log(type,'-----send otp to contact---444444--',identifier,'---',userType)
+      // Send OTP
+       const jay = await this.otpService.sendOtp(identifier, type, userType, ipAddress);
+   //.log(type,'-----send otp to contact---444444--',jay)
+  // process.exit();
+       return jay;
 
     } catch (error) {
       if (error instanceof NotFoundException || error instanceof UnauthorizedException) {

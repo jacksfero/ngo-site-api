@@ -190,16 +190,16 @@ async logout(@Res() res: Response) {
     return await this.authService.cartLogin(identifier, ipAddress);
   }
 
-    @Public()
+@Public()
   @Post('send-otp-contact')
   async sendOtpContact(@Body('identifier') identifier: string, 
-  @Req() req: ExpressRequest,
-  
+  @Req() req: ExpressRequest,  
 ) {
-  let guestId = req.cookies?.['guestCartId'];
+  console.log('----send otp to contact------')
+  //let guestId = req.cookies?.['guestCartId'];
     // Extract IP if you want to track OTP abuse attempts
     const ipAddress = req.ip || (req.headers['x-forwarded-for'] as string) || undefined;
-    return await this.authService.ContactLogin(identifier, ipAddress);
+    return await this.authService.ContactSendOTP(identifier, ipAddress);
   }
  
 

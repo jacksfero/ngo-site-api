@@ -48,9 +48,11 @@ export class OtpService {
   async verifyOtp(dto: VerifyOtpDto): Promise<OtpVerificationResult> {
     const { identifier, type, otp,userType } = dto;
 
-    
+     const now = new Date();
+
     const record = await this.otpRepository.findOne({
-      where: { identifier, type,userType },
+      where: { identifier, type,userType, isVerified: false },
+      order: { createdAt: 'DESC' },
       relations: ['user','user.roles'], // Ensure user is loaded
     });
   
@@ -64,7 +66,7 @@ export class OtpService {
         : { success: true, message: 'Already verified' };
     }
   
-    const now = new Date();
+    
   
     if (record.expiresAt < now) {
       throw new BadRequestException('OTP has expired. Please resend OTP.');
@@ -91,7 +93,32 @@ export class OtpService {
     return { success: true, message: 'OTP verified' };
   }
  
-  async resendOtp(
+ 
+  
+
+  async resendOtpByIdentifier(dto: ResendOtpDto, ipAddress?: string) {
+    let identifier: string;
+    let type: OtpType;
+
+  // console.log(dto,'---------')
+    if (dto.email) {
+      identifier = dto.email;
+      type = OtpType.EMAIL;
+     // console.log(identifier,'---------',type,'--------')
+    } else if (dto.mobile) {
+      identifier = dto.mobile;
+      type = OtpType.MOBILE;
+       // console.log(identifier,'---------',type,'--------')
+    } else {
+      throw new BadRequestException('Either email or mobile must be provided.');
+    }
+     const userType = dto.userType || undefined;
+    
+
+    return this.resendOtp(identifier, type, userType, ipAddress);
+  }
+
+ async resendOtp(
     identifier: string,
     type: OtpType,
     userType?: UserType,
@@ -99,28 +126,8 @@ export class OtpService {
   ) {
     return this.sendOtp(identifier, type, userType, ipAddress);
   }
+
   
-
-  async resendOtpByIdentifier(dto: ResendOtpDto, ipAddress?: string) {
-    let identifier: string;
-    let type: OtpType;
-
-    if (dto.email) {
-      identifier = dto.email;
-      type = OtpType.EMAIL;
-    } else if (dto.mobile) {
-      identifier = dto.mobile;
-      type = OtpType.MOBILE;
-    } else {
-      throw new BadRequestException('Either email or mobile must be provided.');
-    }
-    const userType = dto.userType || undefined;
-   
-
-    return this.resendOtp(identifier, type, userType, ipAddress);
-  }
-
-
 async sendOtp(
     identifier: string,
     type: OtpType,
@@ -130,6 +137,8 @@ async sendOtp(
     if (!ipAddress) {
       throw new BadRequestException('IP address is required.');
     }
+console.log('Server Timezone Date:', new Date().toString());
+console.log('UTC Time:', new Date().toISOString());
 
     // Rate limit: Max 50 OTPs per IP per day
     const ipKey = `otp:ip:${ipAddress}`;
@@ -140,17 +149,21 @@ async sendOtp(
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
-
+   
+ // console.log(type,'----2222222-send otp to API---OTP Service--',identifier)
     // Find user by identifier
     const user = await this.userReposs.findOne({ where: { [type]: identifier } });
-    const isRegistrationFlow = userType !== UserType.LOGIN && userType !== UserType.FORGOT_PASSWORD;
+    const isRegistrationFlow = userType !== UserType.LOGIN && userType !== UserType.FORGOT_PASSWORD && userType !== UserType.CONTACTUS;
 
+  
     // Simplified conditions
-    if (!user && !isRegistrationFlow) {
+    if (!user && !isRegistrationFlow && userType !== UserType.CONTACTUS) {
+      
       throw new NotFoundException('User not registered');
     }
 
     if (user && isRegistrationFlow) {
+      
       throw new BadRequestException('User already exists');
     }
 
@@ -165,7 +178,7 @@ async sendOtp(
       where: { identifier, type, userType },
       order: { updatedAt: 'DESC' }
     });
-
+  
     // ✅ FIXED: Handle timezone issues and negative time differences
     if (recentOtp) {
       const lastOtpTimeUTC = new Date(recentOtp.updatedAt);
@@ -255,7 +268,7 @@ async sendOtp(
     if (process.env.NODE_ENV === 'development') {
       this.logger.log(`OTP for ${identifier}: ${otp}`);
     }
-
+ 
 if(type === 'email'){
   
 // 2️⃣ Emit email event (async background process)
@@ -269,7 +282,7 @@ if(type === 'email'){
     };
     
     this.eventEmitter.emit('otp.send', payload);
-  }
+  } 
 
     return { 
       success: true, 
