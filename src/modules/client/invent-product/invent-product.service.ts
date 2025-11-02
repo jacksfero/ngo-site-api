@@ -394,8 +394,8 @@ currency?: string,
 
  ): Promise<InventProductDetailResponseDto> {
 
-   const cacheKey = `frontend:artworkdetail:active:${productSlug}:${currency || 'INR'}`;
-  
+    const cacheKey = `frontend:artworkdetail:active:${productSlug}:${currency || 'INR'}`;
+
        // ✅ 1. Try cache first
      const cached = await this.cacheService.get<InventProductDetailResponseDto>(cacheKey);
     if (cached  ) {
@@ -493,19 +493,7 @@ const rate = await this.getCurrencyRate(currency);
  const finaldiscountamount = Number((discountamount / rate).toFixed(2));
   const displayPrice = Number((finalINR / rate).toFixed(2));
 
-  // price after discount
-  //const afterDiscount = basePrice - finalDiscountAmount;
-
-  // add tax & shipping (simple example)
-  //const gst = inventory.gstSlot ?? 0;
- // const shipping = inventory.shippingSlot ?? 0;
-
-  //const displayPriceInINR = afterDiscount + gst + shipping;
-
-  // convert to selected currency
- // const displayPrice = displayPriceInINR * rate;
-
-
+  
 
   const response = plainToInstance(
     InventProductDetailResponseDto,
@@ -513,10 +501,10 @@ const rate = await this.getCurrencyRate(currency);
       ...inventory.product,
       inventories: [ 
         {
-        ...inventory,
-          displayPrice,
-          finaldiscountamount,          
-          currency: currency || 'INR',
+          ...inventory,
+    displayPrice,
+    finaldiscountamount,
+    currency: currency || 'INR',
 
         }
 
@@ -525,7 +513,7 @@ const rate = await this.getCurrencyRate(currency);
     { excludeExtraneousValues: true },
   );
 
-  await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
+ await this.cacheService.set(cacheKey, response);
   // console.log('✅ Cache miss:', cacheKey);
   return response;
 }

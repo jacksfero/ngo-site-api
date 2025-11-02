@@ -13,8 +13,8 @@ export class ExhibitionController {
 
  // ✅ Get currently live exhibitions
   @Get('status/live')
-  async findLive(): Promise<ExhibitionDetailDto[]> {
-    return this.exhibitionService.findLiveExhibitions();
+  async findLive(@Query('currency') currency?: string,): Promise<ExhibitionDetailDto[]> {
+    return this.exhibitionService.findLiveExhibitions(currency);
   }
 
 

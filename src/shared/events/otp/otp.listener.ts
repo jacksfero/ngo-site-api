@@ -18,7 +18,7 @@ export class OtpListener {
     const bcc = ['indigalleria@gmail.com'];
 
 
-    try {
+   /* try {
       // await this.mailService.sendTemplateEmail({
       //   to: payload.to,
       //    cc,
@@ -31,6 +31,6 @@ export class OtpListener {
       this.logger.log(`✅ OTP creation email sent to ${payload.to}`);
     } catch (error) {
       this.logger.error(`❌ Failed to send OTP creation email`, error);
-    }
+    }*/
   }
 }

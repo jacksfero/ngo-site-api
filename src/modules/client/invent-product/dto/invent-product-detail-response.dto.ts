@@ -23,14 +23,14 @@ export class InventoryDto {
 
   /** ✅ New computed fields for display */
  
-  // @Expose()
-  // finaldiscountamount: number; // actual discount amount applied
+    @Expose()
+    finaldiscountamount: number; // actual discount amount applied
 
-  // @Expose()
-  // displayPrice: number; // final price shown after discount + gst + shipping
+   @Expose()
+   displayPrice: number; // final price shown after discount + gst + shipping
 
-  // @Expose()
-  // currency: string; // INR, USD, etc.
+    @Expose()
+    currency: string; // INR, USD, etc.
 }
 
 export class ArtistDto {

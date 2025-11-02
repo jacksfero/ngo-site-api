@@ -42,12 +42,13 @@ export class InventProductController {
   //   return this.inventProductService.findAll(paginationDto);
   // }
 
-  @Get(':id')
-  async findOne(
-    @Param('id') id: string,
-  ): Promise<InventProductDetailResponseDto> {
-    return this.inventProductService.findOne(id);
-  }
+@Get(':id')
+async findOne(
+  @Param('id') id: string,
+  @Query('currency') currency?: string,
+): Promise<InventProductDetailResponseDto> {
+  return this.inventProductService.findOne(id, currency);
+}
 
   
 }
