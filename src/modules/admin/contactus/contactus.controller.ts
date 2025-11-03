@@ -10,10 +10,14 @@ import { ContactPaginationDto } from './dto/contact-pagination.dto';
 import { ContactListDto } from './dto/contact-list.dto';
 import { RequirePermissions } from 'src/modules/auth/decorators/permissions.decorator';
 import { PaginationClinetPipe } from 'src/shared/pipes/pagination-client.pipe';
+import { CacheService } from 'src/core/cache/cache.service';
+
 
 @Controller()
 export class ContactUsController {
-  constructor(private readonly contactusService: ContactUsService) {}
+  constructor(
+    private readonly cacheService: CacheService,
+    private readonly contactusService: ContactUsService) {}
 
   @Post()
 
@@ -37,7 +41,31 @@ async findAll(
   return this.contactusService.findAll(paginationDto);
 }
 
+// @Get('clear-cache')  
+// async clearCache() {
+//   return this.contactusService.clearCache();
+// }
 
+
+ @Post('clear-cache')
+  @RequirePermissions('manage_cache') // optional: use a stronger permission
+  async clearCache(): Promise<{ success: boolean; message: string }> {
+    try {
+      await this.cacheService.deletePattern('Admin:*');
+      await this.cacheService.deletePattern('frontend:*');
+
+      return {
+        success: true,
+        message: 'Cache cleared successfully',
+      };
+    } catch (error) {
+      console.error('Cache clearance failed:', error);
+      return {
+        success: false,
+        message: 'Failed to clear cache',
+      };
+    }
+  }
 
   @Get(':id')
   @RequirePermissions('read_contactus')

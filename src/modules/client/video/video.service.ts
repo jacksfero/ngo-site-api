@@ -36,6 +36,7 @@ export class ClientVideoService {
 
   if (!videos.length) {
     throw new NotFoundException(`No videos found for user ID: ${userId}`);
+    
   }
 
   await this.cacheService.set(cacheKey, videos); // cache 5 minutes

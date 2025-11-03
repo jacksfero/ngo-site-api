@@ -194,7 +194,7 @@ async findLiveExhibitions(currency?: string): Promise<ExhibitionDetailDtos[]> {
        'displayMappings.product.artist.profileImage'
     ],
   });
-  console.log('-----------------------',JSON.stringify(exhibitions)); 
+ // console.log('-----------------------',JSON.stringify(exhibitions)); 
   //process.exit();
   // ✅ Return empty array instead of throwing error
   if (!exhibitions.length) {

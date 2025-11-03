@@ -48,6 +48,27 @@ export class ContactUsService {
 });*/
   return contact;
 }
+
+// async clearCache(): Promise<{ success: boolean; message: string }> {
+//   try {
+//     await this.cacheService.deletePattern('Admin:*');
+//     await this.cacheService.deletePattern('frontend:*');
+    
+//     return {
+//       success: true,
+//       message: 'Cache cleared successfully'
+//     };
+//   } catch (error) {
+//     // Log the error for debugging
+//     console.error('Cache clearance failed:', error);
+    
+//     return {
+//       success: false,
+//       message: 'Failed to clear cache'
+//     };
+//   }
+// }
+
  async findAll(
   paginationDto: ContactPaginationDto,
 ): Promise<PaginationResponseDto<ContactListDto>> {
