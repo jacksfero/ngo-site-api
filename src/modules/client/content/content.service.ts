@@ -28,7 +28,7 @@ export class ContentService {
   
   async getActiveCurrency() {
     try {
-      const cacheKey = 'frontent:currency:active';
+      const cacheKey = 'frontend:currency:active';
       const results = await this.currencyRepo.find({
         where: { status: true },
         select: ['id', 'currency', 'code', 'value', 'icon'],
@@ -49,7 +49,7 @@ export class ContentService {
  
   async getActivePolicy(id:number) {
     try {
-       const cacheKey = `frontent:policy:active: ${id}`;
+       const cacheKey = `frontend:policy:active: ${id}`;
       const cached = await this.cacheService.get (cacheKey);
         if (cached ) {
           return cached;
@@ -70,7 +70,7 @@ export class ContentService {
   }
 
 async getActiveContent(id: number) {
-    const cacheKey = `frontent:content:active:${id}`;
+    const cacheKey = `frontend:content:active:${id}`;
     
     try {
       const cached = await this.cacheService.get(cacheKey);
