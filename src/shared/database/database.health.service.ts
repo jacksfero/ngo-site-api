@@ -61,7 +61,7 @@ export class DatabaseHealthService implements OnModuleInit, OnApplicationShutdow
       };
     } catch (error) {
       return {
-        status: 'error',
+        status: 'error n',
         error: error.message,
         isInitialized: this.dataSource.isInitialized,
       };

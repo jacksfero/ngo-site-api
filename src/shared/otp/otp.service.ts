@@ -85,7 +85,7 @@ export class OtpService {
     record.isVerified = true;
     record.attempts = 0;
     await this.otpRepository.save(record);
-  
+    console.log(record.user,'---------------------')
     if (record.user) {
       return { success: true, message: 'OTP verified', user: record.user };
     }
