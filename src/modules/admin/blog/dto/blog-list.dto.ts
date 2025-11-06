@@ -51,7 +51,9 @@ export class BlogListDto {
   status: boolean;
  
   @Expose()
-  createdAt: Date;
+  updatedAt: Date;
+
+ 
 
   @Expose()
   scheduledPublishDate: Date;
