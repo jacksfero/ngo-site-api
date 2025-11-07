@@ -17,6 +17,9 @@ export class UsersListDto {
   username: string;
 
   @Expose()
+  adminRemark: string;
+
+  @Expose()
   email: string;
 
   @Expose()
