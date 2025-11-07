@@ -288,18 +288,20 @@ async findByUsername(username: string): Promise<User | undefined> {
   
   
 
- async findOne(id: number) {
-    try {
-    return await this.userRepository.findOne({ 
-      where: { id },
-      relations: ['roles','artistType','profileImage'], // include relations if needed
-    //  select: ['id', 'username','email','mobile','status','is_verified', 'password'] // Customize as needed
-    });
+async findOne(id: number) {
+  try {
+    return await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.roles', 'roles')
+      .leftJoinAndSelect('user.artistType', 'artistType')
+      .leftJoinAndSelect('user.profileImage', 'profileImage')
+      .addSelect('user.adminRemark') // ✅ explicitly include hidden column
+      .where('user.id = :id', { id })
+      .getOne();
   } catch (error) {
-    throw new Error(`User search failed for ${id}` );
-   // return null; // Explicit null (TypeORM's standard)
+    throw new Error(`User search failed for ${id}`);
   }
-  }
+}
 
   async update(id: number, dto: UpdateUserDto): Promise<User> {
     const { roleIds, email, mobile, ...rest } = dto;
