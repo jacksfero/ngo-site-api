@@ -12,3 +12,20 @@ export const configurationCache = () => ({
   REDIS_PASSWORD: process.env.REDIS_PASSWORD,
   REDIS_TLS_ENABLED: process.env.REDIS_TLS_ENABLED === 'true',
 });
+
+
+export default () => ({
+  email: {
+    enabled: process.env.MAIL_ENABLED === 'true',
+  },
+});
+
+/*
+
+Use it:
+
+if (!this.configService.get('email.enabled')) {
+  return;
+}
+
+*/
