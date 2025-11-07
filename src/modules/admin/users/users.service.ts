@@ -285,9 +285,7 @@ async findByUsername(username: string): Promise<User | undefined> {
  await this.cacheService.set(cacheKey, profileImage);
     return profileImage;
   }
-  
-  
-
+   
 async findOne(id: number) {
   try {
     return await this.userRepository
@@ -295,7 +293,7 @@ async findOne(id: number) {
       .leftJoinAndSelect('user.roles', 'roles')
       .leftJoinAndSelect('user.artistType', 'artistType')
       .leftJoinAndSelect('user.profileImage', 'profileImage')
-      .addSelect('user.adminRemark') // ✅ explicitly include hidden column
+     .addSelect(['user.adminRemark', 'user.profileEdit', 'user.homePageDisplay', 'user.featured_artist']) // ✅ explicitly include hidden column
       .where('user.id = :id', { id })
       .getOne();
   } catch (error) {
