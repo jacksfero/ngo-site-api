@@ -293,10 +293,10 @@ if (updateProductDto.medium_id !== undefined) {
 try {
      const productss = await this.productRepository.save(product);
 
-    // await this.cacheService.deletePattern('Admin:Artwork:*');
+     await this.cacheService.deletePattern('Admin:Artwork:*');
 
    
-   const payload: ProductCreatedPayload = {
+  /* const payload: ProductCreatedPayload = {
   to: 'jayprakash005@gmail.com',  
   subject: `Your product "${product.productTitle}" has been updated 🖼️`, 
   context: {
@@ -307,8 +307,8 @@ try {
   productName: product.productTitle,  
   testingNote: 'Testing product update flow',
 };
+this.eventEmitter.emit('product.created', payload);*/
 
-this.eventEmitter.emit('product.created', payload);
     return productss;
      } catch (error) {
     throw new BadRequestException('Error updating product');
