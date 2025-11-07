@@ -15,7 +15,7 @@ export class ContactListener {
  
   @OnEvent('contact.created', { async: true })
 async handleContactCreated(payload: ContactCreatedPayload) {
-  if (!this.configService.get('MAIL_ENABLED')) {
+ if (this.configService.get('MAIL_ENABLED') !== 'astrue') {
     this.logger.warn(`🚫 Mail disabled. OTP email not sent to ${payload.to}`);
     return;
   }

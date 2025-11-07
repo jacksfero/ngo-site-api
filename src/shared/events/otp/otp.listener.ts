@@ -16,7 +16,7 @@ export class OtpListener {
   @OnEvent('otp.send', { async: true })
   async handleOtpCreated(payload: OtpCreatedPayload) {
       // ✅ Check if mail is disabled
-   if (this.configService.get('MAIL_ENABLED') !== 'true') {
+   if (this.configService.get('MAIL_ENABLED') !== 'astrue') {
     this.logger.warn(`🚫 Mail disabled. OTP email not sent to ${payload.to}`);
     return;
   }
