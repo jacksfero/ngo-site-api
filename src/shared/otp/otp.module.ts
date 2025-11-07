@@ -6,6 +6,7 @@ import { OtpVerification } from '../entities/OtpVerification.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { AuthModule } from 'src/modules/auth/auth.module';
+import { OtpCronService } from './otp-cron.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([OtpVerification,User]),
@@ -16,7 +17,7 @@ import { AuthModule } from 'src/modules/auth/auth.module';
  forwardRef(() => AuthModule), // ✅ put this back
 ],
   controllers: [OtpController],
-  providers: [OtpService],
+  providers: [OtpService,OtpCronService],
   exports: [OtpService], // <--- Important
 })
 export class OtpModule {

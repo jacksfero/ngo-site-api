@@ -83,7 +83,6 @@ password: string | null;
   @Column({ type: 'boolean', default: false , select: false})
   profileEdit: boolean;
 
-
   @Column({ type: 'varchar', length: 255, nullable: true , select: false})
   adminRemark: string;
 

@@ -44,12 +44,18 @@ export interface UserCreatedPayload extends BaseMailPayload {
   fullName: string;
   email: string;
 }
+export interface ResetPassCreatedPayload extends BaseMailContactPayload {
+  
+  name: string;
+  to: string;
+  
+}
 
-
-export interface OtpCreatedPayload extends BaseMailPayload {
+export interface OtpCreatedPayload extends BaseMailContactPayload {
   otp: string;
   name: string;
-   
+  to: string;
+   type?: string;
 }
 
 /**

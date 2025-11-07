@@ -56,6 +56,15 @@ export class MailService {
   }
 
 async sendTemplateEmail(options: SendMailOptions): Promise<void> {
+
+const mailEnabled = this.configService.get<string>('MAIL_ENABLED') === 'true';
+
+  // ✅ If mail disabled, skip sending
+  if (!mailEnabled) {
+    this.logger.warn(`🚫 Mail sending disabled. Skipped email to ${options.to}`);
+    return;
+  }
+
     try {
       // ✅ Build template file path
       const templatePath = path.join(

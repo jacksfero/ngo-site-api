@@ -13,9 +13,12 @@ import { configurationCache } from './shared/config/configuration.cache';
 import payuConfig from './shared/config/payu.config';
 import paypalConfig from './shared/config/paypal.config';
 import razorpayConfig from './shared/config/razor.config';
+import { ScheduleModule } from '@nestjs/schedule';
+
 
 @Module({
   imports: [
+      ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configurationCache, payuConfig, paypalConfig, razorpayConfig],

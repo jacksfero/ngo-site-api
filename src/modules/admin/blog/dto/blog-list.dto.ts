@@ -1,7 +1,6 @@
 import { Expose,Exclude, Type } from 'class-transformer';
  
 
-
 @Exclude()
 export class AuthorDto {
   @Expose()
@@ -13,7 +12,6 @@ export class CategoryDto {
   @Expose()
   name: string;
 }
-
 
 @Exclude()
 export class BlogListDto {
@@ -32,8 +30,6 @@ export class BlogListDto {
   @Expose()
   titleImage: string;
 
- 
-
   @Expose()
   get contentSnippet(): string {
     if (!this.blogContent) return '';
@@ -45,20 +41,15 @@ export class BlogListDto {
   @Expose()
   blogContent?: string; // keep original for mapping
 
-  
-
   @Expose()
   status: boolean;
  
   @Expose()
   updatedAt: Date;
 
- 
-
   @Expose()
   scheduledPublishDate: Date;
-  
-  
+    
   @Expose()
   @Type(() => AuthorDto)
   author?: AuthorDto;

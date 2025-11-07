@@ -12,6 +12,7 @@ import * as bcrypt from 'bcrypt';
 
 import { UsersService } from 'src/modules/admin/users/users.service';
 import { JwtService } from '@nestjs/jwt';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtPayload, RegisterCartUserResponse } from './interfaces/jwt-payload.interface';
 import { UserListByRoleNameDto } from '../admin/users/dto/user-list-byrole.dto';
 
@@ -76,6 +77,7 @@ import { MailService } from 'src/shared/mail/mail.service';
 
 // import { REQUEST } from '@nestjs/core';
   import { Request } from 'express';
+import { ResetPassCreatedPayload } from 'src/shared/events/interfaces/event-payload.interface';
 
 
 
@@ -83,7 +85,7 @@ import { MailService } from 'src/shared/mail/mail.service';
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   constructor(
-
+     private readonly eventEmitter: EventEmitter2,
     private readonly mailService: MailService,
  
     private usersService: UsersService,
@@ -685,7 +687,16 @@ export class AuthService {
 
     // Remove token after use
     await this.passresettokenRepo.delete(record.id);
+    console.log('Name-----', user.username,'---Email-------', user.email)
+    /** Start Mail Service */
+     const payload: ResetPassCreatedPayload = {
+        context: {},
+        name: user.username,
+        to: user.email,
+};
 
+this.eventEmitter.emit('reset_password.send', payload);       
+/** End Mail Service */
     return { message: 'Password reset successfully' };
   }
 

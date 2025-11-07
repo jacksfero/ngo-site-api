@@ -85,7 +85,7 @@ export class OtpService {
     record.isVerified = true;
     record.attempts = 0;
     await this.otpRepository.save(record);
-    console.log(record.user,'---------------------')
+   // console.log(record.user,'---------------------')
     if (record.user) {
       return { success: true, message: 'OTP verified', user: record.user };
     }
@@ -137,8 +137,8 @@ async sendOtp(
     if (!ipAddress) {
       throw new BadRequestException('IP address is required.');
     }
-console.log('Server Timezone Date:', new Date().toString());
-console.log('UTC Time:', new Date().toISOString());
+// console.log('Server Timezone Date:', new Date().toString());
+// console.log('UTC Time:', new Date().toISOString());
 
     // Rate limit: Max 50 OTPs per IP per day
     const ipKey = `otp:ip:${ipAddress}`;
@@ -270,16 +270,28 @@ console.log('UTC Time:', new Date().toISOString());
     }
  
 if(type === 'email'){
+    let mail_name = "User"
+  if(userType === UserType.FORGOT_PASSWORD){
+    mail_name = user ? user.username:"User";
+  }
   
 // 2️⃣ Emit email event (async background process)
-     const payload: OtpCreatedPayload = {
-      to: 'jayprakash005@gmail.com',      
-      subject: `Your IndiGalleria Email Verification Code ${otp}`,      
+
+  const payload: OtpCreatedPayload = {           
+            context: { 
+            },
+          name: mail_name,
+          to: identifier, 
+         type: userType || 'default',
+           otp: otp,      
+          };
+   /*  const payload: OtpCreatedPayload = {
+      to: 'jayprakash005@gmail.com',   
       context: { 
       },
       otp:  otp,
       name: 'User',      
-    };
+    };*/
     
     this.eventEmitter.emit('otp.send', payload);
   } 
