@@ -28,6 +28,24 @@ async function bootstrap() {
     // ✅ Cookie parser
     app.use(cookieParser());
 
+     // ✅ Request logging middleware
+    app.use((req: Request, res: Response, next: NextFunction) => {
+      const start = Date.now();
+      console.log(`➡️ [${new Date().toISOString()}] ${req.method} ${req.url}`);
+      
+      res.on('finish', () => {
+        const duration = Date.now() - start;
+        console.log(`⬅️ [${new Date().toISOString()}] ${req.method} ${req.url} - ${res.statusCode} - ${duration}ms`);
+      });
+
+      res.on('close', () => {
+        const duration = Date.now() - start;
+        console.log(`💥 [${new Date().toISOString()}] ${req.method} ${req.url} - Connection closed - ${duration}ms`);
+      });
+
+      next();
+    });
+
     // ✅ CORS configuration
     app.enableCors({
       origin: [
@@ -77,23 +95,7 @@ async function bootstrap() {
     // ✅ Global interceptors
     app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
-    // ✅ Request logging middleware
-    app.use((req: Request, res: Response, next: NextFunction) => {
-      const start = Date.now();
-      console.log(`➡️ [${new Date().toISOString()}] ${req.method} ${req.url}`);
-      
-      res.on('finish', () => {
-        const duration = Date.now() - start;
-        console.log(`⬅️ [${new Date().toISOString()}] ${req.method} ${req.url} - ${res.statusCode} - ${duration}ms`);
-      });
-
-      res.on('close', () => {
-        const duration = Date.now() - start;
-        console.log(`💥 [${new Date().toISOString()}] ${req.method} ${req.url} - Connection closed - ${duration}ms`);
-      });
-
-      next();
-    });
+   
 
     // ✅ Start server
     const port = process.env.PORT || 3000;

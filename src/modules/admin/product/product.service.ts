@@ -10,7 +10,7 @@ import { ProductDto } from './dto/product.dto';
 import { CacheService } from 'src/core/cache/cache.service';
 import { plainToInstance } from 'class-transformer';
 import { S3Service } from 'src/shared/s3/s3.service';
-import { ProductPaginationDto, ProductSearchStatus } from './dto/product-pagination.dto';
+import { ProductPaginationDto,PriceOnDemandStatus, ProductSearchStatus } from './dto/product-pagination.dto';
 import { sanitizeFileName } from 'src/shared/utils/sanitizefilename';
 import { ProductListDto } from './dto/product-list.dto';
 import { Subject } from 'src/shared/entities/subject.entity';
@@ -366,14 +366,28 @@ const cached = await this.cacheService.get(cacheKey);
       const fieldMap: Record<ProductSearchStatus, string> = {
         [ProductSearchStatus.NEW_ARRIVAL]: 'product.new_arrival',
         [ProductSearchStatus.ELITE_CHOICE]: 'product.eliteChoice',
-        [ProductSearchStatus.FEATURED]: 'product.featured',
+        [ProductSearchStatus.PRINTTING_RIGHTS]: 'product.printing_rights',
         [ProductSearchStatus.IS_LOCK]: 'product.is_lock',
         [ProductSearchStatus.NEGOTIABLE]: 'product.negotiable',
-        [ProductSearchStatus.PRICE_ON_DEMAND]: 'product.price_on_demand',
+       [ProductSearchStatus.REFUNDABLE]: 'product.refundable', 
+       [ProductSearchStatus.CERTIFICATE]: 'product.certificate',
         [ProductSearchStatus.AFFORDABLE_ART]: 'product.affordable_art',
       };
-    
-      queryBuilder.andWhere(`${fieldMap[status]} = :flag`, { flag: true });
+
+        const priceMap: Record<string, PriceOnDemandStatus> = {
+    only_display_price: PriceOnDemandStatus.ONLY_DISPLAY_PRICE,
+    price_on_demand: PriceOnDemandStatus.PRICE_ON_DEMAND,
+    contact_for_art: PriceOnDemandStatus.CONTACT_FOR_ART,
+   // negotiable_price: PriceOnDemandStatus.NEGOTIABLE_PRICE,
+   // auction_price: PriceOnDemandStatus.AUCTION_PRICE,
+  };
+      if (fieldMap[status]) {
+    queryBuilder.andWhere(`${fieldMap[status]} = true`);
+  } else if (priceMap[status] !== undefined) {
+    queryBuilder.andWhere(`product.price_on_demand = :p`, {
+      p: priceMap[status],
+    });
+  }
     }
 
     if (is_active !== undefined) {

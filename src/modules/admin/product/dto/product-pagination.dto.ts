@@ -6,12 +6,23 @@ import { AdminPaginationBaseDto } from 'src/shared/dto/admin-pagination-base.dto
 export enum ProductSearchStatus {
   NEW_ARRIVAL = 'new_arrival',
   ELITE_CHOICE = 'eliteChoice',
-  FEATURED = 'featured',
+  PRINTTING_RIGHTS = 'printing_rights',
   IS_LOCK = 'is_lock',
   NEGOTIABLE = 'negotiable',
-  PRICE_ON_DEMAND = 'price_on_demand',
+ REFUNDABLE  = 'refundable',
+ CERTIFICATE  = 'certificate',
   AFFORDABLE_ART = 'affordable_art',
 }
+
+// price_on_demand is ENUM (0,1,2)
+export enum PriceOnDemandStatus {
+  ONLY_DISPLAY_PRICE = 0,
+  PRICE_ON_DEMAND = 1,
+  CONTACT_FOR_ART = 2,
+ // NEGOTIABLE_PRICE = 3,
+ // AUCTION_PRICE = 4,
+}
+
 export class ProductPaginationDto extends AdminPaginationBaseDto {
   // @IsOptional()
   // @IsBoolean()

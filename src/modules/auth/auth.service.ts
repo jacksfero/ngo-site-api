@@ -249,10 +249,22 @@ export class AuthService {
 
   async getLoggedInUser(users: any): Promise<User> {
     const userId = users.sub.toString();
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      relations: ['profileImage'], // 👈 add relations if you need
-    });
+  //   const user = await this.userRepository.findOne({
+  //     where: { id: userId },
+  //     relations: ['profileImage'], // 👈 add relations if you need
+  //       select: {
+  //   id: true,
+  //   username: true,
+  //   profileEdit: true,
+  // },
+  //   });
+
+    const user = await this.userRepository
+  .createQueryBuilder('user')
+  .leftJoinAndSelect('user.profileImage', 'profileImage')
+  .addSelect('user.profileEdit')  // ✅ add extra field
+  .where('user.id = :id', { id: userId })
+  .getOne();
  
  //    Send welcome email
 //   await this.mailService.sendTemplateEmail({
