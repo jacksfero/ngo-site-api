@@ -246,7 +246,7 @@ if (dto.shippingId) {
     const inventory = await this.inventoryRepo.findOne({
        where: { id }, 
        relations: ['product','product.artist','product.size','product.shippingTime',
-       'product.commissionType', 'product.packingMode', 'product.category'] });
+       'product.commissionType', 'product.medium','product.surface','product.packingMode', 'product.category'] });
     if (!inventory) throw new NotFoundException('Inventory not found');
       // ✅ 3. Cache result for 1 hour (3600 seconds)
   await this.cacheService.set(cacheKey, inventory, { ttl: 3600 });
