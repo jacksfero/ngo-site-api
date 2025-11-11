@@ -12,10 +12,14 @@ export enum ProductSearchStatus {
  REFUNDABLE  = 'refundable',
  CERTIFICATE  = 'certificate',
   AFFORDABLE_ART = 'affordable_art',
+
+   ONLY_DISPLAY_PRICE = 'only_display_price',
+  PRICE_ON_DEMAND = 'price_on_demand',
+  CONTACT_FOR_ART = 'contact_for_art',
 }
 
 // price_on_demand is ENUM (0,1,2)
-export enum PriceOnDemandStatus {
+export enum PriceOnDemandSearch {
   ONLY_DISPLAY_PRICE = 0,
   PRICE_ON_DEMAND = 1,
   CONTACT_FOR_ART = 2,
@@ -43,11 +47,11 @@ export class ProductPaginationDto extends AdminPaginationBaseDto {
   @IsInt()
   artistId: number;
 
-  @IsOptional()
-  @IsEnum(ProductSearchStatus, {
-    message: 'status must be one of new_arrival, eliteChoice, featured',
-  })
-  status?: ProductSearchStatus;
+@IsOptional()
+@IsEnum(ProductSearchStatus, {
+  message: `status must be one of: ${Object.values(ProductSearchStatus).join(', ')}`,
+})
+status?: ProductSearchStatus;
 
   @IsOptional()
   @IsEnum(ProductStatus)

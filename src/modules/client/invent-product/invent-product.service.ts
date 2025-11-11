@@ -474,7 +474,7 @@ currency?: string,
     .getOne();
 
     if (!inventory) {
-      throw new NotFoundException(`Product with slug "${productSlug}" not found or out of stock`);
+      throw new NotFoundException(`Artwork with Title "${productSlug}" not found or out of stock`);
     }
 
 //const rate = conversionRates[currency || 'INR'];

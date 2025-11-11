@@ -10,7 +10,7 @@ import { ProductDto } from './dto/product.dto';
 import { CacheService } from 'src/core/cache/cache.service';
 import { plainToInstance } from 'class-transformer';
 import { S3Service } from 'src/shared/s3/s3.service';
-import { ProductPaginationDto,PriceOnDemandStatus, ProductSearchStatus } from './dto/product-pagination.dto';
+import { ProductPaginationDto,PriceOnDemandSearch, ProductSearchStatus } from './dto/product-pagination.dto';
 import { sanitizeFileName } from 'src/shared/utils/sanitizefilename';
 import { ProductListDto } from './dto/product-list.dto';
 import { Subject } from 'src/shared/entities/subject.entity';
@@ -330,7 +330,7 @@ this.eventEmitter.emit('product.created', payload);*/
   async paginate(
     paginationDto: ProductPaginationDto,
   ): Promise<PaginationResponseDto<ProductDto>> {
-    const { page, limit,is_active, search,artistId,status,   categoryId } = paginationDto;
+    const { page, limit,is_active, search,artistId,status, categoryId } = paginationDto;
     const skip = (page - 1) * limit;
 
 
@@ -352,7 +352,6 @@ const cached = await this.cacheService.get(cacheKey);
         OR LOWER(owner.username) LIKE :search)`,
           { search: `%${search.toLowerCase()}%` },
         );
-       
     }
     if (artistId) { 
       queryBuilder.andWhere('product.artist_id LIKE :artistId', { artistId  });
@@ -362,34 +361,38 @@ const cached = await this.cacheService.get(cacheKey);
       queryBuilder.andWhere('product.category_id LIKE :categoryId', { categoryId   });
     }
  
-    if (status) {
-      const fieldMap: Record<ProductSearchStatus, string> = {
-        [ProductSearchStatus.NEW_ARRIVAL]: 'product.new_arrival',
-        [ProductSearchStatus.ELITE_CHOICE]: 'product.eliteChoice',
-        [ProductSearchStatus.PRINTTING_RIGHTS]: 'product.printing_rights',
-        [ProductSearchStatus.IS_LOCK]: 'product.is_lock',
-        [ProductSearchStatus.NEGOTIABLE]: 'product.negotiable',
-       [ProductSearchStatus.REFUNDABLE]: 'product.refundable', 
-       [ProductSearchStatus.CERTIFICATE]: 'product.certificate',
-        [ProductSearchStatus.AFFORDABLE_ART]: 'product.affordable_art',
-      };
-
-        const priceMap: Record<string, PriceOnDemandStatus> = {
-    only_display_price: PriceOnDemandStatus.ONLY_DISPLAY_PRICE,
-    price_on_demand: PriceOnDemandStatus.PRICE_ON_DEMAND,
-    contact_for_art: PriceOnDemandStatus.CONTACT_FOR_ART,
-   // negotiable_price: PriceOnDemandStatus.NEGOTIABLE_PRICE,
-   // auction_price: PriceOnDemandStatus.AUCTION_PRICE,
+   if (status) {
+  const fieldMap: Partial <Record<ProductSearchStatus, string>> = {
+    [ProductSearchStatus.NEW_ARRIVAL]: 'product.new_arrival',
+    [ProductSearchStatus.ELITE_CHOICE]: 'product.eliteChoice',
+    [ProductSearchStatus.PRINTTING_RIGHTS]: 'product.printing_rights',
+    [ProductSearchStatus.IS_LOCK]: 'product.is_lock',
+    [ProductSearchStatus.NEGOTIABLE]: 'product.negotiable',
+    [ProductSearchStatus.REFUNDABLE]: 'product.refundable', 
+    [ProductSearchStatus.CERTIFICATE]: 'product.certificate',
+    [ProductSearchStatus.AFFORDABLE_ART]: 'product.affordable_art',
   };
-      if (fieldMap[status]) {
+
+  const priceMap: Record<string, PriceOnDemandSearch> = {
+    only_display_price: PriceOnDemandSearch.ONLY_DISPLAY_PRICE,
+    price_on_demand: PriceOnDemandSearch.PRICE_ON_DEMAND,
+    contact_for_art: PriceOnDemandSearch.CONTACT_FOR_ART,
+  };
+
+  // ✅ If status belongs to fieldMap -> boolean flag match
+  if (status in fieldMap) {
+     console.log("✅ Field match:", status);
     queryBuilder.andWhere(`${fieldMap[status]} = true`);
-  } else if (priceMap[status] !== undefined) {
+  }
+
+  // ✅ If status belongs to priceMap -> numeric enum match
+  else if (status in priceMap) {
+     console.log("✅ Price match:", status);
     queryBuilder.andWhere(`product.price_on_demand = :p`, {
       p: priceMap[status],
     });
   }
-    }
-
+}
     if (is_active !== undefined) {
       queryBuilder.andWhere('product.is_active = :is_active', { is_active });
     }
