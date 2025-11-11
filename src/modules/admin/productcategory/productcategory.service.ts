@@ -55,7 +55,7 @@ export class ProductcategoryService {
       }
 
     const surfaces = await this.procateRepository.find({
-      order: { id: 'DESC' },
+      order: { id: 'ASC' },
       where: {
        status: true, // only active surfaces
      }

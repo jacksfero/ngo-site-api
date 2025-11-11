@@ -417,7 +417,7 @@ currency?: string,
     .where('product.slug = :productSlug', { productSlug }) // Better parameter name
     .andWhere('inventory.status = :status', { status: true })
     .andWhere('product.is_active IN (:...statuses)', { 
-      statuses: [ProductStatus.ACTIVE, ProductStatus.SOLD_OUT] 
+      statuses: [ProductStatus.ACTIVE, ProductStatus.SOLD_OUT, ProductStatus.SOLD_BY_ARTIST] 
     })
     // ✅ CRITICAL: Add inventory quantity check for e-commerce
     //.andWhere('inventory.quantity > :minQuantity', { minQuantity: 0 })
