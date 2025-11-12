@@ -31,17 +31,17 @@ export class CreateProductDto {
   slug: string;
 
   // ✅ Optional owner & artist IDs (for Admin usage)
-  @IsOptional()
+ // @IsOptional()
   @IsInt()
-  owner_id?: number;
+  owner_id: number;
 
-  @IsOptional()
+ // @IsOptional()
   @IsInt()
-  artist_id?: number;
+  artist_id: number;
 
-  @IsOptional()
+ // @IsOptional()
   @IsInt()
-  artist_price?: number;
+  artist_price: number;
 
   @IsOptional()
   @IsInt()
@@ -51,26 +51,26 @@ export class CreateProductDto {
   @IsNotEmpty()
   category_id: number;
 
-  @IsOptional()
+  //@IsOptional()
   @IsInt()
-  medium_id?: number;
+  medium_id: number;
 
   @IsOptional()
   @IsInt()
   surface_id?: number;
 
   
-  @IsOptional()
+//  @IsOptional()
   @IsInt()
-  orientation_id?: number;
+  orientation_id: number;
 
- @IsOptional()
+//@IsOptional()
 @IsNumber({ allowNaN: false, maxDecimalPlaces: 2 })
-width?: number;
+width: number;
 
- @IsOptional()
+ //@IsOptional()
 @IsNumber({ allowNaN: false, maxDecimalPlaces: 2 })
-  height?: number;
+  height: number;
 
  @IsOptional()
 @IsNumber({ allowNaN: false, maxDecimalPlaces: 2 })
@@ -80,17 +80,17 @@ width?: number;
 @IsNumber({ allowNaN: false, maxDecimalPlaces: 2 })
   weight?: number;
 
-  @IsOptional()
+ // @IsOptional()
   @IsInt()
-  commissionTypeId?: number;
+  commissionTypeId: number;
  
-  @IsOptional()
+ // @IsOptional()
   @IsInt()
-  packingModeId?: number;
+  packingModeId: number;
  
-  @IsOptional()
+ // @IsOptional()
   @IsInt()
-  shippingTimeId?: number;
+  shippingTimeId: number;
   
   @IsOptional()
   @IsInt()
