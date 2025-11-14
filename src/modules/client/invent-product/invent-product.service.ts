@@ -550,7 +550,10 @@ if (cached) {
   // .leftJoinAndSelect('product.styles', 'style')
   .leftJoinAndSelect('inventory.shippingWeight', 'shipping')
   .where('inventory.status = :status', { status:true })
-  .andWhere('product.is_active = :statuses', { statuses:  ProductStatus.SOLD_OUT })
+  //.andWhere('product.is_active = :statuses', { statuses:  ProductStatus.SOLD_OUT })
+  .andWhere('product.is_active IN (:...statuses)', { 
+      statuses: [  ProductStatus.SOLD_OUT, ProductStatus.SOLD_BY_ARTIST] 
+    })
 
     // ✅ OPTIONAL: Only join many-to-many relations if they're needed for filtering
 if (subjectId) {
