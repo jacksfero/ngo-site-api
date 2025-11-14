@@ -73,6 +73,12 @@ export class OrderResponseDto {
 @Expose()
 status: OrderStatus;
 
+@IsEnum(PaymentStatus)
+@Expose()
+paymentStatus: PaymentStatus;
+
+
+
   @Expose()
   totalAmount: number;
 
