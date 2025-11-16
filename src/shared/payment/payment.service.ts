@@ -182,6 +182,7 @@ const items = order.items.map((item) => ({
    // this.mailService.sendPaymentSuccessMail(payment.order.user.email, payment.order);
     } else if (event === 'payment.failed') {
       payment.status = PaymentStatus.FAILED;
+      console.log('Order Failed send email to user----------')
       // Notify user (payment failed)
    /** Start Mail Service */
             const payload: OrderPaymentFailedPayload = {  
