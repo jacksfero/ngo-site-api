@@ -34,7 +34,7 @@ export class OrderListener {
   
       try {
         await this.mailService.sendTemplateEmail({
-          to: payload.to,
+          to,
         //  cc,
         //  bcc,
           subject ,
