@@ -31,6 +31,8 @@ import { Productcategory } from 'src/shared/entities/productcategory.entity';
 import { Subject } from 'src/shared/entities/subject.entity';
 import { Style } from 'src/shared/entities/style.entity';
 import { Cart } from 'src/shared/entities/cart.entity';
+import { AuthUserAddressService } from './auth-user-address.service';
+import { AuthUserProductService } from './auth-user-product.service';
  
 @Module({
   imports: [TypeOrmModule.forFeature([User,Role,OtpVerification,PasswordResetToken,
@@ -54,7 +56,7 @@ import { Cart } from 'src/shared/entities/cart.entity';
   ],
   controllers: [AuthController],
   providers: [
-    AuthService, LocalStrategy,
+    AuthService,AuthUserAddressService,AuthUserProductService, LocalStrategy,
    // MailService,
     JwtStrategy,
     JwtAuthGuard,      // 👈 Add
@@ -65,6 +67,7 @@ import { Cart } from 'src/shared/entities/cart.entity';
     JwtAuthGuard,      // 👈 Export
     RolesGuard,        // 👈 Export
     PermissionsGuard,  // 👈 Export
+    AuthService
   ],
 })
 export class AuthModule {}

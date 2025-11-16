@@ -22,9 +22,10 @@ export enum OrderStatus {
   SHIPPED = 'shipped',
   OUT_FOR_DELIVERY = 'out_for_delivery',
   DELIVERED = 'delivered',
-  CANCELLED = 'cancelled', PARTIALLY_CANCELLED = 'partially_cancelled',
+  CANCELLED = 'cancelled', 
+  PARTIALLY_CANCELLED = 'partially_cancelled',
   REFUNDED = 'refunded',
-   FAILED = 'failed',
+  FAILED = 'failed',
 }
 
 @Entity('orders')

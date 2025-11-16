@@ -58,10 +58,17 @@ import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
 import { WishlistInventProdDto } from './dto/wishlist-invent-prod-list.dto';
 import { User } from 'src/shared/entities/user.entity';
 import { RequirePermissions } from './decorators/permissions.decorator';
+import { AuthUserAddressService } from './auth-user-address.service';
+import { AuthUserProductService } from './auth-user-product.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService,
+    private authUserAddressService: AuthUserAddressService,
+
+    private authUserProductService: AuthUserProductService
+
+  ) { }
 
   /**
      * Step 1: Start Registration - Send OTP
@@ -195,7 +202,7 @@ async logout(@Res() res: Response) {
   async sendOtpContact(@Body('identifier') identifier: string, 
   @Req() req: ExpressRequest,  
 ) {
-  console.log('----send otp to contact------')
+//  console.log('----send otp to contact------')
   //let guestId = req.cookies?.['guestCartId'];
     // Extract IP if you want to track OTP abuse attempts
     const ipAddress = req.ip || (req.headers['x-forwarded-for'] as string) || undefined;
@@ -272,19 +279,20 @@ async logout(@Res() res: Response) {
   @UseGuards(AuthGuard('jwt'))
   @Post('about')
   createUserAbout(@Body() dto: CreateUsersAboutDto, @Req() req) {
-    return this.authService.createUserAbout(dto, req.user);
+ 
+    return this.authUserAddressService.createUserAbout(dto, req.user);
   }
   @UseGuards(JwtAuthGuard)
   @Get('about')
   findOneUserAbout(@Req() req) {
-    return this.authService.findOneAboutByUserId(req.user);
+    return this.authUserAddressService.findOneAboutByUserId(req.user);
   }
   @UseGuards(JwtAuthGuard)
   @Patch('about')
   updateAbout(@Body() dto: UpdateUsersAboutDto, @Req() req) {
     // console.log('update JWT User:', req.user);  // <--- check if user is set
     //console.log('update Body:', dto);
-    return this.authService.updateAbout(dto, req.user);
+    return this.authUserAddressService.updateAbout(dto, req.user);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -309,13 +317,13 @@ async logout(@Res() res: Response) {
   createkycDetail(@Body() dto: CreateKycDetailDto, @Req() req) {
   //  console.log('JWT User:', req.user);  // <--- check if user is set
    // console.log('Body:', dto);
-    return this.authService.createkycDetail(dto, req.user);
+    return this.authUserAddressService.createkycDetail(dto, req.user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('user-kyc')
   findAllKyc(@Req() req) {
-    return this.authService.findAllKyc(req.user.sub.toString());
+    return this.authUserAddressService.findAllKyc(req.user.sub.toString());
   }
 
   @UseGuards(JwtAuthGuard)
@@ -323,7 +331,7 @@ async logout(@Res() res: Response) {
   updatekyc(@Body() dto: UpdateKycDetailDto, @Req() req) {
     // console.log('update JWT User:', req.user);  // <--- check if user is set
     // console.log('update Body:', dto);
-    return this.authService.updatekyc(dto, req.user);
+    return this.authUserAddressService.updatekyc(dto, req.user);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -331,13 +339,13 @@ async logout(@Res() res: Response) {
   createBankDetail(@Body() dto: CreateBankDetailDto, @Req() req) {
    // console.log('JWT User:', req.user);  // <--- check if user is set
    // console.log('Body:', dto);
-    return this.authService.createBankDetail(dto, req.user);
+    return this.authUserAddressService.createBankDetail(dto, req.user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('user-bank')
   findAllBank(@Req() req) {
-    return this.authService.findAllBank(req.user.sub.toString());
+    return this.authUserAddressService.findAllBank(req.user.sub.toString());
   }
 
   @UseGuards(JwtAuthGuard)
@@ -345,7 +353,7 @@ async logout(@Res() res: Response) {
   updateBank(@Body() dto: UpdateBankDetailDto, @Req() req) {
     // console.log('update JWT User:', req.user);  // <--- check if user is set
     // console.log('update Body:', dto);
-    return this.authService.updateBank(dto, req.user);
+    return this.authUserAddressService.updateBank(dto, req.user);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -353,7 +361,7 @@ async logout(@Res() res: Response) {
   createAddress(@Body() dto: CreateUserAddressDto, @Req() req) {
     // console.log('JWT User:', req.user);  // <--- check if user is set
     // console.log('Body:', dto);
-    return this.authService.createAddress(dto, req.user);
+    return this.authUserAddressService.createAddress(dto, req.user);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -366,7 +374,7 @@ async logout(@Res() res: Response) {
     //  console.log('AddressType:', addressType);
     //  console.log('JWT User:', req.user);
  
-    return this.authService.findAllForUserAddress(addressType, req.user);
+    return this.authUserAddressService.findAllForUserAddress(addressType, req.user);
   }
 
    @UseGuards(JwtAuthGuard)
@@ -374,7 +382,7 @@ async logout(@Res() res: Response) {
   findOneAddress(@Param('id') id: number,  @Req() req) {
     // console.log('update JWT User:', req.user);  // <--- check if user is set
     // console.log('update Body:', dto);
-    return this.authService.findOneAddress(id,  req.user);
+    return this.authUserAddressService.findOneAddress(id,  req.user);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -382,13 +390,13 @@ async logout(@Res() res: Response) {
   updateAddress(@Param('id') id: number, @Body() dto: UpdateUserAddressDto, @Req() req) {
     // console.log('update JWT User:', req.user);  // <--- check if user is set
     // console.log('update Body:', dto);
-    return this.authService.updateAddress(id, dto, req.user);
+    return this.authUserAddressService.updateAddress(id, dto, req.user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete('user-address/:id')
   remove(@Param('id') id: number, @Req() req) {
-    return this.authService.removeAddress(id, req.user);
+    return this.authUserAddressService.removeAddress(id, req.user);
   }
   /*************End    User address Section */
 
@@ -404,7 +412,7 @@ async logout(@Res() res: Response) {
     @Req() req,
   ) {
     // const imagePath = file?.filename;
-    return this.authService.createProduct(createProductDto, req.user, file);
+    return this.authUserProductService.createProduct(createProductDto, req.user, file);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -415,14 +423,14 @@ async logout(@Res() res: Response) {
     @Query() paginationDto: ProductPaginationDto,
     @Req() req,
   ): Promise<PaginationResponseDto<ProductDto>> {
-    return this.authService.findAllProducts(paginationDto, req.user);
+    return this.authUserProductService.findAllProducts(paginationDto, req.user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('products/:id')
   @RequirePermissions('read_artwork')
   findOneProduct(@Param('id') id: string) {
-    return this.authService.findOneProduct(+id);
+    return this.authUserProductService.findOneProduct(+id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -437,7 +445,7 @@ async logout(@Res() res: Response) {
 
   ) {
     const imagePath = file?.filename;
-    return this.authService.updateProduct(id, dto, req.user, file ?? null);
+    return this.authUserProductService.updateProduct(id, dto, req.user, file ?? null);
   }
 
   @Post('products/:product_id/upload-image')
@@ -450,7 +458,7 @@ async logout(@Res() res: Response) {
     if (!file) {
       throw new BadRequestException('Image file is required');
     }
-    return this.authService.addImageProduct(productId, file);
+    return this.authUserProductService.addImageProduct(productId, file);
   }
 
   @Patch('products/image/:image_id/alt-text')
@@ -462,13 +470,13 @@ async logout(@Res() res: Response) {
     if (!altText) {
       throw new BadRequestException('alt_text is required');
     }
-    return this.authService.updateImageAltText(imageId, altText);
+    return this.authUserProductService.updateImageAltText(imageId, altText);
   }
 
   @Delete('products/delete-image/:imageId')
   @RequirePermissions('delete_artwork')
   async deleteImage(@Param('imageId') imageId: number) {
-    return this.authService.deleteProductImage(imageId);
+    return this.authUserProductService.deleteProductImage(imageId);
   }
 
  

@@ -1,4 +1,3 @@
-
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -15,15 +14,18 @@ import { PaypalService } from './gateways/paypal.service';
 import { PaymentCallbackResult } from './dto/payment-callback-result';
 import { Order, OrderStatus } from '../entities/order.entity';
 import { ConfigService } from '@nestjs/config';
-
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { OrderPaymentFailedPayload } from '../events/interfaces/event-payload.interface';
+import { AuthService } from 'src/modules/auth/auth.service';
 
 @Injectable()
 export class PaymentService {
  private secret: string;
  
  constructor(
+  private readonly authService: AuthService,
+    private readonly eventEmitter: EventEmitter2,
   
-
   @InjectRepository(Payment)
   private readonly paymentRepo: Repository<Payment>,
 
@@ -156,14 +158,47 @@ async handleWebhook(body: any, signature: string) {
     where: { txnId: paymentEntity.order_id },
     relations: ['order'],
   });
+if (!payment) return { success: false };
 
+const userdetails = await this.authService.getUserDetailsById(payment.userId);
+const order = payment.order;
+const items = order.items.map((item) => ({
+  productName: item.productName,
+  // quantity: item.quantity,
+  // price: String(item.price),
+  // total: String(item.price * item.quantity),
+  // image: item.imageUrl, // if exists
+}));
   if (payment) {
     if (event === 'payment.captured') {
       payment.status = PaymentStatus.SUCCESS;
       payment.gatewayResponse = paymentEntity;
       payment.gatewayPaymentId = paymentEntity.id;
+      // Notify user (payment success)
+
+       
+
+
+   // this.mailService.sendPaymentSuccessMail(payment.order.user.email, payment.order);
     } else if (event === 'payment.failed') {
       payment.status = PaymentStatus.FAILED;
+      // Notify user (payment failed)
+   /** Start Mail Service */
+            const payload: OrderPaymentFailedPayload = {  
+        context: {   
+        },   
+        orderId:  String (payment.orderId),
+         totalAmount: String(payment.amount),  
+         orderDate:String(payment.createdAt),
+         paymentGatway:payment.paymentGateway,
+         paymentStatus:'Failed',orderStatus:'Cancelled',
+         name: userdetails.username,
+         to: userdetails.email, 
+          items,
+       // testingNote: 'Testing product update flow',
+      };
+      this.eventEmitter.emit('order.payment.failed', payload);     
+      /** End Mail Service */
     }
     await this.paymentRepo.save(payment);
 
@@ -216,7 +251,7 @@ if (sign !== razorpay_signature) {
 
     if (!payment) throw new Error('Payment record not found');
 
-  if (payment) {
+ /* if (payment) {
     payment.status = PaymentStatus.SUCCESS;
     payment.gatewayPaymentId = razorpay_payment_id;
      payment.gatewayResponse = body;
@@ -228,7 +263,7 @@ if (sign !== razorpay_signature) {
       payment.order.status = OrderStatus.CONFIRMED;
       await this.orderRepo.save(payment.order);
     }
-  }
+  }*/
 return { success: true, txnId: razorpay_payment_id };
  // return { success: true, message: 'Payment verified (callback)' };
 }

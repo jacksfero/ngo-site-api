@@ -5,35 +5,35 @@
  */
 export interface BaseMailPayload {
   to: string | string[];
- // cc?: string | string[];
-//  bcc?: string | string[];
+  // cc?: string | string[];
+  //  bcc?: string | string[];
   subject: string;
- // template: string;
+  // template: string;
   context: Record<string, any>; // holds dynamic variables for templates
 }
 
 export interface BaseMailContactPayload {
   //to: string | string[];
- // cc?: string | string[];
-//  bcc?: string | string[];
- // subject: string;
- // template: string;
+  // cc?: string | string[];
+  //  bcc?: string | string[];
+  // subject: string;
+  // template: string;
   context: Record<string, any>; // holds dynamic variables for templates
 }
- 
+
 /**
  * Product created event payload (extends base payload).
  */
 export interface ContactCreatedPayload extends BaseMailContactPayload {
   to: String;
-  type:string; 
-  name:string;
+  type: string;
+  name: string;
   mobile?: string;
   message?: string;
   productName?: string;
   productId?: number;
-  
- 
+
+
 }
 
 /**
@@ -45,30 +45,45 @@ export interface UserCreatedPayload extends BaseMailPayload {
   email: string;
 }
 export interface ResetPassCreatedPayload extends BaseMailContactPayload {
-  
+
   name: string;
   to: string;
-  
+
 }
 
 export interface OtpCreatedPayload extends BaseMailContactPayload {
   otp: string;
   name: string;
   to: string;
-   type?: string;
+  type?: string;
 }
 
 /**
  * Product created event payload (extends base payload).
  */
-export interface ProductCreatedPayload extends BaseMailPayload {
-  productId: String;
+export interface OrderPaymentFailedPayload extends BaseMailContactPayload {
+  orderId: string;
+  paymentGatway: string;
+   paymentStatus: string;
+   orderStatus: string;
+  totalAmount: string;
+  orderDate: string;
+  name: String;
+  to: string;
+  testingNote?: string; // extra variable for debugging/testing
+   items: Array<{
+    productName: string;
+     
+  }>;
+}
+
+/**
+ * Product created event payload (extends base payload).
+ */
+export interface ProductCreatedPayload extends BaseMailContactPayload {
+  productId: string;
   productName: string;
- // artistName: string;
- /// category: string;
-//  imageUrl: string;
- // price: number;
- // stock: number;
- // createdAt: Date;
+  name: String;
+  to: string;
   testingNote?: string; // extra variable for debugging/testing
 }

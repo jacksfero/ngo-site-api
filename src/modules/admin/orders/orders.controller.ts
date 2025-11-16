@@ -14,7 +14,7 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Get()
-  @RequirePermissions('read_order')
+   @RequirePermissions('read_order')
   async findAll(
     @Query(new PaginationClinetPipe(ORDER_LIMIT, ORDER_MAX_LIMIT, ORDER_PAGE))
     @Query() paginationDto: OrderPaginationDto,

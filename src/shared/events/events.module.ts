@@ -7,6 +7,7 @@ import { ProductListener } from './product/product.listener';
 import { OtpListener } from './otp/otp.listener';
 import { ContactListener } from './contact/contact.listener';
 import { ResetPasswordListener } from './user/reset-password.listener';
+import { OrderListener } from './order/order.listener';
 
 @Global()
 @Module({
@@ -22,7 +23,9 @@ import { ResetPasswordListener } from './user/reset-password.listener';
   ],
   providers: [
     MailListener,
-    UserListener,ProductListener,OtpListener,ContactListener,ResetPasswordListener
+    UserListener,ProductListener,OtpListener,ContactListener,ResetPasswordListener,
+    OrderListener,
+
     // Future listeners (uncomment as needed)
     // OtpListener,
     // UserListener,
