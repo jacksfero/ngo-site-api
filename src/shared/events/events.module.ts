@@ -25,7 +25,6 @@ import { OrderListener } from './order/order.listener';
     MailListener,
     UserListener,ProductListener,OtpListener,ContactListener,ResetPasswordListener,
     OrderListener,
-
     // Future listeners (uncomment as needed)
     // OtpListener,
     // UserListener,
