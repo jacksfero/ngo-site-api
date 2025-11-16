@@ -26,7 +26,7 @@ export class OrderListener {
 
       this.logger.log(`📦   order Failed event received for: ${payload.totalAmount}`);
       const template = 'Failed_Payment_Mailer_with_Order'; // ✅ Constant template name
-     // const cc = ['info@indigalleria.com'];
+       const cc = ['jayprakash005@gmail.com'];
     //  const bcc = ['indigalleria@gmail.com'];
      // const to = payload.to;
      const to = 'jayprakash005@gmail.com';
@@ -35,7 +35,7 @@ export class OrderListener {
       try {
         await this.mailService.sendTemplateEmail({
           to,
-        //  cc,
+           cc,
         //  bcc,
           subject ,
           template,
