@@ -14,7 +14,7 @@ export class OrderUpdateAdminListener {
     private readonly configService: ConfigService,
     private readonly mailService: MailService
 
-  ) { }
+  ) {}
 
   @OnEvent('order.update', { async: true })
   async handleUpdateOrderStatus(payload: OrderPaymentFailedPayload) {
@@ -25,8 +25,8 @@ export class OrderUpdateAdminListener {
     }
 
     this.logger.log(`📦   order Failed event received for: ${payload.totalAmount}`);
-    let template = 'Order_Mailer_Shipped';
-    let subject = `Update on Your Order  ${payload.orderId}`;
+    let template = 'Order_Status_Change_Mailer';
+    let subject = `Update on Your Order  #${payload.orderId}`;
     const cc = ['indigalleria@gmail.com'];
     //  const bcc = ['indigalleria@gmail.com'];
     // const to = payload.to;
