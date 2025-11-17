@@ -68,6 +68,7 @@ export interface OrderPaymentFailedPayload extends BaseMailContactPayload {
    orderStatus: string;
   totalAmount: string;
   orderDate: string;
+   currency: string;
   name: String;
   to: string;
   testingNote?: string; // extra variable for debugging/testing

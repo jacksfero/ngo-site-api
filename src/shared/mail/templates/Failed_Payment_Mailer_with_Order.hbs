@@ -26,7 +26,7 @@
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 12px;">
             <tr>
                 <td style="padding: 3px 0;">
-                    <p style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: 400;">
+                    <p style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: bold;">
                         There may be a few possible reasons for this:
 
                     </p>
@@ -91,18 +91,18 @@
             <tr>
                 <td style="padding: 3px 0;">
 
-                    {{#each items}}
+                   
                     <p style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: 400;">
-                        Artwork Title: <strong>{{productName}}</strong>
+                        Artwork Title: <strong> {{#each items}}{{productName}}, {{/each}}</strong>
                     </p>
-                    {{/each}}
+                   
                 </td>
             </tr>
 
             <tr>
                 <td style="padding: 3px 0;">
                     <p style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: 400;">
-                        Total Amount: <strong>{{totalAmount}}</strong>
+                        Total Amount: <strong>{{currency}}{{totalAmount}}</strong>
                     </p>
                 </td>
             </tr>

@@ -181,12 +181,28 @@ const items = order.items.map((item) => ({
     }
      // Notify user (payment failed)
    /** Start Mail Service */
+   const date = new Date(payment.createdAt);
+
+const formattedDateTime =
+  date.toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).replace(/,/g, '') +
+  ' at ' +
+  date.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
             const payload: OrderPaymentFailedPayload = {  
         context: {   
         },   
         orderId:  String (payment.orderId),
+        currency:String (payment.currency),
          totalAmount: String(payment.amount),  
-         orderDate:String(payment.createdAt),
+         orderDate:String(formattedDateTime),
          paymentGatway:payment.paymentGateway,
          paymentStatus:payment.status,orderStatus:'Pending',
          name: userdetails.username,
