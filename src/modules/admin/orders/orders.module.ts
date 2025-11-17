@@ -8,9 +8,12 @@ import { Payment } from 'src/shared/entities/payment.entity';
 import { User } from 'src/shared/entities/user.entity';
 import { UsersAddress } from 'src/shared/entities/users-address.entity';
 import { Product } from 'src/shared/entities/product.entity';
+import { AuthModule } from 'src/modules/auth/auth.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Order,OrderItem,Payment,User,UsersAddress,Product])],
+  imports:[TypeOrmModule.forFeature([Order,OrderItem,Payment,User,UsersAddress,Product]),
+ 
+],
   controllers: [OrdersController],
   providers: [OrdersService],
 })

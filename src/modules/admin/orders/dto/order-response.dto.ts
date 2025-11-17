@@ -76,9 +76,7 @@ status: OrderStatus;
 @IsEnum(PaymentStatus)
 @Expose()
 paymentStatus: PaymentStatus;
-
-
-
+ 
   @Expose()
   totalAmount: number;
 

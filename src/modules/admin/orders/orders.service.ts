@@ -7,11 +7,16 @@ import { OrderResponseDto } from './dto/order-response.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { OrderPaginationDto } from './dto/order-pagination.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { OrderPaymentFailedPayload } from 'src/shared/events/interfaces/event-payload.interface';
+ 
  
 @Injectable()
 export class OrdersService {
 
   constructor(
+    
+    private readonly eventEmitter: EventEmitter2,
     @InjectRepository(Order)
     private readonly orderRepo: Repository<Order>,
   ) {}
@@ -67,11 +72,51 @@ export class OrdersService {
   }
 
   async updateStatus(id: number, dto: UpdateOrderStatusDto): Promise<OrderResponseDto> {
-    const order = await this.orderRepo.findOne({ where: { id } });
+    const order = await this.orderRepo.findOne({ where: { id },
+     relations: [
+        'user'
+  ], });
     if (!order) throw new NotFoundException(`Order ${id} not found`);
 
     order.status = dto.status;
     await this.orderRepo.save(order);
+     const date = new Date(order.createdAt);
+
+const formattedDateTime =
+  date.toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).replace(/,/g, '') +
+  ' at ' +
+  date.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+const items = order.items.map((item) => ({
+  productName: item.productName,
+  // quantity: item.quantity,
+  // price: String(item.price),
+  // total: String(item.price * item.quantity),
+  // image: item.imageUrl, // if exists
+}));
+      const payload: OrderPaymentFailedPayload = {  
+            context: {   
+            },   
+            orderId:  String (order.id),
+            currency:String (order.currency),
+             totalAmount: String(order.totalAmount),  
+             orderDate:String(formattedDateTime),
+             paymentGatway:order.payments[0].paymentGateway	,
+             paymentStatus:order.paymentStatus	,orderStatus:order.status	,
+             name: order.user.username,
+             to: order.user.email, 
+              items,
+           // testingNote: 'Testing product update flow',
+          };
+          this.eventEmitter.emit('order.update', payload);  
 
     return plainToInstance(OrderResponseDto, order, {
       excludeExtraneousValues: true,

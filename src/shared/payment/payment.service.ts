@@ -169,14 +169,17 @@ const items = order.items.map((item) => ({
   // total: String(item.price * item.quantity),
   // image: item.imageUrl, // if exists
 }));
+let orderstatus_mail = 'Cancelled';
   if (payment) {
     if (event === 'payment.captured') {
       payment.status = PaymentStatus.SUCCESS;
       payment.gatewayResponse = paymentEntity;
       payment.gatewayPaymentId = paymentEntity.id;
+      orderstatus_mail = 'Under Process';
        
     } else if (event === 'payment.failed') {
-      payment.status = PaymentStatus.FAILED;  
+      payment.status = PaymentStatus.FAILED;
+      orderstatus_mail = 'Cancelled';  
      
     }
      // Notify user (payment failed)
@@ -204,7 +207,7 @@ const formattedDateTime =
          totalAmount: String(payment.amount),  
          orderDate:String(formattedDateTime),
          paymentGatway:payment.paymentGateway,
-         paymentStatus:payment.status,orderStatus:'Pending',
+         paymentStatus:payment.status,orderStatus:orderstatus_mail,
          name: userdetails.username,
          to: userdetails.email, 
           items,

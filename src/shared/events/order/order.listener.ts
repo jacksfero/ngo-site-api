@@ -20,7 +20,7 @@ export class OrderListener {
   async handleProductCreated(payload: OrderPaymentFailedPayload) {
 
 if (this.configService.get('MAIL_ENABLED') !== 'true') {
-   this.logger.warn(`🚫 Mail disabled. Reset password email not sent to ${payload.to}`);
+   this.logger.warn(`🚫 Mail disabled. Order Success and Failed email not sent to ${payload.to}`);
    return;
   }
 
