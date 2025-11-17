@@ -27,7 +27,7 @@ if (this.configService.get('MAIL_ENABLED') !== 'true') {
       this.logger.log(`📦   order Failed event received for: ${payload.totalAmount}`);
       let template = 'Failed_Payment_Mailer_with_Order';  
          
-       const cc = ['jayprakash005@gmail.com'];
+       const cc = ['indigalleria@gmail.com'];
     //  const bcc = ['indigalleria@gmail.com'];
      // const to = payload.to;
      const to = 'jayprakash005@gmail.com';
@@ -41,7 +41,7 @@ if (this.configService.get('MAIL_ENABLED') !== 'true') {
       try {
         await this.mailService.sendTemplateEmail({
           to,
-        //   cc,
+           cc,
         //  bcc,
           subject ,
           template,
