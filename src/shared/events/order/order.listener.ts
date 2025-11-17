@@ -19,23 +19,29 @@ export class OrderListener {
   @OnEvent('order.payment.failed', { async: true })
   async handleProductCreated(payload: OrderPaymentFailedPayload) {
 
-// if (this.configService.get('MAIL_ENABLED') !== 'False') {
-//   //  this.logger.warn(`🚫 Mail disabled. Reset password email not sent to ${payload.to}`);
-//   //  return;
-//   }
+if (this.configService.get('MAIL_ENABLED') !== 'true') {
+   this.logger.warn(`🚫 Mail disabled. Reset password email not sent to ${payload.to}`);
+   return;
+  }
 
       this.logger.log(`📦   order Failed event received for: ${payload.totalAmount}`);
-      const template = 'Failed_Payment_Mailer_with_Order'; // ✅ Constant template name
+      let template = 'Failed_Payment_Mailer_with_Order';  
+         
        const cc = ['jayprakash005@gmail.com'];
     //  const bcc = ['indigalleria@gmail.com'];
      // const to = payload.to;
      const to = 'jayprakash005@gmail.com';
-      const subject = `Payment Failed for Your Order ${payload.orderId}`;
+      let subject = `Payment Failed for Your Order ${payload.orderId}`;
+   if (payload.paymentStatus === 'SUCCESS') {
+      template = 'Successful_Payment_Mailer_with_Order';
+       subject = `Payment Successful for Your Order ${payload.orderId}`;
+   }
+
   
       try {
         await this.mailService.sendTemplateEmail({
           to,
-           cc,
+        //   cc,
         //  bcc,
           subject ,
           template,

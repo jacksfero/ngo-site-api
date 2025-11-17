@@ -174,16 +174,12 @@ const items = order.items.map((item) => ({
       payment.status = PaymentStatus.SUCCESS;
       payment.gatewayResponse = paymentEntity;
       payment.gatewayPaymentId = paymentEntity.id;
-      // Notify user (payment success)
-
        
-
-
-   // this.mailService.sendPaymentSuccessMail(payment.order.user.email, payment.order);
     } else if (event === 'payment.failed') {
-      payment.status = PaymentStatus.FAILED;
-      console.log('Order Failed send email to user----------')
-      // Notify user (payment failed)
+      payment.status = PaymentStatus.FAILED;  
+     
+    }
+     // Notify user (payment failed)
    /** Start Mail Service */
             const payload: OrderPaymentFailedPayload = {  
         context: {   
@@ -192,7 +188,7 @@ const items = order.items.map((item) => ({
          totalAmount: String(payment.amount),  
          orderDate:String(payment.createdAt),
          paymentGatway:payment.paymentGateway,
-         paymentStatus:'Failed',orderStatus:'Cancelled',
+         paymentStatus:payment.status,orderStatus:'Pending',
          name: userdetails.username,
          to: userdetails.email, 
           items,
@@ -200,7 +196,6 @@ const items = order.items.map((item) => ({
       };
       this.eventEmitter.emit('order.payment.failed', payload);     
       /** End Mail Service */
-    }
     await this.paymentRepo.save(payment);
 
     if (payment.order) {
