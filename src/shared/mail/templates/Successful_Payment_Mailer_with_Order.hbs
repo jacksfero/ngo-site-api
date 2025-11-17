@@ -29,77 +29,69 @@
                             </p>
 
                             <!-- Order Details -->
-                            <p
-                                style="margin: 0 0 18px 0; font-size: 11pt; color: #212529; line-height: 1.6; font-weight: 400;">
-                                <strong>Order Details:</strong></p>
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
-                                style="margin-bottom: 28px;">
-                                <tr>
-                                    <td style="padding: 10px 0;">
-                                        <p
-                                            style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: 400;">
-                                            Order ID: <strong>{{orderId}}</strong> 
-                                        </p>
-                                    </td>
-                                </tr>
-                               
-                                <tr>
-                                   <td style="padding: 10px 0;">
-                                       
-                                       {{#each items}}
-   <p
-                                            style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: 400;">
-                                           Artwork Title:  <strong>{{productName}}</strong>
-                                        </p>
-{{/each}}    
-                                    </td>
-                                </tr>
-                                
-                                <tr>
-                                    <td style="padding: 10px 0;">
-                                        <p
-                                            style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: 400;">
-                                             Total Amount: <strong>{{totalAmount}}</strong> 
-                                        </p>
-                                    </td>
-                                </tr>
-                                
-                                <tr>
-                                    <td style="padding: 10px 0;">
-                                        <p
-                                            style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: 400;">
-                                             Order Date: <strong>{{orderDate}}</strong> 
-                                        </p>
-                                    </td>
-                                </tr>
-                                 
-                                <tr>
-                                  <td style="padding: 10px 0;">
-                                        <p
-                                            style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: 400;">
-                                            Payment Gateway: <strong>{{paymentGatway}}</strong> 
-                                        </p>
-                                    </td>
-                                </tr>
-                                 
-                                <tr>
-                                    <td style="padding: 10px 0;">
-                                        <p
-                                            style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: 400;">
-                                            Payment Status: <strong>{{paymentStatus}}</strong> 
-                                        </p>
-                                    </td>
-                                </tr>
-                                 
-                                <tr>
-                                    <td style="padding: 10px 0;">
-                                        <p
-                                            style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: 400;">
-                                            Order Status:  <strong>{{orderStatus}}</strong> 
-                                        </p>
-                                    </td>
-                                </tr>
-                            </table>
+                             <p style="margin: 0 0 3px 0; font-size: 11pt; color: #212529; line-height: 1.6; font-weight: 400;">
+            <strong>Order Details:</strong>
+        </p>
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 10px;">
+            <tr>
+                <td style="padding: 3px 0;">
+                    <p style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: 400;">
+                        Order ID: <strong>{{orderId}}</strong>
+                    </p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="padding: 3px 0;">
+
+                   
+                    <p style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: 400;">
+                        Artwork Title: <strong> {{#each items}}{{productName}}, {{/each}}</strong>
+                    </p>
+                   
+                </td>
+            </tr>
+
+            <tr>
+                <td style="padding: 3px 0;">
+                    <p style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: 400;">
+                        Total Amount: <strong>{{currency}}{{totalAmount}}</strong>
+                    </p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="padding: 3px 0;">
+                    <p style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: 400;">
+                        Order Date: <strong>{{orderDate}}</strong>
+                    </p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="padding: 3px 0;">
+                    <p style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: 400;">
+                        Payment Gateway: <strong>{{paymentGatway}}</strong>
+                    </p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="padding: 3px 0;">
+                    <p style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: 400;">
+                        Payment Status: <strong>{{paymentStatus}}</strong>
+                    </p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="padding: 3px 0;">
+                    <p style="margin: 0; font-size: 11pt; color: #212529; line-height: 1.5; font-weight: 400;">
+                        Order Status: <strong>{{orderStatus}}</strong>
+                    </p>
+                </td>
+            </tr>
+        </table>
 
                             <p
                                 style="margin: 0 0 18px 0; font-size: 11pt; color: #212529; line-height: 1.6; font-weight: 400;">
