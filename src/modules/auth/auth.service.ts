@@ -78,6 +78,7 @@ import { MailService } from 'src/shared/mail/mail.service';
 // import { REQUEST } from '@nestjs/core';
   import { Request } from 'express';
 import { ResetPassCreatedPayload } from 'src/shared/events/interfaces/event-payload.interface';
+import { RequestContextService } from 'src/core/request-context.service';
 
 
 
@@ -85,6 +86,7 @@ import { ResetPassCreatedPayload } from 'src/shared/events/interfaces/event-payl
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   constructor(
+    private readonly context: RequestContextService,
      private readonly eventEmitter: EventEmitter2,
     private readonly mailService: MailService,
  
@@ -457,21 +459,21 @@ export class AuthService {
       } as Partial<User>);
       await this.userRepository.save(user);
     }
-
+console.log('guest ID ---Register--1--------',guestCartId)
 //     // 3️⃣ Merge guest cart
-//   let mergedCart: Cart | undefined;
-// if (guestCartId) {
-//   const guestCart = await this.cartRepo.findOne({
-//     where: { guestId: guestCartId },
-//     relations: ['items'], // optional
-//   });
+    let mergedCart: Cart | undefined;
+  if (guestCartId) {
+    const guestCart = await this.cartRepo.findOne({
+      where: { guestId: guestCartId },
+      relations: ['items'], // optional
+    });
 
-//   if (guestCart) {
-//     guestCart.user = user;
-//    // guestCart.guestId = null; // remove guest reference
-//     mergedCart = await this.cartRepo.save(guestCart); // assign to outer variable
-//   }
-// }
+    if (guestCart) {
+      guestCart.user = user;
+     // guestCart.guestId = null; // remove guest reference
+      mergedCart = await this.cartRepo.save(guestCart); // assign to outer variable
+    }
+  }
 
     // 4️⃣ Generate JWT
     const tokenResponse = await this.login(user);
@@ -652,8 +654,10 @@ export class AuthService {
     this.logger?.warn?.('Login failed: user is undefined');
     throw new UnauthorizedException('Invalid login request');
   }
+const request = req ?? this.context.getRequest();  // renamed
+  const guestCartId = request?.cookies?.['guestCartId'];// ✅ Safe access with optional chaining
 
-  const guestCartId = req?.cookies?.['guestCartId']; // ✅ Safe access with optional chaining
+//console.log('guest ID ---Login--1--------',guestCartId)
 
   let mergedCart: Cart | undefined;
   if (guestCartId) {
@@ -661,7 +665,7 @@ export class AuthService {
       where: { guestId: guestCartId },
       relations: ['items', 'items.product'],
     });
-
+//console.log('guest ID -----2--------',guestCartId)
     if (guestCart) {
       guestCart.user = user;
       mergedCart = await this.cartRepo.save(guestCart);

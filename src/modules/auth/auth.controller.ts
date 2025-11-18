@@ -175,14 +175,23 @@ async login(
   }
  
   
- @Public()
+@Public()
 @Post('logout')
-async logout(@Res() res: Response) {
-  res.clearCookie('access_token');
-  res.clearCookie('guest_id');
-  return res.json({ message: 'Logged out successfully' });
-}
+async logout(@Res({ passthrough: true }) res: Response) {
+  // Clear JWT token (if stored as cookie)
+  res.clearCookie('access_token', {
+    httpOnly: true,
+    sameSite: 'lax',
+  });
 
+  // Clear guest cart cookie
+  res.clearCookie('guestCartId', {
+    httpOnly: true,
+    sameSite: 'lax',
+  });
+
+  return { message: 'Logged out successfully' };
+}
    
 
   @Public()
@@ -220,7 +229,7 @@ async logout(@Res() res: Response) {
   ) {
     let guestId = req.cookies?.['guestCartId'];
  
-   // console.log('guestId---------', guestId);
+     console.log('guestId---------', guestId);
     return this.authService.registerCartUserAndLogin(dto, guestId);
   }
 

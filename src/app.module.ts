@@ -14,10 +14,12 @@ import payuConfig from './shared/config/payu.config';
 import paypalConfig from './shared/config/paypal.config';
 import razorpayConfig from './shared/config/razor.config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { CoreModule } from './core/core.module';
 
 
 @Module({
   imports: [
+    CoreModule,   // only once
       ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
