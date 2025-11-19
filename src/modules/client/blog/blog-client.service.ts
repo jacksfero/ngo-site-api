@@ -50,9 +50,9 @@ if (cached) {
        const queryBuilder = this.blogRepo
        .createQueryBuilder('blog')    
        .select(['blog.id','blog.title','blog.views', 'blog.descriptionTag','blog.scheduledPublishDate', 'blog.slug','blog.createdAt','blog.titleImage','blog.blogContent'])
-       .leftJoin('blog.category', 'category', 'category.status = :isActive', { isActive: true })
-       .addSelect([ 'category.name', 'category.slug'])
-       .leftJoin('blog.tags', 'tags')
+     //  .leftJoin('blog.category', 'category', 'category.status = :isActive', { isActive: true })
+      // .addSelect([ 'category.name', 'category.slug'])
+      // .leftJoin('blog.tags', 'tags')
        .leftJoin('blog.author', 'author')
         .addSelect([  'author.username'])
        .where('blog.status = :status', { status: true })
