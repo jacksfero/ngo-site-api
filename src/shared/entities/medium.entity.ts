@@ -1,4 +1,4 @@
-import {Unique, BeforeInsert, BeforeUpdate,Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {Unique,Index, BeforeInsert, BeforeUpdate,Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('medium')
 @Unique(['name'])
@@ -6,9 +6,11 @@ export class Medium {
   @PrimaryGeneratedColumn()
   id: number;
 
+    @Index()
   @Column({ type: 'varchar', length: 255 })
   name: string;
 
+  @Index()
   @Column({ type: 'boolean', default: false })
   status: boolean; // ✅ correct type: boolean
 
@@ -18,9 +20,11 @@ export class Medium {
    @Column({ type: 'varchar', length: 50, nullable: true })
   updatedBy: string;
 
+   @Index()
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
+   @Index()
   @Column({
     type: 'datetime',
     default: () => 'CURRENT_TIMESTAMP',

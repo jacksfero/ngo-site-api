@@ -1,4 +1,4 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { BeforeInsert,Index, BeforeUpdate, Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
 
 @Entity('surface')
@@ -7,9 +7,11 @@ export class Surface {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Index()
   @Column({ type: 'varchar', length: 255 })
   surfaceName: string;
 
+  @Index()
   @Column({ type: 'boolean', default: false })
   status: boolean; // ✅ correct type: boolean
 
@@ -19,9 +21,11 @@ export class Surface {
    @Column({ type: 'varchar', length: 50, nullable: true })
   updatedBy: string;
 
+  @Index()
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
+  @Index()
   @Column({
     type: 'datetime',
     default: () => 'CURRENT_TIMESTAMP',

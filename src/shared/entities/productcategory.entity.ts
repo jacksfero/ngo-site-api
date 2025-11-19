@@ -1,16 +1,18 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column,Index, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('product_category')
 export class Productcategory {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Index()
   @Column({ type: 'varchar', length: 255 })
   name: string;
 
   @Column({ type: 'varchar', length: 255 })
   slug: string;
 
+  @Index()
   @Column({ type: 'boolean', default: false })
   status: boolean; // ✅ correct type: boolean
 
@@ -20,9 +22,11 @@ export class Productcategory {
   @Column({ type: 'varchar', length: 50, nullable: true })
   updatedBy: string;
 
+  @Index()
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
+  @Index()
   @Column({
     type: 'datetime',
     default: () => 'CURRENT_TIMESTAMP',

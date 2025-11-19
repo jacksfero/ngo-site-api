@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, Unique, BeforeInsert, BeforeUpdate, ManyToMany } from 'typeorm';
+import { Entity,Index, PrimaryGeneratedColumn, Column, Unique, BeforeInsert, BeforeUpdate, ManyToMany } from 'typeorm';
 import { Product } from './product.entity';
 
 @Entity()
@@ -7,6 +7,7 @@ export class Style {
   @PrimaryGeneratedColumn()
   id: number;
 
+   @Index()
   @Column({ type: 'varchar', length: 255 })
   title: string;
 
@@ -22,9 +23,11 @@ export class Style {
   @Column({ type: 'varchar', length: 50, nullable: true })
   updatedBy: string;
 
+   @Index()
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
+  @Index()
   @Column({
     type: 'datetime',
     default: () => 'CURRENT_TIMESTAMP',

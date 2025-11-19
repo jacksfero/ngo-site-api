@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, Unique, BeforeInsert, BeforeUpdate, ManyToMany } from 'typeorm';
+import { Entity,Index, PrimaryGeneratedColumn, Column, Unique, BeforeInsert, BeforeUpdate, ManyToMany } from 'typeorm';
 import { Product } from './product.entity';
 
 @Entity('subject')
@@ -7,12 +7,14 @@ export class Subject {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Index()
   @Column({ type: 'varchar', length: 255 })
   subject: string;
 
   @Column({ type: 'text' })
   description: string;
 
+  @Index()
   @Column({ type: 'boolean', default: false })
   status: boolean;
 
@@ -22,9 +24,11 @@ export class Subject {
   @Column({ type: 'varchar', length: 50, nullable: true })
   updatedBy: string;
 
+  @Index()
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
+  @Index()
   @Column({
     type: 'datetime',
     default: () => 'CURRENT_TIMESTAMP',

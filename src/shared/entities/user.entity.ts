@@ -1,6 +1,6 @@
 // src/users/user.entity.ts
 import {
-  Entity,
+  Entity, Index,
   Column,
   PrimaryGeneratedColumn,
   ManyToMany,
@@ -26,10 +26,13 @@ import { UsersAbout } from './users-about.entity';
 
 
 @Entity('user')
+@Index(['email'], { unique: true })
+@Index(['mobile'], { unique: true })
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Index()
   @Column({ type: 'varchar', length: 150, nullable: true })
   username: string;
 
@@ -42,8 +45,8 @@ export class User {
   @Column({ type: 'varchar', length: 150, unique: true, nullable: true })
   mobile: string;
 
-@Column({ type: 'varchar', length: 255, nullable: true, select: false })
-password: string | null;
+  @Column({ type: 'varchar', length: 255, nullable: true, select: false })
+  password: string | null;
 
   @ManyToMany(() => Role, (role) => role.users, { eager: false })
   @JoinTable({
@@ -68,48 +71,52 @@ password: string | null;
   @OneToMany(() => ExhibitionProduct, (map) => map.user)
   displayMappings: ExhibitionProduct[];
 
-  @Column({ type: 'boolean', nullable: true ,  })
+  @Index()
+  @Column({ type: 'boolean', nullable: true, })
   is_verified: boolean;
 
-  @Column({ type: 'boolean', default: false ,  })
+  @Index()
+  @Column({ type: 'boolean', default: false, })
   status: boolean;
 
-  @Column({ type: 'boolean', default: false , select: false})
+  @Column({ type: 'boolean', default: false, select: false })
   featured_artist: boolean;
 
-  @Column({ type: 'boolean', default: false , select: false})
+  @Column({ type: 'boolean', default: false, select: false })
   homePageDisplay: boolean;
 
-  @Column({ type: 'boolean', default: false , select: false})
+  @Column({ type: 'boolean', default: false, select: false })
   profileEdit: boolean;
 
-  @Column({ type: 'varchar', length: 255, nullable: true , select: false})
+  @Column({ type: 'varchar', length: 255, nullable: true, select: false })
   adminRemark: string;
 
   // 🟢 Add relation to Artist test Type
+  @Index()
   @ManyToOne(() => ArtistType, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'artist_type_id' })
   artistType: ArtistType | null;
 
-  @Column({ type: 'boolean', default: true , select: false})
+  @Column({ type: 'boolean', default: true, select: false })
   termscondition: boolean;
 
-   @Column({ type: 'boolean', default: true , select: false})
+  @Column({ type: 'boolean', default: true, select: false })
   isSubscribe: boolean;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
   createdBy: string;
 
+  @Index()
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
+  @Index()
   @Column({
     type: 'datetime',
     default: () => 'CURRENT_TIMESTAMP',
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
-
 
 
   @OneToMany(() => UsersAddress, (address) => address.user, { cascade: true })
