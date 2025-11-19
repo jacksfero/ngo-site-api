@@ -109,7 +109,7 @@ async findAll(
     qb.andWhere('inventory.price <= :maxPrice', { maxPrice });
 
   // ✅ Default sorting
-  qb.orderBy('inventory.updatedAt', 'DESC');
+  qb.orderBy('inventory.id', 'DESC');
 
   // ✅ Execute query
   //const [result, total] = await qb.take(limit).skip(skip).getManyAndCount();

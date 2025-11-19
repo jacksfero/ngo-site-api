@@ -1,5 +1,5 @@
 import { Wishlist } from 'src/shared/entities/wishlist.entity';
-import { Column, Unique,OneToMany, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToOne, ManyToMany, JoinTable } from 'typeorm';
+import { Column,Index, Unique,OneToMany, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToOne, ManyToMany, JoinTable } from 'typeorm';
 import { User } from './user.entity';
 import { ExhibitionProduct } from './exhibition-product.entity';
 import { ProductImage } from './product-image.entity';
@@ -34,6 +34,7 @@ export enum PriceOnDemand {
 
 @Entity()
 @Unique(['slug']) // Enforce unique slug
+@Index('idx_product_title', ['productTitle'])
 export class Product {
   @PrimaryGeneratedColumn()
   id: number;
@@ -73,18 +74,23 @@ export class Product {
 
   
   // ✅ Boolean Flags
+   @Index()
   @Column({ type: 'boolean', default: false })
   original_painting: boolean;
 
+   @Index()
   @Column({ type: 'boolean', default: false })
   new_arrival: boolean;
 
+   @Index()
   @Column({ type: 'boolean', default: false })
   eliteChoice: boolean;
 
+   @Index()
   @Column({ type: 'boolean', default: false })
   affordable_art: boolean;
  
+   @Index()
    @Column({
     type: 'enum',
     enum: PriceOnDemand,
@@ -92,12 +98,15 @@ export class Product {
   })
   price_on_demand: PriceOnDemand;
 
+   @Index()
   @Column({ type: 'boolean', default: false })
   negotiable: boolean;
 
+   @Index()
   @Column({ type: 'boolean', default: false })
   printing_rights: boolean;
 
+   @Index()
   @Column({ type: 'boolean', default: false })
   featured: boolean;
 
@@ -120,6 +129,7 @@ export class Product {
     // status: boolean;
 
    // ✅ Add status field with enum
+   @Index()
    @Column({
     type: 'enum',
     enum: ProductStatus,
@@ -180,22 +190,27 @@ productInventory: Inventory;
  
 
 // ✅ Owner (Relation)
+@Index()
 @ManyToOne(() => User )
 @JoinColumn({ name: 'owner_id' }) // foreign key in DB need to change name owner_id
 owner: User;
 
   // ✅ Category (Relation)
+  
+@Index()
 @ManyToOne(() => Productcategory)
 @JoinColumn({ name: 'category_id' }) // foreign key in DB need to change name owner_id
 category: Productcategory;
 
 // ✅ Artist (Relation)
+@Index()
 @ManyToOne(() => User, (user) => user.products,)
 @JoinColumn({ name: 'artist_id' }) // foreign key in DB need to change name owner_id
 artist: User;
 
 
 // 👇 Medium Mode
+  @Index()
 @ManyToOne(() => Medium,  { nullable: true, onDelete: 'SET NULL'  }) 
 @JoinColumn({ name: 'medium_id' })
 medium: Medium|null;
@@ -204,6 +219,7 @@ medium: Medium|null;
 // mediumId: number;
 
 // 👇 Surface Mode
+  @Index()
 @ManyToOne(() => Surface,   { nullable: true, onDelete: 'SET NULL'  }) 
 @JoinColumn({ name: 'surface_id' })
 surface: Surface|null;
@@ -229,6 +245,7 @@ commissionType: CommissionType;
 commissionTypeId: number;
 
 // 👇 Shipping Time
+
 @ManyToOne(() => ShippingTime, )
 @JoinColumn({ name: 'shipping_time_id' })
 shippingTime: ShippingTime;
@@ -237,6 +254,7 @@ shippingTime: ShippingTime;
 shippingTimeId: number;
  
  // 🟢 Add relation to Size
+ @Index()
  @ManyToOne(() => Size, )
  @JoinColumn({ name: 'size_id' })
  size: Size;
@@ -245,6 +263,7 @@ shippingTimeId: number;
  size_id: number;
 
  // 🟢 Orientation
+  @Index()
  @ManyToOne(() => Orientation,  )
  @JoinColumn({ name: 'orientation_id' })
  orientation: Orientation;
