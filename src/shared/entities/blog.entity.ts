@@ -1,4 +1,4 @@
-import { Column, JoinTable,OneToMany, ManyToMany, ManyToOne, Entity, PrimaryGeneratedColumn, Unique, BeforeInsert, BeforeUpdate } from 'typeorm';
+import { Column, Index, JoinTable,OneToMany, ManyToMany, ManyToOne, Entity, PrimaryGeneratedColumn, Unique, BeforeInsert, BeforeUpdate } from 'typeorm';
  
 import { Category } from './category.entity';
 import { Tag } from './tag.entity';
@@ -12,6 +12,7 @@ export class Blog {
   @PrimaryGeneratedColumn()
   id: number;
 
+   @Index()
   @ManyToOne(() => Category, (category) => category.blogs, { eager: true })
   category: Category;
 
@@ -23,15 +24,18 @@ export class Blog {
   })
   tags: Tag[];
 
+   @Index()
   @ManyToOne(() => User, (user) => user.blogs, { eager: true })
   author: User;
 
+  @Index()
   @Column({ type: 'varchar', length: 200 })
   title: string;
 
   @Column({ type: 'varchar', length: 200, nullable: true, default: null })
   titleImage: string | null;
 
+  @Index()
   @Column({ type: 'varchar', length: 150 })
   slug: string;
 
@@ -60,9 +64,12 @@ export class Blog {
   @Column({ type: 'varchar', length: 150, nullable: true, default: null })
   optionalTitle: string;
  
+
+  @Index()
   @Column({ type: 'boolean', default: false })
   status: boolean;
 
+  @Index()
   @Column({ default: false })
   isPublished: boolean;
 
@@ -76,6 +83,8 @@ export class Blog {
   })
   updatedAt: Date;
 
+
+  @Index()
   @Column({
     type: 'timestamp',
     nullable: true,

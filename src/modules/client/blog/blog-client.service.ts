@@ -4,10 +4,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 import { Blog } from '../../../shared/entities/blog.entity';
 import { plainToInstance } from 'class-transformer';
- 
+
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
-import { BlogListDto,BlogListDetailDto } from './dto/blog-list.dto';
+import { BlogListDto, BlogListDetailDto } from './dto/blog-list.dto';
 import { CategoryWithBlogCountDto } from './dto/category-with-count.dto';
 import { Category } from '../../../shared/entities/category.entity';
 import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
@@ -23,129 +23,154 @@ export class BlogClientService {
     @InjectRepository(Blog)
     private blogRepo: Repository<Blog>,
 
-     @InjectRepository(BlogView)
+    @InjectRepository(BlogView)
     private blogViewRepo: Repository<BlogView>,
 
-       @InjectRepository(Category)
+    @InjectRepository(Category)
     private categoryRepo: Repository<Category>,
 
-  ) {}
+  ) { }
 
- /* async findAllPublished(
-    paginationDto: PaginationDto,
-  ): Promise<PaginationResponseDto<BlogListDto>> {*/
-    async findAllPublished(
-      paginationDto: PaginationBaseDto,
-    ): Promise<PaginationResponseDto<BlogListDto>> {
+  /* async findAllPublished(
+     paginationDto: PaginationDto,
+   ): Promise<PaginationResponseDto<BlogListDto>> {*/
+  async findAllPublished(
+    paginationDto: PaginationBaseDto,
+  ): Promise<PaginationResponseDto<BlogListDto>> {
 
-      const { page , limit, search   } = paginationDto;
-      const skip = (page - 1) * limit;
-  const searchTerm = search?.toLowerCase() || '';
-   const cacheKey = `frontend:blog:${JSON.stringify(paginationDto)}`;
-const cached = await this.cacheService.get(cacheKey);
-if (cached) {
-  return cached as PaginationResponseDto<BlogListDto>;
-}
+    const { page, limit, search } = paginationDto;
+    const skip = (page - 1) * limit;
+    const searchTerm = search?.toLowerCase() || '';
+    // ---------- CACHE ----------
+    const cacheKey = `frontend:blog:${JSON.stringify(paginationDto)}`;
+    const cached = await this.cacheService.get<PaginationResponseDto<BlogListDto>>(cacheKey);
+    if (cached) return cached;
 
-       const queryBuilder = this.blogRepo
-       .createQueryBuilder('blog')    
-       .select(['blog.id','blog.title','blog.views', 'blog.descriptionTag','blog.scheduledPublishDate', 'blog.slug','blog.createdAt','blog.titleImage','blog.blogContent'])
-     //  .leftJoin('blog.category', 'category', 'category.status = :isActive', { isActive: true })
-      // .addSelect([ 'category.name', 'category.slug'])
-      // .leftJoin('blog.tags', 'tags')
-       .leftJoin('blog.author', 'author')
-        .addSelect([  'author.username'])
-       .where('blog.status = :status', { status: true })
-       .orderBy('blog.createdAt', 'DESC')
-       .take(limit)
-       .skip(skip);
+    const queryBuilder = this.blogRepo
+      .createQueryBuilder('blog')
+      .select(['blog.id', 'blog.title', 'blog.views', 'blog.descriptionTag', 'blog.scheduledPublishDate', 'blog.slug', 'blog.createdAt',
+        'blog.titleImage',
+        //'blog.blogContent'
+      ])
 
-       if (searchTerm) {
-        queryBuilder.andWhere(
-          `(LOWER(blog.title) LIKE :search 
+      .leftJoin('blog.category', 'category')
+      .addSelect(['category.name', 'category.slug'])
+      .leftJoin('blog.tags', 'tags')
+      .leftJoin('blog.author', 'author')
+      .addSelect(['author.username'])
+      .where('blog.status = :status', { status: true })
+      .orderBy('blog.createdAt', 'DESC')
+      .take(limit)
+      .skip(skip);
+const isSearch = Boolean(searchTerm);
+    if (isSearch) {
+      queryBuilder.andWhere(
+        `(LOWER(blog.title) LIKE :search 
         OR LOWER(category.name) LIKE :search
         OR LOWER(tags.name) LIKE :search
         OR LOWER(author.username) LIKE :search)`,
-          { search: `%${searchTerm.toLowerCase()}%` },
-        );
-      }
-      const [result, total] = await queryBuilder.getManyAndCount();
-        // Check if results exist
-     if (result.length === 0 && total === 0) {
-      throw new NotFoundException('No Blog found matching your criteria');
+        { search: `%${searchTerm.toLowerCase()}%` },
+      );
     }
-    // Check if requested page exists
-   const totalPages = Math.ceil(total / limit);
-   if (page > totalPages && totalPages > 0) {
-     throw new BadRequestException(`Page ${page} does not exist. Total pages: ${totalPages}`);
-   }
-   const data = plainToInstance(BlogListDto, result, {
+    //const [result, total] = await queryBuilder.getManyAndCount();
+   //  ⭐ COUNT CACHING (Only when no search term)
+  // ---------------------------------------------------
+  let total = 0;
+
+  if (!isSearch) {
+    const countCacheKey = `frontend:blog_count`; // no pagination, no search
+    const cachedCount = await this.cacheService.get<number>(countCacheKey);
+
+    if (cachedCount !== null && cachedCount !== undefined) {
+      total = cachedCount;
+    } else {
+      total = await queryBuilder.clone().getCount();
+      // Cache count for 5 minutes
+      await this.cacheService.set(countCacheKey, total, { ttl: 300 });
+    }
+  } else {
+    // For search results → must calculate fresh count
+    total = await queryBuilder.clone().getCount();
+  }
+  const result = await queryBuilder.getMany();
+
+  if (result.length === 0) {
+    throw new NotFoundException('No Blog found matching your criteria');
+  }
+
+  const totalPages = Math.ceil(total / limit);
+  if (page > totalPages && totalPages > 0) {
+    throw new BadRequestException(`Page ${page} does not exist. Total pages: ${totalPages}`);
+  }
+
+  const data = plainToInstance(BlogListDto, result, {
     excludeExtraneousValues: true,
   });
 
- const response = new PaginationResponseDto(data, { total, page, limit  });
-        await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)), { ttl: 900 });
+  const response = new PaginationResponseDto(data, { total, page, limit });
+
+  await this.cacheService.set(cacheKey, response, { ttl: 900 });
 
   return response;
   }
 
-   async findAll_top_viewed(
-      paginationDto: PaginationBaseDto,
-    ): Promise<PaginationResponseDto<BlogListDto>> {
+  async findAll_top_viewed(
+    paginationDto: PaginationBaseDto,
+  ): Promise<PaginationResponseDto<BlogListDto>> {
 
-      const { page , limit, search   } = paginationDto;
-      const skip = (page - 1) * limit;
-  const searchTerm = search?.toLowerCase() || '';
-   const cacheKey = `frontend:blog:topViews:${JSON.stringify(paginationDto)}`;
-const cached = await this.cacheService.get(cacheKey);
-if (cached) {
-  return cached as PaginationResponseDto<BlogListDto>;
-}
+    const { page, limit, search } = paginationDto;
+    const skip = (page - 1) * limit;
+    const searchTerm = search?.toLowerCase() || '';
+    const cacheKey = `frontend:blog:topViews:${JSON.stringify(paginationDto)}`;
+    const cached = await this.cacheService.get(cacheKey);
+    if (cached) {
+      return cached as PaginationResponseDto<BlogListDto>;
+    }
 
-       const queryBuilder = this.blogRepo
-       .createQueryBuilder('blog')    
-       .select(['blog.id','blog.title','blog.views','blog.descriptionTag','blog.scheduledPublishDate', 'blog.slug','blog.createdAt','blog.titleImage','blog.blogContent'])
-       .leftJoin('blog.category', 'category', 'category.status = :isActive', { isActive: true })
-       .addSelect([ 'category.name', 'category.slug'])
-       .leftJoin('blog.tags', 'tags')
-       .leftJoin('blog.author', 'author')
-        .addSelect([  'author.username'])
-       .where('blog.status = :status', { status: true })
-       .orderBy('blog.views', 'DESC')
-       .take(limit)
-       .skip(skip);
+    const queryBuilder = this.blogRepo
+      .createQueryBuilder('blog')
+      .select(['blog.id', 'blog.title', 'blog.views', 'blog.descriptionTag', 'blog.scheduledPublishDate', 'blog.slug', 'blog.createdAt', 'blog.titleImage', 'blog.blogContent'])
+      .leftJoin('blog.category', 'category', 'category.status = :isActive', { isActive: true })
+      .addSelect(['category.name', 'category.slug'])
+      .leftJoin('blog.tags', 'tags')
+      .leftJoin('blog.author', 'author')
+      .addSelect(['author.username'])
+      .where('blog.status = :status', { status: true })
+      .orderBy('blog.views', 'DESC')
+      .take(limit)
+      .skip(skip);
 
-       if (searchTerm) {
-        queryBuilder.andWhere(
-          `(LOWER(blog.title) LIKE :search 
+    if (searchTerm) {
+      queryBuilder.andWhere(
+        `(LOWER(blog.title) LIKE :search 
         OR LOWER(category.name) LIKE :search
         OR LOWER(tags.name) LIKE :search
         OR LOWER(author.username) LIKE :search)`,
-          { search: `%${searchTerm.toLowerCase()}%` },
-        );
-      }
-      const [result, total] = await queryBuilder.getManyAndCount();
-        // Check if results exist
-     if (result.length === 0 && total === 0) {
+        { search: `%${searchTerm.toLowerCase()}%` },
+      );
+    }
+    const [result, total] = await queryBuilder.getManyAndCount();
+    // Check if results exist
+    if (result.length === 0 && total === 0) {
       throw new NotFoundException('No Blog found matching your criteria');
     }
     // Check if requested page exists
-   const totalPages = Math.ceil(total / limit);
-   if (page > totalPages && totalPages > 0) {
-     throw new BadRequestException(`Page ${page} does not exist. Total pages: ${totalPages}`);
-   }
-   const data = plainToInstance(BlogListDto, result, {
-    excludeExtraneousValues: true,
-  });
+    const totalPages = Math.ceil(total / limit);
+    if (page > totalPages && totalPages > 0) {
+      throw new BadRequestException(`Page ${page} does not exist. Total pages: ${totalPages}`);
+    }
+    const data = plainToInstance(BlogListDto, result, {
+      excludeExtraneousValues: true,
+    });
 
- const response = new PaginationResponseDto(data, { total, page, limit  });
-        await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)) );
+    const response = new PaginationResponseDto(data, { total, page, limit });
+    await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
 
-  return response;
+    return response;
   }
 
- 
-   async getBlogBySlug(slug: string, viewerIdentifier: string): Promise<BlogListDetailDto> {
+
+  async getBlogBySlug(slug: string, viewerIdentifier: string): Promise<BlogListDetailDto> {
     const cacheKey = `frontend:blog:${slug}`;
     let blog = await this.cacheService.get<Blog>(cacheKey);
 
@@ -157,7 +182,7 @@ if (cached) {
       });
 
       if (!blog) throw new NotFoundException('Blog not found');
- 
+
     }
 
     // ✅ Now blog is always defined, but add safeguard
@@ -191,9 +216,9 @@ if (cached) {
       excludeExtraneousValues: true,
     });
     await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
-     return response;
+    return response;
   }
- 
+
 
   /*async findBlogsByCategory(categoryId: number, page = 1, limit = 10): Promise<PaginationResponseDto<BlogListDto>> {
   const [result, total] = await this.blogRepo.findAndCount({
@@ -208,151 +233,151 @@ if (cached) {
   });
   }*/
 
-async findBlogsByCategorySlug(
-  slug: string,
-  paginationDto: PaginationDto,
-): Promise<PaginationResponseDto<BlogListDto>> {
+  async findBlogsByCategorySlug(
+    slug: string,
+    paginationDto: PaginationDto,
+  ): Promise<PaginationResponseDto<BlogListDto>> {
 
     const { page = 1, limit = 10, search } = paginationDto;
-  const skip = (page - 1) * limit;
-  const searchTerm = search?.toLowerCase() || '';
-   const cacheKey = 'frontend:blogcat:active';
-  
-       // ✅ 1. Try cache first
-     const cached = await this.cacheService.get(cacheKey);
-    if (cached  ) {
+    const skip = (page - 1) * limit;
+    const searchTerm = search?.toLowerCase() || '';
+    const cacheKey = 'frontend:blogcat:active';
+
+    // ✅ 1. Try cache first
+    const cached = await this.cacheService.get(cacheKey);
+    if (cached) {
       return cached as PaginationResponseDto<BlogListDto>;
     } // ✅ 2. Fetch from DB if not cached
- const where: any = {
-  status: true,
-    category: { slug },
-  };
-   // Optional title/h1Title search (simple LIKE)
-  if (searchTerm) {
-    where.title = () => `LOWER(blog.title) LIKE '%${searchTerm}%'`;
-    // You could use a custom QueryBuilder if needed here for performance
-  }
-  const [result, total] = await this.blogRepo.findAndCount({
-    where: where,
-  
-     take: limit,
-    skip,
-    order: { createdAt: 'DESC' },
-  });
- 
- 
-const data = plainToInstance(BlogListDto, result, {
-  excludeExtraneousValues: true,
-  enableImplicitConversion: true, // optional but helps with nested types
-});
-  const response = new PaginationResponseDto(data, {
-    total,
-    page,
-    limit,
-  });
+    const where: any = {
+      status: true,
+      category: { slug },
+    };
+    // Optional title/h1Title search (simple LIKE)
+    if (searchTerm) {
+      where.title = () => `LOWER(blog.title) LIKE '%${searchTerm}%'`;
+      // You could use a custom QueryBuilder if needed here for performance
+    }
+    const [result, total] = await this.blogRepo.findAndCount({
+      where: where,
 
-   await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
-  // console.log('✅ Cache miss:', cacheKey);
-  return response;
-} 
- 
-async findBlogsByTagSlug(
-  slug: string,
-  paginationDto: PaginationDto,
-): Promise<PaginationResponseDto<BlogListDto>> {
-  const { page = 1, limit = 10, search } = paginationDto;
-  const skip = (page - 1) * limit;
-  const searchTerm = search?.toLowerCase() || '';
-const cacheKey = 'frontend:blogtag:active';
-  
-       // ✅ 1. Try cache first
-     const cached = await this.cacheService.get(cacheKey);
-    if (cached  ) {
+      take: limit,
+      skip,
+      order: { createdAt: 'DESC' },
+    });
+
+
+    const data = plainToInstance(BlogListDto, result, {
+      excludeExtraneousValues: true,
+      enableImplicitConversion: true, // optional but helps with nested types
+    });
+    const response = new PaginationResponseDto(data, {
+      total,
+      page,
+      limit,
+    });
+
+    await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
+    // console.log('✅ Cache miss:', cacheKey);
+    return response;
+  }
+
+  async findBlogsByTagSlug(
+    slug: string,
+    paginationDto: PaginationDto,
+  ): Promise<PaginationResponseDto<BlogListDto>> {
+    const { page = 1, limit = 10, search } = paginationDto;
+    const skip = (page - 1) * limit;
+    const searchTerm = search?.toLowerCase() || '';
+    const cacheKey = 'frontend:blogtag:active';
+
+    // ✅ 1. Try cache first
+    const cached = await this.cacheService.get(cacheKey);
+    if (cached) {
       return cached as PaginationResponseDto<BlogListDto>;
     }
-   // Validate input parameters
-   if (page < 1) throw new BadRequestException('Page must be greater than 0');
-   if (limit < 1 || limit > 100) throw new BadRequestException('Limit must be between 1 and 100');
+    // Validate input parameters
+    if (page < 1) throw new BadRequestException('Page must be greater than 0');
+    if (limit < 1 || limit > 100) throw new BadRequestException('Limit must be between 1 and 100');
 
-  const query = this.blogRepo
-    .createQueryBuilder('blog')
-    .leftJoinAndSelect('blog.category', 'category')
-    .leftJoinAndSelect('blog.tags', 'tag')
-    .leftJoinAndSelect('blog.author', 'author')
-    .where('blog.status = :published', { published: true })
-    .andWhere('tag.slug = :slug', { slug });
+    const query = this.blogRepo
+      .createQueryBuilder('blog')
+      .leftJoinAndSelect('blog.category', 'category')
+      .leftJoinAndSelect('blog.tags', 'tag')
+      .leftJoinAndSelect('blog.author', 'author')
+      .where('blog.status = :published', { published: true })
+      .andWhere('tag.slug = :slug', { slug });
 
-  if (searchTerm) {
-    query.andWhere(
-      '(LOWER(blog.title) LIKE :search )',
-    //  '(LOWER(blog.title) LIKE :search OR LOWER(blog.h1Title) LIKE :search)',
-      { search: `%${searchTerm}%` },
-    );
+    if (searchTerm) {
+      query.andWhere(
+        '(LOWER(blog.title) LIKE :search )',
+        //  '(LOWER(blog.title) LIKE :search OR LOWER(blog.h1Title) LIKE :search)',
+        { search: `%${searchTerm}%` },
+      );
+    }
+
+    query.orderBy('blog.createdAt', 'DESC').skip(skip).take(limit);
+
+    const [result, total] = await query.getManyAndCount();
+
+    // Check if results exist
+    if (result.length === 0 && total === 0) {
+      throw new NotFoundException('No Blog found matching your criteria');
+    }
+
+    // Check if requested page exists
+    const totalPages = Math.ceil(total / limit);
+    if (page > totalPages && totalPages > 0) {
+      throw new BadRequestException(`Page ${page} does not exist. Total pages: ${totalPages}`);
+    }
+
+    const data = plainToInstance(BlogListDto, result, {
+      excludeExtraneousValues: true,
+      enableImplicitConversion: true,
+    });
+
+    const response = new PaginationResponseDto(data, {
+      total,
+      page,
+      limit,
+    });
+
+    await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
+    // console.log('✅ Cache miss:', cacheKey);
+    return response;
   }
 
-  query.orderBy('blog.createdAt', 'DESC').skip(skip).take(limit);
 
-  const [result, total] = await query.getManyAndCount();
 
-  // Check if results exist
-  if (result.length === 0 && total === 0) {
-    throw new NotFoundException('No Blog found matching your criteria');
-  }
+  async getCategoriesWithBlogCount(): Promise<CategoryWithBlogCountDto[]> {
+    const cacheKey = 'frontend:blogcount:active';
 
-   // Check if requested page exists
-   const totalPages = Math.ceil(total / limit);
-   if (page > totalPages && totalPages > 0) {
-     throw new BadRequestException(`Page ${page} does not exist. Total pages: ${totalPages}`);
-   }
-   
-  const data = plainToInstance(BlogListDto, result, {
-    excludeExtraneousValues: true,
-    enableImplicitConversion: true,
-  });
-
- const response = new PaginationResponseDto(data, {
-    total,
-    page,
-    limit,
-  });
-
-   await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
-  // console.log('✅ Cache miss:', cacheKey);
-  return response;
-}
-
- 
-
-async getCategoriesWithBlogCount(): Promise<CategoryWithBlogCountDto[]> {
-   const cacheKey = 'frontend:blogcount:active';
-  
-       // ✅ 1. Try cache first
-     const cached = await this.cacheService.get<CategoryWithBlogCountDto[]>(cacheKey);
+    // ✅ 1. Try cache first
+    const cached = await this.cacheService.get<CategoryWithBlogCountDto[]>(cacheKey);
     if (cached && cached.length) {
       return cached;
     } // ✅ 2. Fetch from DB if not cached
-  const raw = await this.categoryRepo
-    .createQueryBuilder('category')
-    .leftJoin('category.blogs', 'blog', 'blog.status = true')
-    .select(['category.id', 'category.name', 'category.slug'])
-    .addSelect('COUNT(blog.id)', 'blogCount')
-    .groupBy('category.id')
-    .having('COUNT(blog.id) > 0')
-    .getRawMany();
+    const raw = await this.categoryRepo
+      .createQueryBuilder('category')
+      .leftJoin('category.blogs', 'blog', 'blog.status = true')
+      .select(['category.id', 'category.name', 'category.slug'])
+      .addSelect('COUNT(blog.id)', 'blogCount')
+      .groupBy('category.id')
+      .having('COUNT(blog.id) > 0')
+      .getRawMany();
 
-  const response = plainToInstance(CategoryWithBlogCountDto, raw.map((c) => ({
-    id: c.category_id,
-    name: c.category_name,
-    slug: c.category_slug,
-    blogCount: Number(c.blogCount),
-  })), {
-    excludeExtraneousValues: true,
-  });
+    const response = plainToInstance(CategoryWithBlogCountDto, raw.map((c) => ({
+      id: c.category_id,
+      name: c.category_name,
+      slug: c.category_slug,
+      blogCount: Number(c.blogCount),
+    })), {
+      excludeExtraneousValues: true,
+    });
 
-     await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
-  // console.log('✅ Cache miss:', cacheKey);
-  return response;
-}
+    await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
+    // console.log('✅ Cache miss:', cacheKey);
+    return response;
+  }
 
 
 }

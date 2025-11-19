@@ -91,16 +91,16 @@ export class BlogListDto {
   blogContent: string;*/
 
  
-  @Expose()
-  get contentSnippet(): string {
-    if (!this.blogContent) return '';
-    return this.blogContent.length > 15
-      ? this.blogContent.substring(0, 15) + '...'
-      : this.blogContent;
-  } 
+  // @Expose()
+  // get contentSnippet(): string {
+  //   if (!this.blogContent) return '';
+  //   return this.blogContent.length > 15
+  //     ? this.blogContent.substring(0, 15) + '...'
+  //     : this.blogContent;
+  // } 
  
-  @Expose()
-  blogContent?: string; // keep original for mapping
+  // @Expose()
+  // blogContent?: string; // keep original for mapping
 
   @Expose()
   keywordsTag: string;
@@ -119,7 +119,7 @@ export class BlogListDto {
 
   @Expose()
   @Type(() => CategoryDto)
-  category?: CategoryDto;
+    category?: CategoryDto;
 
   @Expose()
   @Type(() => AuthorDto)
