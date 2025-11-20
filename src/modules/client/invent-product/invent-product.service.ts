@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable,Logger, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateInventProductDto } from './dto/create-invent-product.dto';
@@ -16,7 +16,7 @@ import { Currency } from 'src/shared/entities/currency.entity';
 
 @Injectable()
 export class InventProductService {
-
+private readonly logger = new Logger(CacheService.name);
   constructor(
     private cacheService: CacheService,
     @InjectRepository(Inventory)
@@ -28,7 +28,7 @@ export class InventProductService {
   ) {}
  
 // product.service.ts (excerpt)
-async findAll(
+async findAll_new(
   paginationDto: InventProdPaginatDto,
 ): Promise<PaginationResponseDto<InventProdListDto>> {
   const {
@@ -178,7 +178,7 @@ async findAll(
       .leftJoinAndSelect('inventory.product', 'product')
       .leftJoinAndSelect('product.artist', 'artist')
       .leftJoinAndSelect('product.category', 'category')
-      .leftJoinAndSelect('product.defaultImage', 'defaultImage') // if you have relation; else omit
+     // .leftJoinAndSelect('product.defaultImage', 'defaultImage') // if you have relation; else omit
       .leftJoinAndSelect('inventory.shippingWeight', 'shipping')
       .whereInIds(ids)
       .orderBy(`FIELD(inventory.id, ${ids.join(',')})`) // maintain page order
@@ -213,161 +213,195 @@ async findAll(
   return response;
 }
 
-
- 
-async findAll_newback(
+async findAll(
   paginationDto: InventProdPaginatDto,
 ): Promise<PaginationResponseDto<InventProdListDto>> {
-  const {
-    page,
-    limit,
-    search,
-    isActive,
-    categoryId,
-    artistId,
-    select,
-    styleId,
-    subjectId,
-    orientationId,
-    sizeId,
-    mediumId,
-    surfaceId,
-    affordable_art,
-    eliteChoice,
-    new_arrival,
-    discount,
-    minPrice,
-    maxPrice,
-    sortPrice,
-    currency,
-  } = paginationDto;
+  try {
+    const {
+      page,
+      limit,
+      search,
+      categoryId,
+      artistId,
+      styleId,
+      subjectId,
+      orientationId,
+      sizeId,
+      mediumId,
+      surfaceId,
+      affordable_art,
+      eliteChoice,
+      new_arrival,
+      discount,
+      minPrice,
+      maxPrice,
+      sortPrice,
+      currency,
+    } = paginationDto;
 
-  const skip = (page - 1) * limit;
-  // normalize search
-  const searchTerm = search?.trim();
-  const cacheKey = `frontend:Artwork:All:${page}:${limit}:${searchTerm || ''}:${JSON.stringify({
-    categoryId, artistId, styleId, subjectId, orientationId, sizeId, mediumId, surfaceId,
-    affordable_art, eliteChoice, new_arrival, discount, minPrice, maxPrice, sortPrice, currency
-  })}`;
+    const skip = (page - 1) * limit;
+    const searchTerm = search?.trim();
+    
+    const cacheKey = `frontend:Artwork:All:${page}:${limit}:${searchTerm || ''}:${JSON.stringify({
+      categoryId, artistId, styleId, subjectId, orientationId, sizeId, mediumId, surfaceId,
+      affordable_art, eliteChoice, new_arrival, discount, minPrice, maxPrice, sortPrice, currency
+    })}`;
 
-  const cached = await this.cacheService.get<PaginationResponseDto<InventProdListDto>>(cacheKey);
-  if (cached) return cached;
+    const cached = await this.cacheService.get<PaginationResponseDto<InventProdListDto>>(cacheKey);
+    if (cached) return cached;
 
-  const qb = this.inventoryRepo.createQueryBuilder('inventory')
-    .leftJoinAndSelect('inventory.product', 'product')
-    .leftJoinAndSelect('product.artist', 'artist')
-    .leftJoinAndSelect('product.category', 'category')
-    .leftJoinAndSelect('product.surface', 'surface')
-    .leftJoinAndSelect('product.medium', 'medium')
-    .leftJoinAndSelect('product.tags', 'tag')
-    .leftJoinAndSelect('product.subjects', 'subject')
-    .leftJoinAndSelect('product.styles', 'style')
-    .leftJoinAndSelect('inventory.shippingWeight', 'shipping')     
-    .where("inventory.quantity > :quantity", { quantity: 0 })
-    .andWhere('inventory.status = :status', { status: true })
-    .andWhere('product.is_active = :isActive', { isActive: ProductStatus.ACTIVE });
+    // ✅ Main query builder
+    const qb = this.inventoryRepo.createQueryBuilder('inventory')
+    .select([
+        'inventory.id',
+        'inventory.price',
+        'inventory.discount',
+        'inventory.gstSlot',
+        'inventory.quantity',
+        'inventory.status',
+        'product.id',
+        'product.productTitle',
+        'product.slug',
+        'product.defaultImage',
+        'product.new_arrival',
+        'product.eliteChoice',
+        'product.affordable_art',
+        'product.is_active',
+        'artist.id',
+        'artist.username',
+        'category.id',
+        'category.name',
+        'shipping.id',
+        'shipping.costINR',
+        'surface.id',
+        'surface.surfaceName',
+        'medium.id','subject.id','subject.subject','subject.description',
+        'medium.name','style.id','style.title','style.description',
+      ])
+      .leftJoin('inventory.product', 'product')
+      .leftJoin('product.artist', 'artist')
+      .leftJoin('product.category', 'category')
+      .leftJoin('product.tags', 'tag')
+      .leftJoin('product.subjects', 'subject')
+      .leftJoin('product.styles', 'style')
+        .leftJoin('product.surface', 'surface')
+     .leftJoin('product.medium', 'medium')
+      .leftJoin('inventory.shippingWeight', 'shipping')
+      .where("inventory.quantity > :quantity", { quantity: 0 })
+      .andWhere('inventory.status = :status', { status: true })
+      .andWhere('product.is_active = :isActive', { isActive: ProductStatus.ACTIVE });
 
-  // ✅ Search
-  if (search) {
-    qb.andWhere(
-      `(product.productTitle LIKE :search 
-        OR tag.name LIKE :search 
-        OR artist.username LIKE :search)`,
-      { search: `%${search}%` },
-    );
+    // ✅ Search filter
+    if (searchTerm) {
+      qb.andWhere(
+        `(product.productTitle LIKE :search OR artist.username LIKE :search OR tag.name LIKE :search)`,
+        { search: `%${searchTerm}%` },
+      );
+    }
+
+    // ✅ Apply filters
+    const filters = [
+      { field: 'orientation_id', value: orientationId },
+      { field: 'surface_id', value: surfaceId },
+      { field: 'medium_id', value: mediumId },
+      { field: 'size_id', value: sizeId },
+      { field: 'category_id', value: categoryId },
+      { field: 'artist_id', value: artistId },
+    ];
+
+    filters.forEach(({ field, value }) => {
+      if (value) qb.andWhere(`product.${field} = :${field}`, { [field]: value });
+    });
+
+    if (subjectId) qb.andWhere('subject.id = :subjectId', { subjectId });
+    if (styleId) qb.andWhere('style.id = :styleId', { styleId });
+    if (new_arrival) qb.andWhere('product.new_arrival = :new_arrival', { new_arrival });
+    if (eliteChoice) qb.andWhere('product.eliteChoice = :eliteChoice', { eliteChoice });
+    if (affordable_art) qb.andWhere('product.affordable_art = :affordable_art', { affordable_art });
+    if (discount === 1) qb.andWhere('inventory.discount > 0');
+
+    // ✅ Price filtering at database level (use base price)
+    if (minPrice !== undefined && maxPrice !== undefined) {
+      qb.andWhere('inventory.price BETWEEN :minPrice AND :maxPrice', { minPrice, maxPrice });
+    } else if (minPrice !== undefined) {
+      qb.andWhere('inventory.price >= :minPrice', { minPrice });
+    } else if (maxPrice !== undefined) {
+      qb.andWhere('inventory.price <= :maxPrice', { maxPrice });
+    }
+
+    // ✅ Sorting at database level
+    if (sortPrice === 'low') {
+      qb.orderBy('inventory.price', 'ASC');
+    } else if (sortPrice === 'high') {
+      qb.orderBy('inventory.price', 'DESC');
+    } else {
+      qb.orderBy('inventory.id', 'DESC');
+    }
+
+    // ✅ Get total count
+    const total = await qb.getCount();
+
+    // ✅ Get paginated results
+    const inventories = await qb
+      .skip(skip)
+      .take(limit)
+      .getMany();
+
+    // ✅ Currency conversion
+    const rate = await this.getCurrencyRate(currency);
+
+    // ✅ Compute prices with proper logic
+    const computed = inventories.map((inventory) => {
+      const basePrice = Number(inventory.price || 0);
+      const gst = Number(inventory.gstSlot || 0);
+      const discount = Number(inventory.discount || 0);
+      const shipping = Number(inventory.shippingWeight?.costINR || 0);
+
+      // Calculate price after discount
+      const priceAfterDiscount = basePrice * (1 - discount / 100);
+      
+      // Add GST to discounted price
+      const priceWithGST = priceAfterDiscount * (1 + gst / 100);
+      
+      // Add shipping
+      const finalINR = priceWithGST + shipping;
+      
+      // Convert to target currency
+      const displayPrice = Number((finalINR / rate).toFixed(2));
+      
+      // Calculate original price for discount display
+      const originalPriceWithGST = (basePrice * (1 + gst / 100)) + shipping;
+      const finaldiscountamount = Number((originalPriceWithGST / rate).toFixed(2));
+
+      return {
+        ...inventory,
+        finaldiscountamount,
+        displayPrice,
+        currency: currency || 'INR',
+      };
+    });
+
+    // ✅ Transform to DTO
+    const data = plainToInstance(InventProdListDto, computed, {
+      excludeExtraneousValues: true,
+    });
+
+    const response = new PaginationResponseDto<InventProdListDto>(data, {
+      total,
+      page,
+      limit,
+    });
+
+    await this.cacheService.set(cacheKey, response); // Add TTL
+    return response;
+
+  } catch (error) {
+    this.logger.error(`Error in findAll: ${error.message}`, error.stack);
+    throw new InternalServerErrorException('Failed to fetch products');
   }
-
-  // ✅ Filtering
-  if (orientationId) qb.andWhere('product.orientation_id = :orientationId', { orientationId });
-  if (surfaceId) qb.andWhere('product.surface_id = :surfaceId', { surfaceId });
-  if (mediumId) qb.andWhere('product.medium_id = :mediumId', { mediumId });
-  if (sizeId) qb.andWhere('product.size_id = :sizeId', { sizeId });
-  if (subjectId) qb.andWhere('subject.id = :subjectId', { subjectId });
-  if (styleId) qb.andWhere('style.id = :styleId', { styleId });
-  if (categoryId) qb.andWhere('product.category_id = :categoryId', { categoryId });
-  if (artistId) qb.andWhere('product.artist_id = :artistId', { artistId });
-  if (new_arrival) qb.andWhere('product.new_arrival = :new_arrival', { new_arrival });
-  if (eliteChoice) qb.andWhere('product.eliteChoice = :eliteChoice', { eliteChoice });
-  if (affordable_art) qb.andWhere('product.affordable_art = :affordable_art', { affordable_art });
-  if (discount === 1) qb.andWhere('inventory.discount > 0');
-
-  // ✅ Price range filter
-  if (minPrice && maxPrice)
-    qb.andWhere('inventory.price BETWEEN :minPrice AND :maxPrice', { minPrice, maxPrice });
-  else if (minPrice)
-    qb.andWhere('inventory.price >= :minPrice', { minPrice });
-  else if (maxPrice)
-    qb.andWhere('inventory.price <= :maxPrice', { maxPrice });
-
-  // ✅ Default sorting
-  qb.orderBy('inventory.id', 'DESC');
-
-  // ✅ Execute query
-  //const [result, total] = await qb.take(limit).skip(skip).getManyAndCount();
-  const [result, total] = await qb.getManyAndCount();
-
-  // ✅ Currency conversion rates
- // const conversionRates = { INR: 1, USD: 0.067, EUR: 0.061 };
-//const rate = conversionRates[currency || 'INR'];
-const rate = await this.getCurrencyRate(currency);
-
-  // ✅ Compute displayPrice properly
-let computed = result.map((inventory) => {
-  const basePrice = Number(inventory.price || 0);
-  const gst = Number(inventory.gstSlot || 0);
-  const discount = Number(inventory.discount || 0);
-  const shipping = Number(inventory.shippingWeight?.costINR || 0);
-
-  // calculate total price in INR
- // const finalINR = basePrice + gst + shipping - discount;
- const finaldiscount = basePrice  - (basePrice*(discount/100));
-   const finalINR = (finaldiscount  + (finaldiscount*(gst/100)));
-  const  discountamount = (basePrice  + (basePrice*(gst/100)));
- const finaldiscountamount = Number((discountamount / rate).toFixed(2));
-  const displayPrice = Number((finalINR / rate).toFixed(2));
-
-  return {
-    ...inventory,
-    finaldiscountamount,
-    displayPrice,
-    currency: currency || 'INR', // include currency for frontend
-  };
-});
-
-  // --- Filter by minPrice / maxPrice ---
-  if (minPrice !== undefined) {
-    computed = computed.filter((item) => item.displayPrice >= minPrice);
-  }
-  if (maxPrice !== undefined) {
-    computed = computed.filter((item) => item.displayPrice <= maxPrice);
-  }
-
-  // ✅ Sort in memory by computed displayPrice
-let sortedData = computed;
-if (sortPrice === 'low') {
-  sortedData = computed.sort((a, b) => a.displayPrice - b.displayPrice);
-} else if (sortPrice === 'high') {
-  sortedData = computed.sort((a, b) => b.displayPrice - a.displayPrice);
 }
-  // ✅ Apply pagination after sorting
- const paginatedData = sortedData.slice(skip, skip + limit);
-
-  const data = plainToInstance(InventProdListDto, paginatedData, {
-  excludeExtraneousValues: true,
-});
-
- const response = new PaginationResponseDto<InventProdListDto>(data, {
-  total,
-  page,
-  limit,
-});
-
-  await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
-  return response;
-} 
-
  
-
+ 
 
   async findAll_bk(
     paginationDto: InventProdPaginatDto,
