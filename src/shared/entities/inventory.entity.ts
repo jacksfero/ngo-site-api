@@ -25,8 +25,9 @@ export enum InventoryStatus {
  
 
 @Entity()
-@Index(['product', 'status']) // For product inventory queries
-@Index(['status', 'quantity']) // For stock level queries
+@Index('idx_inventory_product_status', ['productId', 'status'])
+@Index('idx_inventory_status_quantity', ['status', 'quantity'])
+@Index('idx_inventory_price', ['price'])
 export class Inventory {
   @PrimaryGeneratedColumn()
   id: number;
@@ -43,6 +44,7 @@ export class Inventory {
   @JoinColumn({ name: 'product_id' })
   product: Product;
 
+  @Index()
   @Column({ name: 'product_id' })
   productId: number; // ✅ Keep productId for easier queries
 
@@ -52,15 +54,19 @@ export class Inventory {
   @Column({ type: 'date', nullable: true })
   endDate: Date;
 
+  @Index()
   @Column({ type: 'boolean', default: false })
   status: boolean;
 
+   @Index()
   @Column({ type: 'int', default: 0 })
   quantity: number; // ✅ CRITICAL: Stock quantity
 
+  @Index()
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   price: number;
 
+ @Index()
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   discount: number; // % discount or absolute value, depending on logic
 

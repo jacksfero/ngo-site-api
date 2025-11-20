@@ -27,10 +27,195 @@ export class InventProductService {
 
   ) {}
  
+// product.service.ts (excerpt)
+async findAll(
+  paginationDto: InventProdPaginatDto,
+): Promise<PaginationResponseDto<InventProdListDto>> {
+  const {
+    page = 1,
+    limit = 20,
+    search,
+    categoryId,
+    artistId,
+    styleId,
+    subjectId,
+    orientationId,
+    sizeId,
+    mediumId,
+    surfaceId,
+    affordable_art,
+    eliteChoice,
+    new_arrival,
+    discount,
+    minPrice,
+    maxPrice,
+    sortPrice,
+    currency,
+  } = paginationDto;
+
+  const skip = (page - 1) * limit;
+
+  // normalize search
+  const searchTerm = search?.trim();
+
+  // cache key (stringified in predictable order)
+  const cacheKey = `frontend:Artwork:All:${page}:${limit}:${searchTerm || ''}:${JSON.stringify({
+    categoryId, artistId, styleId, subjectId, orientationId, sizeId, mediumId, surfaceId,
+    affordable_art, eliteChoice, new_arrival, discount, minPrice, maxPrice, sortPrice, currency
+  })}`;
+
+  const cached = await this.cacheService.get<PaginationResponseDto<InventProdListDto>>(cacheKey);
+  if (cached) return cached;
+
+  // get currency rate once
+  const rate = Number((await this.getCurrencyRate(currency)) || 1);
+
+  // Base query: inventory primary table, join minimal columns only
+  const qb = this.inventoryRepo.createQueryBuilder('inventory')
+    // join only required product fields (avoid heavy eager loads)
+    .leftJoin('inventory.product', 'product')
+    .leftJoin('product.artist', 'artist')
+    .leftJoin('product.category', 'category')
+    // join shipping for shipping.costINR
+    .leftJoin('inventory.shippingWeight', 'shipping')
+    // join tags/subjects/styles only when used as filters or when needed for results
+    .leftJoin('product.tags', 'tag')
+    .leftJoin('product.subjects', 'subject')
+    .leftJoin('product.styles', 'style')
+    // base conditions
+    .where('inventory.quantity > 0')
+    .andWhere('inventory.status = TRUE')
+    .andWhere('product.is_active = :active', { active: ProductStatus.ACTIVE });
+
+  // ---------- Filters ----------
+  if (searchTerm) {
+    qb.andWhere(
+      `(product.productTitle LIKE :search OR artist.username LIKE :search OR tag.name LIKE :search)`,
+      { search: `%${searchTerm}%` },
+    );
+  }
+
+  if (categoryId) qb.andWhere('product.category_id = :categoryId', { categoryId });
+  if (artistId) qb.andWhere('product.artist_id = :artistId', { artistId });
+
+  if (orientationId) qb.andWhere('product.orientation_id = :orientationId', { orientationId });
+  if (surfaceId) qb.andWhere('product.surface_id = :surfaceId', { surfaceId });
+  if (mediumId) qb.andWhere('product.medium_id = :mediumId', { mediumId });
+  if (sizeId) qb.andWhere('product.size_id = :sizeId', { sizeId });
+
+  if (subjectId) qb.andWhere('subject.id = :subjectId', { subjectId });
+  if (styleId) qb.andWhere('style.id = :styleId', { styleId });
+
+  if (new_arrival) qb.andWhere('product.new_arrival = TRUE');
+  if (eliteChoice) qb.andWhere('product.eliteChoice = TRUE');
+  if (affordable_art) qb.andWhere('product.affordable_art = TRUE');
+  if (discount === 1) qb.andWhere('inventory.discount > 0');
+
+  // ---------- Compute displayPrice IN SQL (finalINR / :rate) ----------
+  // finaldiscount = (price * (1 - discount/100))
+  // finalINR = finaldiscount + finaldiscount * (gstSlot/100) + IFNULL(shipping.costINR, 0)
+  // displayPrice = finalINR / :rate
+  const displayPriceExpr = `(
+    (
+      (inventory.price * (1 - COALESCE(inventory.discount, 0) / 100))
+      + ((inventory.price * (1 - COALESCE(inventory.discount, 0) / 100)) * (COALESCE(inventory.gstSlot, 0) / 100))
+      + COALESCE(shipping.costINR, 0)
+    ) / :rate
+  )`;
+
+  qb.addSelect(displayPriceExpr, 'displayPrice')
+    .setParameter('rate', rate);
+
+  // ---------- Apply SQL price filters (if provided) ----------
+  if (minPrice !== undefined) qb.andWhere(`${displayPriceExpr} >= :minPrice`, { minPrice, rate });
+  if (maxPrice !== undefined) qb.andWhere(`${displayPriceExpr} <= :maxPrice`, { maxPrice, rate });
+
+  // ---------- DISTINCT inventory IDs to avoid duplicates when joining tags/subjects/styles ----------
+  qb.select([
+    'DISTINCT inventory.id AS inventory_id',
+    'inventory.price AS inventory_price',
+    'inventory.discount AS inventory_discount',
+    'inventory.gstSlot AS inventory_gstSlot',
+    'inventory.quantity AS inventory_quantity',
+    'inventory.id',
+    'product.id',
+    'product.productTitle',
+    'product.slug',
+    'product.defaultImage',
+    'artist.id',
+    'artist.username',
+    'category.id',
+    'category.name',
+  ]);
+
+  // ---------- Sorting ----------
+  if (sortPrice === 'low') {
+    qb.orderBy('displayPrice', 'ASC');
+  } else if (sortPrice === 'high') {
+    qb.orderBy('displayPrice', 'DESC');
+  } else {
+    qb.orderBy('inventory.id', 'DESC');
+  }
+
+  // ---------- Count (optimized): use clone with COUNT DISTINCT ----------
+  const countQb = qb.clone().select('COUNT(DISTINCT inventory.id)', 'cnt');
+  const rawCount = await countQb.getRawOne();
+  const total = Number(rawCount?.cnt || 0);
+
+  // ---------- Pagination: use distinct ids subquery to get page ids, then load full entities ----------
+  // get inventory ids for page
+  const idsQb = qb.clone()
+    .select('DISTINCT inventory.id', 'id')
+    .skip(skip)
+    .take(limit);
+
+  const rawIds = await idsQb.getRawMany();
+  const ids = rawIds.map(r => r.id);
+  let inventories: Inventory[] = [];
+  if (ids.length > 0) {
+    // fetch full inventory rows with necessary joins but limited to page ids
+    inventories = await this.inventoryRepo.createQueryBuilder('inventory')
+      .leftJoinAndSelect('inventory.product', 'product')
+      .leftJoinAndSelect('product.artist', 'artist')
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.defaultImage', 'defaultImage') // if you have relation; else omit
+      .leftJoinAndSelect('inventory.shippingWeight', 'shipping')
+      .whereInIds(ids)
+      .orderBy(`FIELD(inventory.id, ${ids.join(',')})`) // maintain page order
+      .getMany();
+  }
+
+  // ---------- Post-process: compute displayPrice for each inventory item (rounded) ----------
+  const items = inventories.map((inventory) => {
+    const base = Number(inventory.price || 0);
+    const disc = Number(inventory.discount || 0);
+    const gst = Number(inventory.gstSlot || 0);
+    const ship = Number(inventory.shippingWeight?.costINR || 0);
+
+    const discounted = base * (1 - (disc / 100));
+    const finalINR = discounted + (discounted * (gst / 100)) + ship;
+    const displayPrice = Number((finalINR / rate).toFixed(2));
+
+    return {
+      ...inventory,
+      displayPrice,
+      currency: currency || 'INR',
+    };
+  });
+
+  // ---------- Final pagination response ----------
+  const data = plainToInstance(InventProdListDto, items, { excludeExtraneousValues: true });
+  const response = new PaginationResponseDto<InventProdListDto>(data, { total, page, limit });
+
+  // Cache response (TTL as you prefer)
+  await this.cacheService.set(cacheKey, response, { ttl: 300 });
+
+  return response;
+}
 
 
  
-async findAll(
+async findAll_newback(
   paginationDto: InventProdPaginatDto,
 ): Promise<PaginationResponseDto<InventProdListDto>> {
   const {
@@ -58,9 +243,15 @@ async findAll(
   } = paginationDto;
 
   const skip = (page - 1) * limit;
-  const cacheKey = `frontend:Artwork:All:${JSON.stringify(paginationDto)}`;
-  const cached = await this.cacheService.get(cacheKey);
-  if (cached) return cached as PaginationResponseDto<InventProdListDto>;
+  // normalize search
+  const searchTerm = search?.trim();
+  const cacheKey = `frontend:Artwork:All:${page}:${limit}:${searchTerm || ''}:${JSON.stringify({
+    categoryId, artistId, styleId, subjectId, orientationId, sizeId, mediumId, surfaceId,
+    affordable_art, eliteChoice, new_arrival, discount, minPrice, maxPrice, sortPrice, currency
+  })}`;
+
+  const cached = await this.cacheService.get<PaginationResponseDto<InventProdListDto>>(cacheKey);
+  if (cached) return cached;
 
   const qb = this.inventoryRepo.createQueryBuilder('inventory')
     .leftJoinAndSelect('inventory.product', 'product')
