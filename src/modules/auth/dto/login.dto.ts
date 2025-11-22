@@ -9,6 +9,6 @@ export class LoginDto {
   
     @IsNotEmpty()
     @IsString()
-    @IsValidPassword()
+  //  @IsValidPassword()
     password: string;
   }
