@@ -609,8 +609,8 @@ console.log('guest ID ---Register--1--------',guestCartId)
     this.logger?.warn?.('Login failed: user is undefined');
     throw new UnauthorizedException('Invalid login request');
   }
-  const request = req ?? this.context.getRequest();  // renamed
-    const guestCartId = request?.cookies?.['guestCartId'];// ✅ Safe access with optional chaining
+ const request = req ?? this.context?.getRequest?.();
+const guestCartId = request?.cookies?.['guestCartId'];// ✅ Safe access with optional chaining
   //const guestCartId = null;
 //console.log('guest ID ---Login--1--------',guestCartId)
 

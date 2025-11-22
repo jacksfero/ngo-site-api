@@ -219,7 +219,8 @@ export class ProductsService {
        .leftJoin('product.category', 'category')
       .where('surface.status = :status', { status: true })
       .andWhere('product.is_active = :active', { active: true })
-      .andWhere('category.slug = :slug', { slug })
+     // .andWhere('category.slug = :slug', { slug })
+      .andWhere(slug !== 'all' ? 'category.slug = :slug' : '1=1', { slug })
       .andWhere('inventoryProduct.status = :active', { active: true })
       .orderBy('surface.surfaceName', 'ASC')
       .getMany();
@@ -247,7 +248,8 @@ export class ProductsService {
      .where('style.status = :styleStatus', { styleStatus: true })  
      .andWhere('product.is_active = :productStatus', { productStatus: true })  
      .andWhere('inventory.status = :inventoryStatus', { inventoryStatus: true })  
-     .andWhere('category.slug = :slug', { slug })
+     //.andWhere('category.slug = :slug', { slug })
+      .andWhere(slug !== 'all' ? 'category.slug = :slug' : '1=1', { slug })
     .getMany();
    
     const response =  plainToInstance(StyleResponseDto, styles, {
@@ -274,7 +276,8 @@ export class ProductsService {
        .leftJoin('product.category', 'category')
       .where('subject.status = :status', { status: true })
       .andWhere('product.is_active = :active', { active: true })
-      .andWhere('category.slug = :slug', {  slug })
+     // .andWhere('category.slug = :slug', {  slug })
+      .andWhere(slug !== 'all' ? 'category.slug = :slug' : '1=1', { slug })
       .andWhere('inventoryProduct.status = :active', { active: true })
       .orderBy('subject.subject', 'ASC')
       .getMany();
@@ -320,7 +323,8 @@ export class ProductsService {
      .leftJoin('product.category', 'category')
     .where('medium.status = :status', { status: true })
     .andWhere('product.is_active = :active', { active: true })
-    .andWhere('category.slug = :slug', { slug })
+   // .andWhere('category.slug = :slug', { slug })
+    .andWhere(slug !== 'all' ? 'category.slug = :slug' : '1=1', { slug })
     .andWhere('inventoryProduct.status = :active', { active: true })
     .orderBy('medium.name', 'ASC')
     .getMany();
