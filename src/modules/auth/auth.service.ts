@@ -3,7 +3,7 @@ import {
   UnauthorizedException,
   ConflictException,
   NotFoundException,
-  BadRequestException, Logger,
+  BadRequestException, Logger,Optional,
   ForbiddenException,forwardRef,
   Inject,Scope,
 } from '@nestjs/common';
@@ -44,7 +44,7 @@ import { UserProfileImage } from 'src/shared/entities/user-profile-image.entity'
 import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
 import { WishlistInventProdDto } from './dto/wishlist-invent-prod-list.dto'; 
 import { Cart } from 'src/shared/entities/cart.entity';
- // import { REQUEST } from '@nestjs/core';
+  import { REQUEST } from '@nestjs/core';
   import { Request } from 'express';
 import { ResetPassCreatedPayload } from 'src/shared/events/interfaces/event-payload.interface';
 import { RequestContextService } from 'src/core/request-context.service';
@@ -54,14 +54,13 @@ import { RequestContextService } from 'src/core/request-context.service';
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
-   private get context(): RequestContextService {
-    return this.moduleRef.get(RequestContextService, { strict: false });
-  }
+   //private contextPromise: Promise<RequestContextService> | null = null;
 
   
-  constructor(    
+  constructor(  
+      @Inject(REQUEST) private readonly request: Request,
     //  private readonly context: RequestContextService,
-        @Inject(forwardRef(() => ModuleRef)) private moduleRef: ModuleRef,
+      //  @Inject(forwardRef(() => ModuleRef)) private moduleRef: ModuleRef,
      private readonly eventEmitter: EventEmitter2,
  
  
@@ -602,15 +601,15 @@ console.log('guest ID ---Register--1--------',guestCartId)
     // Basic mobile number validation - adjust for your needs
     return /^\d{10,15}$/.test(input);
   } 
-
+  
 
   async login(user: User, req?: Request) {
   if (!user) {
     this.logger?.warn?.('Login failed: user is undefined');
     throw new UnauthorizedException('Invalid login request');
   }
- const request = req ?? this.context?.getRequest?.();
-const guestCartId = request?.cookies?.['guestCartId'];// ✅ Safe access with optional chaining
+// ✅ Now use async/await to get the context
+    const guestCartId = this.request?.cookies?.['guestCartId'];
   //const guestCartId = null;
 //console.log('guest ID ---Login--1--------',guestCartId)
 
