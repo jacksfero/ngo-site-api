@@ -264,6 +264,7 @@ export class AuthService {
     const user = await this.userRepository
   .createQueryBuilder('user')
   .leftJoinAndSelect('user.profileImage', 'profileImage')
+  .leftJoinAndSelect('user.roles', 'roles')
   .addSelect('user.profileEdit')  // ✅ add extra field
   .where('user.id = :id', { id: userId })
   .getOne();
