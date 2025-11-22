@@ -33,31 +33,30 @@ import { Style } from 'src/shared/entities/style.entity';
 import { Cart } from 'src/shared/entities/cart.entity';
 import { AuthUserAddressService } from './auth-user-address.service';
 import { AuthUserProductService } from './auth-user-product.service';
- 
+
 @Module({
-  imports: [TypeOrmModule.forFeature([User,Role,OtpVerification,PasswordResetToken,
-    UsersAbout,UsersAddress,BankDetail,KycDetails,Product,ProductImage,Surface,Medium,
-    Subject,Style,Productcategory,Wishlist,UserProfileImage,Cart
+  imports: [TypeOrmModule.forFeature([User, Role, OtpVerification, PasswordResetToken,
+    UsersAbout, UsersAddress, BankDetail, KycDetails, Product, ProductImage, Surface, Medium,
+    Subject, Style, Productcategory, Wishlist, UserProfileImage, Cart
   ]),
     UsersModule,
     OtpModule,
-    PassportModule,
-    ConfigModule, 
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get('JWT_SECRET'),
-        signOptions: {
-          expiresIn: `${configService.get('JWT_EXPIRATION_TIME')}`,
-        },
-      }),
+  PassportModule.register({ defaultStrategy: 'local' }), // ✅ Fixed
+    ConfigModule,
+  JwtModule.registerAsync({
+    imports: [ConfigModule],
+    inject: [ConfigService],
+    useFactory: async (configService: ConfigService) => ({
+      secret: configService.get('JWT_SECRET'),
+      signOptions: {
+        expiresIn: `${configService.get('JWT_EXPIRATION_TIME')}`,
+      },
     }),
+  }),
   ],
   controllers: [AuthController],
   providers: [
-    AuthService,AuthUserAddressService,AuthUserProductService, LocalStrategy,
-   // MailService,
+    AuthService,LocalStrategy, AuthUserAddressService, AuthUserProductService,  
     JwtStrategy,
     JwtAuthGuard,      // 👈 Add
     RolesGuard,        // 👈 Add
@@ -70,5 +69,5 @@ import { AuthUserProductService } from './auth-user-product.service';
     AuthService
   ],
 })
-export class AuthModule {}
+export class AuthModule { }
 

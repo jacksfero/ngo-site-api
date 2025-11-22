@@ -4,10 +4,10 @@ import {
   ConflictException,
   NotFoundException,
   BadRequestException, Logger,
-  ForbiddenException,
-  Inject,
+  ForbiddenException,forwardRef,
+  Inject,Scope,
 } from '@nestjs/common';
-
+import { ModuleRef } from '@nestjs/core';
 import * as bcrypt from 'bcrypt';
 
 import { UsersService } from 'src/modules/admin/users/users.service';
@@ -27,68 +27,43 @@ import { OtpService } from 'src/shared/otp/otp.service';
 import { ResendOtpDto } from './dto/resend-verification.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { OtpType, UserType, StartEmailVerificationDto, StartMobileVerificationDto } from './dto/start-verification.dto';
-
 import { SendOtpDto } from './dto/send-otp.dto';
 import { PasswordResetToken } from 'src/shared/entities/password-reset-token.entity';
 import { randomBytes } from 'crypto';
-import { UsersAbout } from 'src/shared/entities/users-about.entity';
-import { CreateUsersAboutDto, UpdateUsersAboutDto } from './dto/create-users-about.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
+ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { CreateUserAddressDto } from './dto/create-user-address.dto';
-import { AddressType, UsersAddress } from 'src/shared/entities/users-address.entity';
-import { UpdateUserAddressDto } from './dto/update-user-address.dto';
-import { UserAddressResponseDto } from './dto/user-address-response.dto';
-import { CreateProductDto } from '../admin/product/dto/create-product.dto';
-import { S3Service } from 'src/shared/s3/s3.service';
+ import { AddressType, UsersAddress } from 'src/shared/entities/users-address.entity';
+ import { S3Service } from 'src/shared/s3/s3.service';
 import { Product, ProductStatus } from 'src/shared/entities/product.entity';
-import { ProductImage } from 'src/shared/entities/product-image.entity';
-import { ProductPaginationDto } from '../admin/product/dto/product-pagination.dto';
-import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
-import { ProductDto } from '../admin/product/dto/product.dto';
+ import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { plainToInstance } from 'class-transformer';
-import { UpdateProductDto } from '../admin/product/dto/update-product.dto';
 import { CreateWishlistDto } from '../admin/wishlist/dto/create-wishlist.dto';
 import { Wishlist } from 'src/shared/entities/wishlist.entity';
 import { sanitizeFileName } from 'src/shared/utils/sanitizefilename';
-import { CreateKycDetailDto, UpdateKycDetailDto } from '../admin/users/dto/create-user-kyc-detail.dto';
-import { KycDetails } from 'src/shared/entities/user-kyc.entity';
-import { CreateBankDetailDto } from '../admin/users/dto/create-user-bank-detail.dto';
-import { UpdateBankDetailDto } from '../admin/users/dto/update-user-bank-detail.dto';
-import { BankDetail } from 'src/shared/entities/user-bank-detail.entity';
-
-import { UserProfileImage } from 'src/shared/entities/user-profile-image.entity';
-import { Productcategory } from 'src/shared/entities/productcategory.entity';
-import { PackingModeEntity } from 'src/shared/entities/packing-mode.entity';
-import { CommissionType } from 'src/shared/entities/commission-type.entity';
-import { ShippingTime } from 'src/shared/entities/shipping-time.entity';
-import { Size } from 'src/shared/entities/size.entity';
-import { Orientation } from 'src/shared/entities/orientation.entity';
-import { InventProdListDto } from '../client/invent-product/dto/invent-prod-list.dto';
+import { UserProfileImage } from 'src/shared/entities/user-profile-image.entity'; 
 import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
-import { WishlistInventProdDto } from './dto/wishlist-invent-prod-list.dto';
-import { Surface } from 'src/shared/entities/surface.entity';
-import { Medium } from 'src/shared/entities/medium.entity';
-import { Subject } from 'src/shared/entities/subject.entity';
-import { Style } from 'src/shared/entities/style.entity';
-import { slugify } from 'src/shared/utils/slugify';
+import { WishlistInventProdDto } from './dto/wishlist-invent-prod-list.dto'; 
 import { Cart } from 'src/shared/entities/cart.entity';
-import { MailService } from 'src/shared/mail/mail.service';
-
-// import { REQUEST } from '@nestjs/core';
+ // import { REQUEST } from '@nestjs/core';
   import { Request } from 'express';
 import { ResetPassCreatedPayload } from 'src/shared/events/interfaces/event-payload.interface';
 import { RequestContextService } from 'src/core/request-context.service';
-
-
+ 
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
-  constructor(
-    private readonly context: RequestContextService,
+
+   private get context(): RequestContextService {
+    return this.moduleRef.get(RequestContextService, { strict: false });
+  }
+
+  
+  constructor(    
+    //  private readonly context: RequestContextService,
+        @Inject(forwardRef(() => ModuleRef)) private moduleRef: ModuleRef,
      private readonly eventEmitter: EventEmitter2,
-    private readonly mailService: MailService,
+ 
  
     private usersService: UsersService,
     private jwtService: JwtService,
@@ -96,34 +71,13 @@ export class AuthService {
 
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
-
-    @InjectRepository(Subject)
-    private subjectRepo: Repository<Subject>,
-
-    @InjectRepository(Style)
-    private styleRepo: Repository<Style>,
-
-    @InjectRepository(ProductImage)
-    private imageRepo: Repository<ProductImage>,
-
+  
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
 
     @InjectRepository(UserProfileImage)
     private readonly profileImageRepo: Repository<UserProfileImage>,
-
-    @InjectRepository(UsersAbout)
-    private readonly aboutRepo: Repository<UsersAbout>,
-
-    @InjectRepository(KycDetails)
-    private readonly kycRepo: Repository<KycDetails>,
-
-    @InjectRepository(BankDetail)
-    private readonly BankRepo: Repository<BankDetail>,
-
-    @InjectRepository(UsersAddress)
-    private readonly addressRepo: Repository<UsersAddress>,
-
+  
     @InjectRepository(OtpVerification)
     private readonly otpveriRepo: Repository<OtpVerification>,
 
@@ -583,7 +537,7 @@ console.log('guest ID ---Register--1--------',guestCartId)
     }
   }
 
-  async validateUser(loginId: string, password: string): Promise<any> {
+   async validateUser(loginId: string, password: string): Promise<any> {
     // const { loginId, password } = dto;
 
     // console.log('loginId-----', loginId, '----password---', password);
@@ -647,7 +601,7 @@ console.log('guest ID ---Register--1--------',guestCartId)
   private isValidMobile(input: string): boolean {
     // Basic mobile number validation - adjust for your needs
     return /^\d{10,15}$/.test(input);
-  }
+  } 
 
 
   async login(user: User, req?: Request) {
@@ -655,9 +609,9 @@ console.log('guest ID ---Register--1--------',guestCartId)
     this.logger?.warn?.('Login failed: user is undefined');
     throw new UnauthorizedException('Invalid login request');
   }
-const request = req ?? this.context.getRequest();  // renamed
-  const guestCartId = request?.cookies?.['guestCartId'];// ✅ Safe access with optional chaining
-
+ //const request = req ?? this.context.getRequest();  // renamed
+  // const guestCartId = request?.cookies?.['guestCartId'];// ✅ Safe access with optional chaining
+  const guestCartId = null;
 //console.log('guest ID ---Login--1--------',guestCartId)
 
   let mergedCart: Cart | undefined;
