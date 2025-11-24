@@ -262,10 +262,9 @@ async findAll(
         'product.id',
         'product.productTitle',
         'product.slug',
-        'product.defaultImage',
-        'product.new_arrival',
-        'product.eliteChoice',
-        'product.affordable_art',
+        'product.defaultImage','product.price_on_demand','product.weight',
+         'product.width','product.height','product.depth',
+        
         'product.is_active',
         'artist.id',
         'artist.username',
