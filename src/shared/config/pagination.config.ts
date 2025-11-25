@@ -21,8 +21,8 @@ export const PRODUCTS_LIMIT = parseInt(process.env.PRODUCTS_LIMIT ?? '10');
 export const PRODUCTS_MAX_LIMIT = parseInt(process.env.PRODUCTS_MAX_LIMIT ?? '500');
 export const PRODUCTS_PAGE = parseInt(process.env.PRODUCTS_PAGE ?? '1');
 
-export const FRONT_INVENT_PRODUCTS_LIMIT = parseInt(process.env.FRONT_INVENT_PRODUCTS_LIMIT ?? '21');
-export const FRONT_INVENT_PRODUCTS_MAX_LIMIT = parseInt(process.env.FRONT_INVENT_PRODUCTS_MAX_LIMIT ?? '500');
+export const FRONT_INVENT_PRODUCTS_LIMIT = parseInt(process.env.FRONT_INVENT_PRODUCTS_LIMIT ?? '24');
+export const FRONT_INVENT_PRODUCTS_MAX_LIMIT = parseInt(process.env.FRONT_INVENT_PRODUCTS_MAX_LIMIT ?? '100');
 export const FRONT_INVENT_PRODUCTS_PAGE = parseInt(process.env.FRONT_INVENT_PRODUCTS_PAGE ?? '1');
 
 export const FRONT_WISHLIST_INVENT_PRODUCTS_LIMIT = parseInt(process.env.FRONT_WISHLIST_INVENT_PRODUCTS_LIMIT ?? '21');

@@ -89,7 +89,7 @@ export class ExhiProductListItemDto {
   
   @Expose()
   artist_price: number;
-
+ 
   @Expose()
   price_on_demand: number;
 
