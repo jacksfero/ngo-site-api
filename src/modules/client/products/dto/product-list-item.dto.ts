@@ -1,7 +1,9 @@
 
 import { Exclude, Expose, Type } from 'class-transformer';
+import { IsEnum } from 'class-validator';
 import { ArtistDto } from 'src/modules/auth/dto/artist.dto';
 import { ImageDto } from './product-image.dto';
+import { ProductStatus } from 'src/shared/entities/product.entity';
 import { CategoryDto } from '../../invent-product/dto/invent-prod-list.dto';
 import { InventoryDto, MediumDto, SurfaceDto } from '../../invent-product/dto/invent-product-detail-response.dto';
 
@@ -80,6 +82,10 @@ export class ExhiProductListItemDto {
   
   @Expose()
   slug: string;
+
+  @Expose()
+    @IsEnum(ProductStatus, { each: true }) // validate against enum
+    is_active: ProductStatus;
   
   @Expose()
   artist_price: number;
