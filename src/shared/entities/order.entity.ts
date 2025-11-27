@@ -79,7 +79,7 @@ currency: string;
   @Column('decimal', { precision: 10, scale: 4, default: 1 })
   exchangeRate: number; // INR → selected currency
 
-@Column({ length: 2, nullable: true })
+@Column({ length: 50, nullable: true })
 country: string;
 
   @Column({ nullable: true })

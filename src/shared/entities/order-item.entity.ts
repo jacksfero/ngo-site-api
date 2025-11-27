@@ -32,40 +32,40 @@ export class OrderItem {
   @Column()
   quantity: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
   price: number; // ✅ Final unit price at time of purchase
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
   originalPrice: number; // ✅ Original price (before discount)
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   discountPct: number; // ✅ Discount %
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   discountAmount: number; // ✅ Discount %
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   gstPct: number; // ✅ GST percentage at time of order
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   gstAmount: number; // ✅ GST value
 
-    @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
+    @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   shipGstPct: number; // ✅ GST percentage at time of order
 
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   shippingCost: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   shipGstAmount: number; // ✅ GST value
 
     @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   shippingCostOther: number; // ✅ shippingCostOther value in case of isDomestic False
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   shipGstAmountOther: number; // ✅ GST Amount in case of isDomestic False
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   total: number; // ✅ (price - discount + gst + shipGst) * quantity
 
   @Column({ nullable: true })
