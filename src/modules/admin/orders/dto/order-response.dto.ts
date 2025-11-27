@@ -61,6 +61,12 @@ import { PaymentStatus } from 'src/shared/entities/payment.entity';
   other_phone: string;
   
   @Expose()
+  phonecode: string;
+  
+  @Expose()
+  phonecode_other: string;
+  
+  @Expose()
   name: string;
 }
 
