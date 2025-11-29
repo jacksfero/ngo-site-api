@@ -52,6 +52,7 @@ async function bootstrap() {
         'http://localhost:3000',
         'https://indiagalleri-frontend.vercel.app',
         'https://indigalleria-backend.onrender.com',
+        'https://rare-quietude-production-ab48.up.railway.app',
       ],
       methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
