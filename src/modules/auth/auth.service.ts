@@ -58,8 +58,8 @@ export class AuthService {
 
   
   constructor(  
-      @Inject(REQUEST) private readonly request: Request,
-    //  private readonly context: RequestContextService,
+     //  @Inject(REQUEST) private readonly request: Request,
+     //  private readonly context: RequestContextService,
       //  @Inject(forwardRef(() => ModuleRef)) private moduleRef: ModuleRef,
      private readonly eventEmitter: EventEmitter2,
  
@@ -536,7 +536,7 @@ console.log('guest ID ---Register--1--------',guestCartId)
     }
   }
 
-   async validateUser(loginId: string, password: string): Promise<any> {
+   async validateUser(loginId: string, password: string, req?: Request): Promise<any> {
     // const { loginId, password } = dto;
 
     // console.log('loginId-----', loginId, '----password---', password);
@@ -608,10 +608,11 @@ console.log('guest ID ---Register--1--------',guestCartId)
     this.logger?.warn?.('Login failed: user is undefined');
     throw new UnauthorizedException('Invalid login request');
   }
+   //const guestCartId = this.request?.cookies?.['guestCartId'];
 // ✅ Now use async/await to get the context
-    const guestCartId = this.request?.cookies?.['guestCartId'];
-  //const guestCartId = null;
-//console.log('guest ID ---Login--1--------',guestCartId)
+   // const guestCartId = this.request?.cookies?.['guestCartId'];
+   const guestCartId = req?.cookies?.['guestCartId'];
+ console.log('guest ID ---Login--1--------',guestCartId)
 
   let mergedCart: Cart | undefined;
   if (guestCartId) {

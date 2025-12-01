@@ -33,11 +33,13 @@ import { Style } from 'src/shared/entities/style.entity';
 import { Cart } from 'src/shared/entities/cart.entity';
 import { AuthUserAddressService } from './auth-user-address.service';
 import { AuthUserProductService } from './auth-user-product.service';
+import { LocalAuthGuard } from './guards/local-auth.guard';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, Role, OtpVerification, PasswordResetToken,
     UsersAbout, UsersAddress, BankDetail, KycDetails, Product, ProductImage, Surface, Medium,
-    Subject, Style, Productcategory, Wishlist, UserProfileImage, Cart
+    Subject, Style, Productcategory, Wishlist, UserProfileImage, Cart,
+    
   ]),
     UsersModule,
     OtpModule,
@@ -58,6 +60,7 @@ import { AuthUserProductService } from './auth-user-product.service';
   providers: [
     AuthService,LocalStrategy, AuthUserAddressService, AuthUserProductService,  
     JwtStrategy,
+   // LocalAuthGuard,
     JwtAuthGuard,      // 👈 Add
     RolesGuard,        // 👈 Add
     PermissionsGuard,  // 👈 Add
@@ -66,7 +69,7 @@ import { AuthUserProductService } from './auth-user-product.service';
     JwtAuthGuard,      // 👈 Export
     RolesGuard,        // 👈 Export
     PermissionsGuard,  // 👈 Export
-    AuthService
+    AuthService,PassportModule
   ],
 })
 export class AuthModule { }

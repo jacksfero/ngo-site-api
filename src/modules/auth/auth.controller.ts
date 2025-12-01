@@ -5,7 +5,7 @@ import {
   Request as Req,
   UseGuards, Res,
   Post,
-  Body,
+  Body,Optional,Inject,
   Patch,
   Param,
   Delete,
@@ -60,15 +60,21 @@ import { User } from 'src/shared/entities/user.entity';
 import { RequirePermissions } from './decorators/permissions.decorator';
 import { AuthUserAddressService } from './auth-user-address.service';
 import { AuthUserProductService } from './auth-user-product.service';
+//import { LocalStrategy } from './strategies/local.strategy';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService,
     private authUserAddressService: AuthUserAddressService,
 
-    private authUserProductService: AuthUserProductService
+    private authUserProductService: AuthUserProductService,
 
-  ) { }
+   // @Optional() @Inject(LocalStrategy) private localStrategy?: LocalStrategy
+  ) {
+   // console.log('🔧 AuthController - LocalStrategy injected:', !!localStrategy);
+  }
+
+ 
 
   /**
      * Step 1: Start Registration - Send OTP
