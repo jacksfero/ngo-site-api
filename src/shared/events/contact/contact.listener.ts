@@ -15,7 +15,7 @@ export class ContactListener {
  
   @OnEvent('contact.created', { async: true })
 async handleContactCreated(payload: ContactCreatedPayload) {
- if (this.configService.get('MAIL_ENABLED') !== 'astrue') {
+ if (this.configService.get('MAIL_ENABLED') !== 'true') {
     this.logger.warn(`🚫 Mail disabled. OTP email not sent to ${payload.to}`);
     return;
   }
@@ -31,7 +31,7 @@ async handleContactCreated(payload: ContactCreatedPayload) {
   let subject_admin = `New Contact Us Submission from ${payload.name}`; 
   let to = payload.to as string;
   let admin = 'info@indigalleria.com';  
-  admin = 'jayprakash005@gmail.com';  
+  //admin = 'jayprakash005@gmail.com';  
 
   // ✅ contact_for_art type
   if (payload.type === 'contact_for_art') {
