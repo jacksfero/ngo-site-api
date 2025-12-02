@@ -12,6 +12,7 @@ import { OtpType,UserType } from 'src/modules/auth/dto/start-verification.dto';
 import { ApiResponse } from '../dto/api-response.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OtpCreatedPayload } from '../events/interfaces/event-payload.interface';
+import { SmsService } from '../sms/sms.service';
 export type OtpVerificationResult =
   | { success: true; message: string; user?: undefined }
   | { success: true; message: string; user: User };
@@ -28,6 +29,7 @@ export class OtpService {
   private readonly ATTEMPT_WINDOW_MINUTES = 10; // 10 minutes window for attempts
 
   constructor(
+    private smsService: SmsService,
     private readonly eventEmitter: EventEmitter2,
 
     @InjectRepository(User)
@@ -294,14 +296,45 @@ if(type === 'email'){
     };*/
     
     this.eventEmitter.emit('otp.send', payload);
-  } 
+  }else
+    {
+     // const otp = '2323'; 
+      const brand = 'INDGL';
+       this.validateMobile(identifier);
+   const  mobile = '9871493853';
+   
+    const message = `Your ${brand} OTP for verification is: ${otp}. OTP is confidential, refrain from sharing it with anyone. By Edumarc Technologies`;
+  const templateId = '1707168926925165526';
+
+    this.smsService.sendSms(identifier, message, templateId);
+
+    } 
 
     return { 
       success: true, 
-      message: `OTP sent to your ${type} -- ${otp}`, 
+      message: `OTP sent to your ${type} `, 
       data: { identifier, type, userType } 
     };
   }
+
+
+private validateMobile(mobile: string): void {
+  const cleaned = mobile.trim();
+
+  // Must be exactly 10 digits
+  const regex = /^[6-9]\d{9}$/;
+
+  if (!regex.test(cleaned)) {
+    throw new BadRequestException(
+      'Invalid mobile number. It must be a valid 10-digit Indian mobile number.'
+    );
+  }
+}
+
+
+
+
+
 
   async getLatestVerifiedOtp(
     identifier: string,
