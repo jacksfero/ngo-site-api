@@ -53,8 +53,8 @@ async function bootstrap() {
         'https://indiagalleri-frontend.vercel.app',
         'https://indigalleria-backend.onrender.com',
         'https://rare-quietude-production-ab48.up.railway.app',
-        'https://www.indigalleria.in','https://indigalleria.in',
-        'wwww.indigalleria.in','indigalleria.in',
+        'https://www.indigalleria.com','https://indigalleria.com',
+        'wwww.indigalleria.com','indigalleria.com',
       ],
       methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -101,7 +101,7 @@ async function bootstrap() {
    
 
     // ✅ Start server
-    const port = process.env.PORT || 3000;
+    const port = process.env.PORT || 3030;
     await app.listen(port, '0.0.0.0');
 
     console.log('🎉 ==========================================');
