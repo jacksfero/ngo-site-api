@@ -94,9 +94,14 @@ const cached = await this.cacheService.get(cacheKey);
 
    // console.log(artistId,'----artist---id-=======---------')
     // ✅ Filtering
+     
     if (status) {
-      qb.andWhere('inventory.status = :status', { status });
-    }
+  qb.andWhere('inventory.status = :status', { status });
+   qb.andWhere('product.is_active = :pDefaultStatus', { pDefaultStatus: 'active' });
+} else {
+  qb.andWhere('inventory.status = :defaultStatus', { defaultStatus: true });
+   qb.andWhere('product.is_active = :pDefaultStatus', { pDefaultStatus: 'active' });
+}
     if (search) {
       
        qb.andWhere(

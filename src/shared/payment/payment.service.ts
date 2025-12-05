@@ -3,10 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as crypto from 'crypto';
 import axios from 'axios';
-import { PaymentRequestDto } from './dto/payment-request.dto';
-import { CreatePaymentDto } from './dto/create-payment.dto';
-import { UpdatePaymentDto } from './dto/update-payment.dto';
-import { Payment, PaymentStatus } from 'src/shared/entities/payment.entity';
+ 
+import { PaymentStatus } from './enum/payment-status.enum';
+import { Payment} from 'src/shared/entities/payment.entity';
 import { InitiatePaymentDto } from './dto/initiate-payment.dto';
 import { PayUMoneyService } from './gateways/payumoney.service';
 import { RazorpayService } from './gateways/razorpay.service';

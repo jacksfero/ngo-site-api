@@ -1,5 +1,5 @@
 // dto/payment-callback-result.ts
-import { PaymentStatus } from 'src/shared/entities/payment.entity';
+import { PaymentStatus } from "../enum/payment-status.enum";
 
 export interface PaymentCallbackResult {
   /** Whether payment was successful */

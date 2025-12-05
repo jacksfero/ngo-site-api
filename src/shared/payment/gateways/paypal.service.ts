@@ -3,7 +3,7 @@ import { Injectable,Request } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as paypal from '@paypal/checkout-server-sdk';
-import { Payment, PaymentStatus } from 'src/shared/entities/payment.entity';
+import { PaymentStatus } from '../enum/payment-status.enum';
 import { PaymentCallbackResult } from '../dto/payment-callback-result';
 import { ConfigService } from '@nestjs/config';
 

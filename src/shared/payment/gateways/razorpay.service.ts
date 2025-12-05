@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PaymentCallbackResult } from '../dto/payment-callback-result';
-import { PaymentStatus } from 'src/shared/entities/payment.entity';
+import { PaymentStatus } from '../enum/payment-status.enum';
 import { ConfigService } from '@nestjs/config';
 
 const Razorpay = require('razorpay');
