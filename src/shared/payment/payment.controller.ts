@@ -115,17 +115,17 @@ async webhook(@Body() body: any, @Headers('x-razorpay-signature') signature: str
 async razorpayCallback(@Res() res: Response, @Body() body: any) {
   try {
     const verify = await this.paymentService.handleCallbackRazor(body);
-
+	console.log(`success---------${this.config.get('FRONTEND_BASE_URL')}${this.config.get('FRONTEND_SUCCESS_PATH')}`)
     // ✅ Redirect to success page (frontend)
      console.error('Payment verification success:', verify);
-     return res.redirect(
+  return res.redirect(
       `${this.successRedirectUrl}?txnId=${verify.txnId}&status=success`,
     );
 
   //  return res.redirect(`https://your-frontend.com/payment/success?txnId=${verify.txnId}`);
   } catch (error) {
     console.error('Payment verification failed:', error.message);
-
+	console.log(`Failed---------${this.config.get('FRONTEND_BASE_URL')}${this.config.get('FRONTEND_FAILURE_PATH')}`)
     // ❌ Redirect to failure page
   //  return res.redirect(`https://your-frontend.com/payment/failure`);
      return res.redirect(
