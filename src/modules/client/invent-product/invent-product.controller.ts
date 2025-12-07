@@ -5,7 +5,7 @@ import { UpdateInventProductDto } from './dto/update-invent-product.dto';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { FRONT_INVENT_PRODUCTS_PAGE,FRONT_INVENT_PRODUCTS_MAX_LIMIT,FRONT_INVENT_PRODUCTS_LIMIT } from 'src/shared/config/pagination.config';
 import { InventProdPaginatDto } from './dto/invent-product-paginate.dto';
-import { InventProdListDto } from './dto/invent-prod-list.dto';
+import { InventProdListArtistDto, InventProdListDto } from './dto/invent-prod-list.dto';
 import { InventProductDetailResponseDto } from './dto/invent-product-detail-response.dto';
 import { PaginationClinetPipe } from 'src/shared/pipes/pagination-client.pipe';
 
@@ -26,7 +26,7 @@ export class InventProductController {
   async getArtworkByArtist(
     @Query(new PaginationClinetPipe(FRONT_INVENT_PRODUCTS_LIMIT, FRONT_INVENT_PRODUCTS_MAX_LIMIT, FRONT_INVENT_PRODUCTS_PAGE))
     @Query() paginationDto: InventProdPaginatDto,
-  ): Promise<PaginationResponseDto<InventProdListDto>> {
+  ): Promise<PaginationResponseDto<InventProdListArtistDto>> {
     return this.inventProductService.getArtworkByArtist(paginationDto);
   } 
 

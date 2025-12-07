@@ -7,7 +7,7 @@ import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { Inventory } from 'src/shared/entities/inventory.entity';
 import { InventProdPaginatDto } from './dto/invent-product-paginate.dto';
-import { InventProdListDto } from './dto/invent-prod-list.dto';
+import { InventProdListArtistDto, InventProdListDto } from './dto/invent-prod-list.dto';
 import { InventProductDetailResponseDto } from './dto/invent-product-detail-response.dto';
 import { ProductStatus } from 'src/shared/entities/product.entity';
 import { CacheService } from 'src/core/cache/cache.service';
@@ -402,7 +402,7 @@ async findAll(
 
 async getArtworkByArtist(
   paginationDto: InventProdPaginatDto,
-): Promise<PaginationResponseDto<InventProdListDto>> {
+): Promise<PaginationResponseDto<InventProdListArtistDto>> {
   try {
     const {
       page,

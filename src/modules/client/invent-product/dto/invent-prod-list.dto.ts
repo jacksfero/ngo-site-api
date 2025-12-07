@@ -173,12 +173,64 @@ export class ProductInvtArtistDto {
   artist: ArtistDto;
  
 }
-
-
-
+ 
 
 @Exclude()
 export class InventProdListDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  @Type(() => ProductInvtDto)
+  product?: ProductInvtDto;
+
+  @Expose()
+  @Type(() => ShippingInvtDto)
+  shippingWeight: ShippingInvtDto;
+ 
+  @Expose()
+  productId: number;
+
+  @Expose()
+  entryDate: Date;
+
+  @Expose()
+  endDate: Date;
+
+  @Expose()
+  status: Boolean;
+
+  @Expose()
+  price: number;
+
+  @Expose()
+  discount: number;
+
+  @Expose()
+  gstSlot: string;
+
+  @Expose()
+  shippingSlot: string;
+
+  @Expose()
+  termsAndConditions: string;
+
+   @Expose()
+  finaldiscountamount: number;
+
+  @Expose()
+  displayPrice: number;
+
+  @Expose()
+  currency: string;
+
+  @Expose()
+  updatedAt: Date;
+}
+
+
+@Exclude()
+export class InventProdListArtistDto {
   @Expose()
   id: number;
 
@@ -189,8 +241,7 @@ export class InventProdListDto {
   @Expose()
   @Type(() => ShippingInvtDto)
   shippingWeight: ShippingInvtDto;
-
-
+ 
   @Expose()
   productId: number;
 
