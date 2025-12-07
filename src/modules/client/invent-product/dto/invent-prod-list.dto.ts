@@ -164,8 +164,8 @@ export class ProductInvtArtistDto {
   surface: SurfaceDto;
 
    @Expose()
-  @Type(() => SubjectDto)
-  subjects: SubjectDto;
+  @Type(() => MediumDto)
+  medium: MediumDto;
  
 
   @Expose()
