@@ -120,6 +120,60 @@ export class ProductInvtDto {
  
 }
 
+@Exclude()
+export class ProductInvtArtistDto {
+
+  @Expose()
+  id: number;
+
+  @Expose()
+  productTitle: string;
+ 
+
+  @Expose()
+  slug: string;
+
+  @Expose()
+  defaultImage: string;
+
+  @Expose()
+  price_on_demand: boolean;
+  
+  @Expose()
+  weight: string;
+
+  @Expose()
+  width: string;
+
+  @Expose()
+  height: string;
+
+  @Expose()
+  depth: string;
+
+  @Expose()
+  @IsEnum(ProductStatus, { each: true }) // validate against enum
+  is_active: ProductStatus;
+
+  @Expose()
+  @Type(() => CategoryDto)
+  category: CategoryDto;
+
+  @Expose()
+  @Type(() => SurfaceDto)
+  surface: SurfaceDto;
+
+   @Expose()
+  @Type(() => SubjectDto)
+  subjects: SubjectDto;
+ 
+
+  @Expose()
+  @Type(() => ArtistDto)
+  artist: ArtistDto;
+ 
+}
+
 
 
 
@@ -129,8 +183,8 @@ export class InventProdListDto {
   id: number;
 
   @Expose()
-  @Type(() => ProductInvtDto)
-  product?: ProductInvtDto;
+  @Type(() => ProductInvtArtistDto)
+  product?: ProductInvtArtistDto;
 
   @Expose()
   @Type(() => ShippingInvtDto)

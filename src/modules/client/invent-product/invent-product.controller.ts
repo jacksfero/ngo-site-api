@@ -22,6 +22,14 @@ export class InventProductController {
     return this.inventProductService.findAll(paginationDto);
   } 
 
+    @Get('artworkbyartist')
+  async getArtworkByArtist(
+    @Query(new PaginationClinetPipe(FRONT_INVENT_PRODUCTS_LIMIT, FRONT_INVENT_PRODUCTS_MAX_LIMIT, FRONT_INVENT_PRODUCTS_PAGE))
+    @Query() paginationDto: InventProdPaginatDto,
+  ): Promise<PaginationResponseDto<InventProdListDto>> {
+    return this.inventProductService.getArtworkByArtist(paginationDto);
+  } 
+
   @Get('soldartworkbyartist')
   async soldArtworkByArtist(
     @Query(new PaginationClinetPipe(FRONT_INVENT_PRODUCTS_LIMIT, FRONT_INVENT_PRODUCTS_MAX_LIMIT, FRONT_INVENT_PRODUCTS_PAGE))
