@@ -9,63 +9,45 @@ import { DatabaseHealthService } from './database.health.service';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService): Promise<TypeOrmModuleOptions> => {
-        const logger = new Logger('TypeORM');
+      useFactory: async (configService: ConfigService): Promise<TypeOrmModuleOptions> => ({
+        type: 'mysql',
+        host: configService.get<string>('DB_HOST'),
+        port: configService.get<number>('DB_PORT'),
+        username: configService.get<string>('DB_USERNAME'),
+        password: configService.get<string>('DB_PASSWORD'),
+        database: configService.get<string>('DB_NAME'),
 
-        return {
-          type: 'mysql',
-          host: configService.get<string>('DB_HOST'),
-          port: configService.get<number>('DB_PORT'),
-          username: configService.get<string>('DB_USERNAME'),
-          password: configService.get<string>('DB_PASSWORD'),
-          database: configService.get<string>('DB_NAME'),
-          synchronize: false,
-          autoLoadEntities: true,
-          entityPrefix: 'my_',
-          // ✅ Valid connection timeouts
-          connectTimeout: 30000,      // 30s to establish connection
-          acquireTimeout: 30000,      // 30s to acquire from pool
+        // ⚠️ Recommended for production
+        synchronize: true,
+       /// migrationsRun: true,
 
-          // Connection pool settings to prevent leaks
-          extra: {
-            //  connectionLimit: 8,
-            // acquireTimeout: 30000,
-            // idleTimeout: 60000, // Close idle connections after 60s
-            // timeout: 30000,
-            charset: 'utf8mb4',
-            multipleStatements: false,
-            //  acquireTimeoutMillis: 30000,  // ✅ Wait max 30s for connection
-            //idleTimeoutMillis: 60000,     // ✅ Close idle after 60s
-            // timeout: 30000,               // ✅ This might be valid in some contexts
-            connectionLimit: 8,
-            waitForConnections: true,
-            queueLimit: 0,
-            // acquireTimeoutMillis: 30000,  // MySQL2 specific
-            // idleTimeoutMillis: 60000,     // MySQL2 specific
-            //  charset: 'utf8mb4',
-            //  multipleStatements: false,
-            timezone: 'Z',
-            decimalNumbers: true,
-          },
-          // ✅ Connection-level timeouts (valid options)
-          logging: ['error'],
-          retryAttempts: 3,
-          retryDelay: 3000,
+        autoLoadEntities: true,
+        entityPrefix: 'my_',
 
-        };
-      },
+        // ✔ VALID MYSQL2 timeout
+        connectTimeout: 30000, 
 
-      dataSourceFactory: async (options: DataSourceOptions) => {
-        const logger = new Logger('DataSource');
-        try {
-          const dataSource = new DataSource(options);
-          await dataSource.initialize();
-          logger.log('✅ Database connection established');
-          return dataSource;
-        } catch (error) {
-          logger.error('❌ Database connection failed', error.stack);
-          throw error;
-        }
+        // ✔ MySQL2 pool settings
+        extra: {
+          connectionLimit: 8,
+          waitForConnections: true,
+          queueLimit: 0,
+          charset: 'utf8mb4',
+          multipleStatements: false,
+          timezone: 'Z',
+          decimalNumbers: true,
+        },
+
+        logging: ['error'],
+        retryAttempts: 3,
+        retryDelay: 3000,
+      }),
+      
+
+     dataSourceFactory: async (options: DataSourceOptions) => {
+        const dataSource = new DataSource(options);
+        await dataSource.initialize();
+        return dataSource;
       },
     }),
   ],
