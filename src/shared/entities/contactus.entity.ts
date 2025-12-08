@@ -1,6 +1,8 @@
-import { ContactUsType,Art_Type } from 'src/modules/admin/contactus/enums/contact-us-type.enum';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn, ManyToOne } from 'typeorm';
-import { Product } from './product.entity';
+ 
+//import { ContactUsType,Art_Type } from 'src/modules/admin/contactus/enums/contact-us-type.enum';
+import { ContactUsType,Art_Type } from '../../modules/admin/contactus/enums/contact-us-type.enum';
+
 
 @Entity()
 export class ContactUs {

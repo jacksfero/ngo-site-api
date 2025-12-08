@@ -1,5 +1,5 @@
 // modules/client/blog/blog-client.controller.ts
-import { Controller, Get, Param, Query, Req } from '@nestjs/common';
+import { Controller, Post,Get, Param, Query, Req } from '@nestjs/common';
 import { BlogClientService } from './blog-client.service';
  import { Request } from 'express';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
@@ -27,6 +27,17 @@ export class BlogClientController {
     paginationDto: PaginationBaseDto
   ): Promise<PaginationResponseDto<BlogListDto>> {
     return this.blogService.findAllPublished(paginationDto);
+  }
+
+    // ✅ Like Blog
+  @Post(':id/like')
+  async likeBlog(@Param('id') blogId: number, @Req() req: Request) {
+    const viewerIdentifier =
+      (req as any).user?.id ||
+      req.cookies?.viewerId ||
+      req.ip;
+
+    return this.blogService.likeBlog(blogId, String(viewerIdentifier));
   }
   
  @Get('top-viewed')

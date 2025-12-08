@@ -6,7 +6,7 @@ export class Medium {
   @PrimaryGeneratedColumn()
   id: number;
 
-    @Index()
+   
   @Column({ type: 'varchar', length: 255 })
   name: string;
 
@@ -20,7 +20,7 @@ export class Medium {
    @Column({ type: 'varchar', length: 50, nullable: true })
   updatedBy: string;
 
-   @Index()
+ 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 

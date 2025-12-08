@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
 
-import { Role } from 'src/shared/entities/role.entity'; // For runtime (if absolutely needed)
+import { Role } from './role.entity'; // For runtime (if absolutely needed)
 
 // console.log(Role); // Now works (but avoid in entities)
 

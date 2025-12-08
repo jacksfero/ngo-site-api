@@ -1,5 +1,5 @@
 // src/app.module.ts
-import { Module } from '@nestjs/common';
+import { Module,forwardRef } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -15,10 +15,12 @@ import paypalConfig from './shared/config/paypal.config';
 import razorpayConfig from './shared/config/razor.config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CoreModule } from './core/core.module';
+//import { PassportModule } from '@nestjs/passport';
 
 
 @Module({
   imports: [
+
     CoreModule,   // only once
       ScheduleModule.forRoot(),
     ConfigModule.forRoot({
@@ -30,6 +32,8 @@ import { CoreModule } from './core/core.module';
     AdminModule,
     ClientModule,
     SharedModule,
+   //  PassportModule.register({ session: false }),
+  //forwardRef(() => AuthModule),
   ],
   controllers: [AppController], // ✅ Make sure AppController is here
   providers: [

@@ -1,9 +1,10 @@
-import { Column, Index, JoinTable,OneToMany, ManyToMany, ManyToOne, Entity, PrimaryGeneratedColumn, Unique, BeforeInsert, BeforeUpdate } from 'typeorm';
- 
+import { Column, Index, JoinTable, OneToMany, ManyToMany, ManyToOne, Entity, PrimaryGeneratedColumn, Unique, BeforeInsert, BeforeUpdate } from 'typeorm';
+
 import { Category } from './category.entity';
 import { Tag } from './tag.entity';
 import { User } from './user.entity';
 import { BlogView } from './blog-view.entity';
+import { BlogLike } from './blog-like.entity';
 
 @Entity('blog')
 @Unique(['slug']) // Enforce unique slug
@@ -12,7 +13,7 @@ export class Blog {
   @PrimaryGeneratedColumn()
   id: number;
 
-   @Index()
+  @Index()
   @ManyToOne(() => Category, (category) => category.blogs, { eager: true })
   category: Category;
 
@@ -24,18 +25,18 @@ export class Blog {
   })
   tags: Tag[];
 
-   @Index()
+  @Index()
   @ManyToOne(() => User, (user) => user.blogs, { eager: true })
   author: User;
 
-  @Index()
+ 
   @Column({ type: 'varchar', length: 200 })
   title: string;
 
   @Column({ type: 'varchar', length: 200, nullable: true, default: null })
   titleImage: string | null;
 
-  @Index()
+  
   @Column({ type: 'varchar', length: 150 })
   slug: string;
 
@@ -45,8 +46,15 @@ export class Blog {
   @Column({ default: 0 })
   views: number; // 👈 view counter
 
-   @OneToMany(() => BlogView, (view) => view.blog)
+  @OneToMany(() => BlogView, (view) => view.blog)
   blogViews: BlogView[];
+
+  @Column({ default: 0 })
+likeCount: number;
+
+  @OneToMany(() => BlogLike, (like) => like.blog)
+  likes: BlogLike[];
+
 
   @Column({
     type: 'longtext',
@@ -55,15 +63,15 @@ export class Blog {
   })
   blogContent: string;
 
-  @Column({ type: 'text', nullable: true, default: null})
+  @Column({ type: 'text', nullable: true, default: null })
   keywordsTag: string;
- 
+
   @Column({ type: 'text', nullable: true, default: null })
   descriptionTag: string;
- 
+
   @Column({ type: 'varchar', length: 150, nullable: true, default: null })
   optionalTitle: string;
- 
+
 
   @Index()
   @Column({ type: 'boolean', default: false })
@@ -99,7 +107,7 @@ export class Blog {
     if (this.title) {
       this.title = this.title.trim().replace(/\s+/g, ' ');
     }
-    
+
     // Normalize slug (convert to lowercase and replace spaces with hyphens)
     if (this.slug) {
       this.slug = this.slug.trim()
@@ -107,7 +115,7 @@ export class Blog {
         .replace(/\s+/g, '-')
         .replace(/[^\w\-]+/g, '');
     }
-    
+
     // Normalize h1Title
     if (this.h1Title) {
       this.h1Title = this.h1Title.trim().replace(/\s+/g, ' ');

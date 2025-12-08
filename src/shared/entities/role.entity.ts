@@ -6,8 +6,8 @@ import {
   ManyToMany,
   JoinTable,
 } from 'typeorm';
-import { User } from 'src/shared/entities/user.entity';
-import { Permission } from 'src/shared/entities/permission.entity';
+import { User } from './user.entity';
+import { Permission } from './permission.entity';
 /*
 //console.log('-----Role Entiry---------- DEBUG:In Roles  User is', User);
 //console.log('----Role Entiry-------- DEBUG:In Roles Permission is', Permission);

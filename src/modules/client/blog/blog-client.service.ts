@@ -14,6 +14,7 @@ import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
 import { CacheService } from 'src/core/cache/cache.service';
 import { response } from 'express';
 import { BlogView } from 'src/shared/entities/blog-view.entity';
+import { BlogLike } from 'src/shared/entities/blog-like.entity';
 
 
 @Injectable()
@@ -23,6 +24,10 @@ export class BlogClientService {
     @InjectRepository(Blog)
     private blogRepo: Repository<Blog>,
 
+     @InjectRepository(BlogLike)
+    private blogLikeRepo: Repository<BlogLike>,
+
+
     @InjectRepository(BlogView)
     private blogViewRepo: Repository<BlogView>,
 
@@ -30,7 +35,35 @@ export class BlogClientService {
     private categoryRepo: Repository<Category>,
 
   ) { }
+// ✅ Like Blog (One Like Per Viewer)
+  async likeBlog(blogId: number, viewerIdentifier: string) {
+    const blog = await this.blogRepo.findOne({ where: { id: blogId } });
+    if (!blog) throw new NotFoundException('Blog not found');
 
+    const alreadyLiked = await this.blogLikeRepo.findOne({
+      where: {
+        blog: { id: blogId },
+        viewerIdentifier,
+      },
+    });
+
+    if (alreadyLiked) {
+      return { message: 'Already liked' };
+    }
+
+    const like = this.blogLikeRepo.create({
+      blog,
+      viewerIdentifier,
+    });
+
+    await this.blogLikeRepo.save(like);
+
+    // ✅ Update total count in Blog table
+    blog.likeCount += 1;
+    await this.blogRepo.save(blog);
+
+    return { message: 'Blog liked successfully' };
+  }
   /* async findAllPublished(
      paginationDto: PaginationDto,
    ): Promise<PaginationResponseDto<BlogListDto>> {*/
@@ -48,7 +81,7 @@ export class BlogClientService {
 
     const queryBuilder = this.blogRepo
       .createQueryBuilder('blog')
-      .select(['blog.id', 'blog.title', 'blog.views', 'blog.descriptionTag', 'blog.scheduledPublishDate', 'blog.slug', 'blog.createdAt',
+      .select(['blog.id', 'blog.title', 'blog.views','blog.likeCount', 'blog.descriptionTag', 'blog.scheduledPublishDate', 'blog.slug', 'blog.createdAt',
         'blog.titleImage',
         //'blog.blogContent'
       ])
@@ -171,6 +204,8 @@ const isSearch = Boolean(searchTerm);
 
 
   async getBlogBySlug(slug: string, viewerIdentifier: string): Promise<BlogListDetailDto> {
+   
+   
     const cacheKey = `frontend:blog:${slug}`;
     let blog = await this.cacheService.get<Blog>(cacheKey);
 
@@ -197,8 +232,7 @@ const isSearch = Boolean(searchTerm);
 
     if (!existingView) {
       await this.blogViewRepo.save({
-        blog: { id: blogId },
-        viewerIdentifier,
+        blog: { id: blogId },   viewerIdentifier,
       });
 
       // ✅ Increment in DB

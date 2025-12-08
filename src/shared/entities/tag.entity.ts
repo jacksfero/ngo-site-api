@@ -3,8 +3,6 @@ import { Blog } from './blog.entity';
 import { Product } from './product.entity';
 
 @Entity('tags')
-@Index(['name'])  // 🔍 Fast name search
-@Index(['slug'])  // 🔍 Fast slug lookup
 export class Tag {
   @PrimaryGeneratedColumn()
   id: number;

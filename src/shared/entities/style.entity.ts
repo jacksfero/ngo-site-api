@@ -7,7 +7,7 @@ export class Style {
   @PrimaryGeneratedColumn()
   id: number;
 
-   @Index()
+ 
   @Column({ type: 'varchar', length: 255 })
   title: string;
 

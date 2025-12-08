@@ -7,7 +7,7 @@ export class Subject {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Index()
+ 
   @Column({ type: 'varchar', length: 255 })
   subject: string;
 

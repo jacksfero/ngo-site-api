@@ -1,51 +1,57 @@
-import { PrimaryGeneratedColumn,Entity, Column, OneToMany } from "typeorm";
+import { PrimaryGeneratedColumn, Entity, Column, OneToMany } from "typeorm";
 import { ExhibitionProduct } from "./exhibition-product.entity";
+ 
 
 @Entity('exhibitions')
 export class Exhibition {
-    @PrimaryGeneratedColumn()
-    id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column({ type: 'varchar', length: 150, })
-    ExibitionTitle: string;
+  @Column({ type: 'varchar', length: 150, })
+  ExibitionTitle: string;
 
-    @Column({ type: 'text', nullable: true })
-    description: string;
+  @Column({ type: 'text', nullable: true })
+  description: string;
 
-    @Column({ type: 'datetime', nullable: true })
-    dateStart: Date;
+  @Column({ type: 'datetime', nullable: true })
+  dateStart: Date;
 
-    @Column({ type: 'datetime', nullable: true })
-    dateEnd: Date;
+  @Column({ type: 'datetime', nullable: true })
+  dateEnd: Date;
+
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  imageURL: string | null;
+
+  @Column({ type: 'boolean', default: false })
+  exhibitionStatus: boolean;
+
+  @Column({ type: 'boolean', default: false })
+  status: boolean;
+
+@Column({ default: 0 })
+views: number; // total global exhibition page views
+
+@Column({ default: 0 })
+likeCount: number; // total global exhibition page likes
  
-    @Column({ type: 'varchar', length: 200, nullable: true })
-    imageURL: string|null;
- 
-    @Column({ type: 'boolean', default: false })
-    exhibitionStatus: boolean;
 
-    @Column({ type: 'boolean', default: false })
-    status: boolean;
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  createdBy: string;
 
- 
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  updatedBy: string;
 
-    @Column({ type: 'varchar', length: 50, nullable: true })
-    createdBy: string;
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
 
-    @Column({ type: 'varchar', length: 50, nullable: true })
-    updatedBy: string;
+  @Column({
+    type: 'datetime',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
 
-    @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
-    createdAt: Date;
-
-    @Column({
-        type: 'datetime',
-        default: () => 'CURRENT_TIMESTAMP',
-        onUpdate: 'CURRENT_TIMESTAMP',
-    })
-    updatedAt: Date;
-
-     @OneToMany(() => ExhibitionProduct, (map) => map.exhibition)
+  @OneToMany(() => ExhibitionProduct, (map) => map.exhibition)
   displayMappings: ExhibitionProduct[];
 
 }

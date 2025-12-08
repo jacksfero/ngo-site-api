@@ -82,6 +82,9 @@ export class BlogListDto {
   views: number;
 
   @Expose()
+  likeCount: number;
+    
+  @Expose()
   titleImage: string;
 
   @Expose()

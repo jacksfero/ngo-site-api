@@ -7,8 +7,8 @@ import {
   JoinColumn,
 } from 'typeorm';
 
-import { User } from 'src/shared/entities/user.entity';
-import { Product } from 'src/shared/entities/product.entity';
+import { User } from './user.entity';
+import { Product } from './product.entity';
 
 @Entity()
 export class Wishlist {

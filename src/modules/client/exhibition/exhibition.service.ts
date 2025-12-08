@@ -12,6 +12,8 @@ import { ExhibitionDetailDto,ExhibitionDetailDtos } from './dto/exhibition-detai
 import { ExhiProductListItemDto, ProductListItemDto } from '../products/dto/product-list-item.dto';
 import { CacheService } from 'src/core/cache/cache.service';
 import { Currency } from 'src/shared/entities/currency.entity';
+import { ExhibitionPageLike } from 'src/shared/entities/exhibition-like.entity';
+import { ExhibitionPageView } from 'src/shared/entities/exhibition-view.entity';
 
 
 @Injectable()
@@ -25,8 +27,64 @@ export class ExhibitionService {
     @InjectRepository(Currency)
     private readonly currencyRepo: Repository<Currency>,
 
+     @InjectRepository(ExhibitionPageLike)
+    private readonly likeRepo: Repository<ExhibitionPageLike>,
+
+    @InjectRepository(ExhibitionPageView)
+    private readonly viewRepo: Repository<ExhibitionPageView>,
+
   ) {}
  
+async addGlobalLike(viewerIdentifier: string) {
+  const existing = await this.likeRepo.findOne({
+    where: { viewerIdentifier },
+  });
+
+  if (existing) {
+    return { success: true, alreadyLiked: true };
+  }
+
+  await this.likeRepo.save({ viewerIdentifier });
+
+  await this.exhibitionRepo.increment({}, 'likeCount', 1);
+
+  return { success: true, liked: true };
+}
+
+async addGlobalView(viewerIdentifier: string) {
+  // ✅ Check if already viewed
+  const existing = await this.viewRepo.findOne({
+    where: { viewerIdentifier },
+  });
+
+  if (existing) {
+    return { success: true, counted: false }; // ❌ do NOT increase again
+  }
+
+  await this.viewRepo.save({ viewerIdentifier });
+
+  // ✅ Increase global counter
+  await this.exhibitionRepo.increment({}, 'views', 1);
+
+  return { success: true, counted: true };
+}
+
+async getExhibitionStats() {
+  const exhibition = await this.exhibitionRepo.findOne({
+    select: ['views', 'likeCount'],
+  });
+
+  return exhibition;
+}
+
+
+
+
+
+
+
+
+
   async findPublicAll(paginationDto: PaginationDto): Promise<PaginationResponseDto<ExhibitionListItemDto>> {
      
     const { page = 1, limit = 10 } = paginationDto;

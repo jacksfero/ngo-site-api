@@ -5,7 +5,7 @@ export class Size {
   @PrimaryGeneratedColumn()
   id: number;
 
-@Index()
+ 
   @Column({ unique: true })
   name: string;
 

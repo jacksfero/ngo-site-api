@@ -7,7 +7,7 @@ export class Surface {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Index()
+   
   @Column({ type: 'varchar', length: 255 })
   surfaceName: string;
 
@@ -21,7 +21,7 @@ export class Surface {
    @Column({ type: 'varchar', length: 50, nullable: true })
   updatedBy: string;
 
-  @Index()
+   
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 

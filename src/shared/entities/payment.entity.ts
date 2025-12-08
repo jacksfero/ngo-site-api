@@ -11,15 +11,7 @@ import {
 import { Order } from './order.entity';
 import { User } from './user.entity';
 
-export enum PaymentStatus {
-  PENDING = 'PENDING',
-  PROCESSING = 'PROCESSING',
-  SUCCESS = 'SUCCESS',
-  FAILED = 'FAILED',
-  REFUNDED = 'REFUNDED',
-  PARTIALLY_REFUNDED = 'PARTIALLY_REFUNDED',
-  CANCELLED = 'CANCELLED',
-}
+import { PaymentStatus } from '../payment/enum/payment-status.enum';
 
 export enum PaymentMethod {
   CREDIT_CARD = 'CREDIT_CARD',

@@ -13,7 +13,8 @@ import {
 import { User } from "./user.entity";
 import { OrderItem } from "./order-item.entity";
 import { UsersAddress } from "./users-address.entity";
-import { Payment, PaymentStatus } from "./payment.entity";
+import { Payment   } from "./payment.entity";
+import { PaymentStatus } from '../payment/enum/payment-status.enum';
 
 export enum OrderStatus {
   PENDING = 'pending',
@@ -109,8 +110,8 @@ country: string;
   @OneToMany(() => Payment, (payment) => payment.order, { eager: true })
   payments: Payment[];
 
-  @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING })
-  paymentStatus: PaymentStatus;
+@Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING })
+paymentStatus: PaymentStatus;
 
   @Column({ type: 'timestamp', nullable: true })
   paidAt: Date;

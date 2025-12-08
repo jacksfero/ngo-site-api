@@ -1,15 +1,41 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe } from '@nestjs/common';
+import { Controller,Req, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe } from '@nestjs/common';
 import { ExhibitionService } from './exhibition.service';
 import { CreateExhibitionDto } from './dto/create-exhibition.dto';
 import { UpdateExhibitionDto } from './dto/update-exhibition.dto';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { ExhibitionDetailDto } from './dto/exhibition-detail.dto';
+import { AuthRequest } from 'src/core/types/auth-request.type';
 
 @Controller()
 export class ExhibitionController {
   constructor(private readonly exhibitionService: ExhibitionService) {}
 
+ @Post('view')
+  addView(@Req() req: AuthRequest) {
+    const viewerIdentifier =
+      req.user?.id ||
+      req.cookies?.viewerId ||
+      req.headers['x-forwarded-for'] ||
+      req.socket.remoteAddress;
 
+    return this.exhibitionService.addGlobalView(String(viewerIdentifier));
+  }
+
+ @Post('like')
+async addLike(@Req() req: AuthRequest) {
+  const viewerIdentifier =
+    req.user?.id ||
+    req.cookies?.viewerId ||
+    req.headers['x-forwarded-for'] ||
+    req.socket.remoteAddress;
+
+  return this.exhibitionService.addGlobalLike(String(viewerIdentifier));
+}
+
+@Get('stats')
+getStats() {
+  return this.exhibitionService.getExhibitionStats();
+}
 
  // ✅ Get currently live exhibitions
   @Get('status/live')
