@@ -2,8 +2,8 @@ import { Entity,Index, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm
 import { Blog } from './blog.entity';
 
 @Entity('categories')
-@Index(['name'])   // 🔍 Faster searching
-@Index(['slug'])   // 🔍 Faster slug URL lookup
+//@Index(['name'])   // 🔍 Faster searching
+//@Index(['slug'])   // 🔍 Faster slug URL lookup
 export class Category {
   @PrimaryGeneratedColumn()
   id: number;

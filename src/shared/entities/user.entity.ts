@@ -25,9 +25,7 @@ import { Product } from './product.entity';
 import { UsersAbout } from './users-about.entity';
 
 
-@Entity('user')
-@Index(['email'], { unique: true })
-@Index(['mobile'], { unique: true })
+@Entity('user') 
 export class User {
   @PrimaryGeneratedColumn()
   id: number;

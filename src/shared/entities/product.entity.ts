@@ -1,4 +1,4 @@
-import { Wishlist } from 'src/shared/entities/wishlist.entity';
+
 import { Column,Index, Unique,OneToMany, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToOne, ManyToMany, JoinTable } from 'typeorm';
 import { User } from './user.entity';
 import { ExhibitionProduct } from './exhibition-product.entity';
@@ -16,6 +16,7 @@ import { Style } from './style.entity';
 import { Medium } from './medium.entity';
 import { Surface } from './surface.entity';
 import { Tag } from './tag.entity';
+import { Wishlist } from './wishlist.entity';
 
 
 export enum ProductStatus {
