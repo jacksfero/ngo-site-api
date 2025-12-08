@@ -12,7 +12,8 @@ import { User } from 'src/shared/entities/user.entity';
 import { Inventory } from 'src/shared/entities/inventory.entity';
 import { UsersAddress } from 'src/shared/entities/users-address.entity';
 import { Shipping } from 'src/shared/entities/shipping.entity';
-import { Payment, PaymentStatus } from 'src/shared/entities/payment.entity';
+import { Payment    } from 'src/shared/entities/payment.entity';
+import { PaymentStatus } from 'src/shared/payment/enum/payment-status.enum';
 
 @Injectable()
 export class OrderService {

@@ -7,8 +7,8 @@ import { UserDto } from 'src/modules/admin/cart/dto/cart-item-list.dto';
  
 import { OrderStatus } from 'src/shared/entities/order.entity';
 import { IsEnum } from 'class-validator';
-import { PaymentStatus } from 'src/shared/entities/payment.entity';
- 
+//import { PaymentStatus } from 'src/shared/payment/enum/payment-status.enum';
+import { PaymentStatus } from '../../../../shared/payment/enum/payment-status.enum'; 
  
  export  class PaymentDto {
   @Expose()

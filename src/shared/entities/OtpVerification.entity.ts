@@ -9,7 +9,7 @@ import {
   Index,
 } from 'typeorm';
 import { User } from './user.entity';
-import { OtpType,UserType } from 'src/modules/auth/dto/start-verification.dto';
+import { OtpType,UserType } from '../../modules/auth/dto/start-verification.dto';
 
 @Entity('otp_verifications')
 @Index(['identifier', 'type']) // For faster lookup

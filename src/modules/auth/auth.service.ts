@@ -48,6 +48,7 @@ import { Cart } from 'src/shared/entities/cart.entity';
   import { Request } from 'express';
 import { ResetPassCreatedPayload } from 'src/shared/events/interfaces/event-payload.interface';
 import { RequestContextService } from 'src/core/request-context.service';
+//import { SmsService } from 'src/shared/sms/sms.service';
  
 
 @Injectable()
@@ -62,7 +63,7 @@ export class AuthService {
      //  private readonly context: RequestContextService,
       //  @Inject(forwardRef(() => ModuleRef)) private moduleRef: ModuleRef,
      private readonly eventEmitter: EventEmitter2,
- 
+ // private readonly smsService: SmsService,
  
     private usersService: UsersService,
     private jwtService: JwtService,

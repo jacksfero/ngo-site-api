@@ -265,66 +265,12 @@ if (sign !== razorpay_signature) {
 
     if (!payment) throw new Error('Payment record not found');
 
- /* if (payment) {
-    payment.status = PaymentStatus.SUCCESS;
-    payment.gatewayPaymentId = razorpay_payment_id;
-     payment.gatewayResponse = body;
-    await this.paymentRepo.save(payment);
-
-    // Also update Order
-    if (payment.order) {
-      payment.order.paymentStatus = PaymentStatus.SUCCESS;
-      payment.order.status = OrderStatus.CONFIRMED;
-      await this.orderRepo.save(payment.order);
-    }
-  }*/
+  
 return { success: true, txnId: razorpay_payment_id };
  // return { success: true, message: 'Payment verified (callback)' };
 }
 
-/*
-async handleRazorpayWebhook(body: any, signature: string) {
-  const secret = process.env.RAZORPAY_WEBHOOK_SECRET!;
-
-  // Verify webhook signature
-  const shasum = crypto.createHmac('sha256', secret);
-  shasum.update(JSON.stringify(body));
-  const digest = shasum.digest('hex');
-
-  if (digest !== signature) {
-    throw new Error('Invalid Razorpay Webhook Signature');
-  }
-
-  // Normalize response
-  const event = body.event;
-  const payload = body.payload?.payment?.entity;
-
-  let status = 'PENDING';
-  if (event === 'payment.captured') status = 'SUCCESS';
-  if (event === 'payment.failed') status = 'FAILED';
-
-  // ✅ Update DB
-  const payment = await this.paymentRepo.findOne({
-    where: { txnId: payload.id },
-    relations: ['order'],
-  });
-
-  if (payment) {
-    payment.status = status as any;
-    await this.paymentRepo.save(payment);
-
-    if (payment.order) {
-      payment.order.paymentStatus = payment.status;
-      if (status === 'SUCCESS') {
-        payment.order.status = 'CONFIRMED';
-      }
-      await this.orderRepo.save(payment.order);
-    }
-  }
-
-  return { success: true };
-}
-*/
+ 
 
 }
 
