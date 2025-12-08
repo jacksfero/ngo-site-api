@@ -17,8 +17,7 @@ import { Medium } from './medium.entity';
 import { Surface } from './surface.entity';
 import { Tag } from './tag.entity';
 import { Wishlist } from './wishlist.entity';
-
-
+ 
 export enum ProductStatus {
   ACTIVE = 'Active',
   INACTIVE = 'Inactive', 

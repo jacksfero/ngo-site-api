@@ -28,7 +28,6 @@ export enum InventoryStatus {
 export class Inventory {
   @PrimaryGeneratedColumn()
   id: number;
-
  
   // ✅ FIXED: Change to Many-to-One (one product, multiple inventory records)
   @ManyToOne(() => Product, (product) => product.productInventory, { 
