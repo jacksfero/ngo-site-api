@@ -19,7 +19,7 @@ export class ResetPasswordListener {
   @OnEvent('reset_password.send', { async: true })
 async handleResetPasswordCreated(payload: ResetPassCreatedPayload) {
  //console.log('-----------rest pass mail sent')
-  if (this.configService.get('MAIL_ENABLED') !== 'False_true') {
+  if (this.configService.get('MAIL_ENABLED') !== 'true') {
     this.logger.warn(`🚫 Mail disabled. Reset password email not sent to ${payload.to}`);
     return;
   }
