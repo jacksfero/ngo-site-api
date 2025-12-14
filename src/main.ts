@@ -57,7 +57,7 @@ async function bootstrap() {
         'wwww.indigalleria.com','indigalleria.com',
         'https://indigalleria-frontend-production.up.railway.app',
         'https://indigalleria-frontend-production.up.railway.app/',
-        'indigalleria-frontend-production.up.railway.app'
+        'indigalleria-frontend-production.up.railway.app',
       ],
       methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
