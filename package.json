@@ -55,7 +55,6 @@
     "multer": "^2.0.2",
     "multer-s3": "^3.0.1",
     "mysql2": "^3.14.1",
-    "nest-mysql": "^0.0.20",
     "nodemailer": "^7.0.7",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
