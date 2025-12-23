@@ -66,10 +66,8 @@ export class InventoryService {
         shippingWeight: shipping, // instead of raw shippingId
     });
 
-
    // console.log('Operation completed successfully.');
     //process.exit(0);
-
   
     return this.inventoryRepo.save(inventory);
   }
@@ -99,8 +97,8 @@ const cached = await this.cacheService.get(cacheKey);
   qb.andWhere('inventory.status = :status', { status });
    qb.andWhere('product.is_active = :pDefaultStatus', { pDefaultStatus: 'active' });
 } else {
-  qb.andWhere('inventory.status = :defaultStatus', { defaultStatus: true });
-   qb.andWhere('product.is_active = :pDefaultStatus', { pDefaultStatus: 'active' });
+ // qb.andWhere('inventory.status = :defaultStatus', { defaultStatus: true });
+ //  qb.andWhere('product.is_active = :pDefaultStatus', { pDefaultStatus: 'active' });
 }
     if (search) {
       
