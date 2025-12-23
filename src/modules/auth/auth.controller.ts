@@ -186,13 +186,13 @@ async login(
 async logout(@Res({ passthrough: true }) res: Response) {
   // Clear JWT token (if stored as cookie)
   res.clearCookie('access_token', {
-    httpOnly: true,
+    httpOnly: true,secure: true, path: "/",
     sameSite: 'lax',
   });
 
   // Clear guest cart cookie
   res.clearCookie('guestCartId', {
-    httpOnly: true,
+    httpOnly: true,secure: true, path: "/",
     sameSite: 'lax',
   });
 
