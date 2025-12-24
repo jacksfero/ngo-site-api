@@ -131,10 +131,28 @@ async login(
   const result = await this.authService.login(req.user as User, req); // ✅ pass req
 
   // clear guestCartId cookie if exists
-  if (req.cookies?.['guestCartId']) {
-    res.clearCookie('guestCartId', { httpOnly: true, sameSite: 'lax' });
+  // if (req.cookies?.['guestCartId']) {
+  //   res.clearCookie('guestCartId', { httpOnly: true, sameSite: 'lax' });
+  // }
+ // 🔐 ADD COOKIE (non-breaking)
+  if (result?.access_token) {
+    res.cookie('access_token', result.access_token, {
+      httpOnly: true,
+      secure: true,          // required for SameSite=None
+      sameSite: 'none',
+      path: '/',
+      maxAge: 1000 * 60 * 60 * 24 * 30,
+    });
   }
 
+  // clear guest cart
+  if (req.cookies?.['guestCartId']) {
+    res.clearCookie('guestCartId', {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+    });
+  }
   return result;
 }
 
