@@ -3,12 +3,26 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
+import { Request } from 'express';
+
+
+
+
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly configService: ConfigService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+        jwtFromRequest: ExtractJwt.fromExtractors([
+  ExtractJwt.fromAuthHeaderAsBearerToken(),
+  (req: Request) => {
+    if (!req) return null;
+    if (req.headers?.authorization) return null;
+    return req.cookies?.['access_token'] || null;
+  },
+]),
+
+ 
       ignoreExpiration: false,
       secretOrKey: configService.get<string>('JWT_SECRET')!,
       // ⚠️ Using { strict: true } forces Nest to throw if variable is missing
@@ -22,3 +36,5 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return payload;
   }
 }
+
+
