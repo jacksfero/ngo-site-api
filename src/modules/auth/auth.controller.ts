@@ -141,7 +141,7 @@ async login(
     res.cookie('access_token', result.access_token, {
   httpOnly: true,
   secure: true,
-  sameSite: 'none',
+  sameSite: 'lax',
   path: '/',
    domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
   maxAge: 1000 * 60 * 60 * 24 * 30,
@@ -153,7 +153,7 @@ async login(
     res.clearCookie('guestCartId', {
      httpOnly: true,
   secure: true,
-  sameSite: 'none',
+  sameSite: 'lax',
   path: '/',
    domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
   maxAge: 1000 * 60 * 60 * 24 * 30,
