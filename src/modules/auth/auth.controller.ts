@@ -139,20 +139,24 @@ async login(
  // 🔐 ADD COOKIE (non-breaking)
   if (result?.access_token) {
     res.cookie('access_token', result.access_token, {
-      httpOnly: true,
-      secure: true,          // required for SameSite=None
-      sameSite: 'none',
-      path: '/',
-      maxAge: 1000 * 60 * 60 * 24 * 30,
-    });
+  httpOnly: true,
+  secure: true,
+  sameSite: 'none',
+  path: '/',
+   domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
+  maxAge: 1000 * 60 * 60 * 24 * 30,
+});
   }
 
   // clear guest cart
   if (req.cookies?.['guestCartId']) {
     res.clearCookie('guestCartId', {
-      httpOnly: true,
-      sameSite: 'none',
-      path: '/',
+     httpOnly: true,
+  secure: true,
+  sameSite: 'none',
+  path: '/',
+   domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
+  maxAge: 1000 * 60 * 60 * 24 * 30,
     });
   }
   return result;
@@ -230,7 +234,7 @@ async login(
       secure: process.env.NODE_ENV === 'production', // Use secure only in production
       path: '/',
       sameSite: 'lax', // 'lax' is better for most cases
-      domain: process.env.COOKIE_DOMAIN || undefined,
+      domain: process.env.COOKIE_DOMAIN,
     });
 
      
@@ -241,7 +245,7 @@ async login(
       secure: process.env.NODE_ENV === 'production',
       path: '/',
       sameSite: 'lax',
-      domain: process.env.COOKIE_DOMAIN || undefined,
+      domain: process.env.COOKIE_DOMAIN,
     });
 
      
