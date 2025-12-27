@@ -144,20 +144,12 @@ async login(
   secure: !isDev,          // Use false for localhost HTTP
   sameSite: isDev ? 'lax' : 'none', 
   path: '/',
-    domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
+   // domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
   maxAge: 1000 * 60 * 60 * 24 * 30,
 });
   }
 
-
-
  
-
-
-
-
-
-
   // clear guest cart
   if (req.cookies?.['guestCartId']) {
     res.clearCookie('guestCartId', {
@@ -165,7 +157,7 @@ async login(
   secure: !isDev,          // Use false for localhost HTTP
   sameSite: isDev ? 'lax' : 'none', 
   path: '/',
-    domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
+  //  domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
   maxAge: 1000 * 60 * 60 * 24 * 30,
     });
   }
@@ -244,7 +236,7 @@ async login(
       secure: true, // Use secure only in production
       path: '/',
       sameSite: 'none', // 'lax' is better for most cases
-       domain: process.env.COOKIE_DOMAIN,
+     //  domain: process.env.COOKIE_DOMAIN,
     });
 
      
@@ -255,7 +247,7 @@ async login(
        secure: true,
       path: '/',
       sameSite: 'none',
-       domain: process.env.COOKIE_DOMAIN,
+     //  domain: process.env.COOKIE_DOMAIN,
     });
 
      
