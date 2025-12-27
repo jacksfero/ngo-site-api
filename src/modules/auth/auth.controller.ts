@@ -1,4 +1,6 @@
 import { Request as ExpressRequest } from 'express';
+ 
+
 import {
   Controller,
   Get,
@@ -15,7 +17,7 @@ import {
   UploadedFile,
   Query,
   BadRequestException,
-  ParseEnumPipe,
+  ParseEnumPipe,Headers,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Response } from 'express';
@@ -149,7 +151,7 @@ async login(
   if (req.cookies?.['guestCartId']) {
     res.clearCookie('guestCartId', {
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: 'none',
       path: '/',
     });
   }
@@ -199,23 +201,57 @@ async login(
   }
  
   
-@Public()
-@Post('logout')
-async logout(@Res({ passthrough: true }) res: Response) {
-  // Clear JWT token (if stored as cookie)
-  res.clearCookie('access_token', {
-    httpOnly: true,secure: true, path: "/",
-    sameSite: 'lax',
-  });
+// @Public()
+// @Post('logout')
+// async logout(@Res({ passthrough: true }) res: Response) {
+//   // Clear JWT token (if stored as cookie)
+//   res.clearCookie('access_token', {
+//     httpOnly: true,secure: true, path: "/",
+//     sameSite: 'none',
+//   });
 
-  // Clear guest cart cookie
-  res.clearCookie('guestCartId', {
-    httpOnly: true,secure: true, path: "/",
-    sameSite: 'lax',
-  });
+//   // Clear guest cart cookie
+//   res.clearCookie('guestCartId', {
+//     httpOnly: true,secure: true, path: "/",
+//     sameSite: 'none',
+//   });
 
-  return { message: 'Logged out successfully' };
-}
+//   return { message: 'Logged out successfully' };
+// }
+ @Public()
+  @Post('logout')
+  async logout(
+    @Res({ passthrough: true }) res: Response,
+    @Headers('authorization') authHeader: string
+  ) {
+    // Clear JWT token cookie
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Use secure only in production
+      path: '/',
+      sameSite: 'lax', // 'lax' is better for most cases
+      domain: process.env.COOKIE_DOMAIN || undefined,
+    });
+
+     
+
+    // Clear guest cart cookie
+    res.clearCookie('guestCartId', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      sameSite: 'lax',
+      domain: process.env.COOKIE_DOMAIN || undefined,
+    });
+
+     
+
+    return {
+      success: true,
+      message: 'Logged out successfully',
+      timestamp: new Date().toISOString(),
+    };
+  }
    
 
   @Public()
