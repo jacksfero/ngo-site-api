@@ -137,6 +137,8 @@ async login(
   //   res.clearCookie('guestCartId', { httpOnly: true, sameSite: 'lax' });
   // }
  // 🔐 ADD COOKIE (non-breaking)
+  console.log(`process.env.NODE_ENV-------`,process.env.NODE_ENV)
+
  const isDev = process.env.NODE_ENV !== 'production';
   if (result?.access_token) {
     res.cookie('access_token', result.access_token, {
