@@ -143,7 +143,7 @@ async login(
   secure: true,
   sameSite: 'none',
   path: '/',
-   domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
+ //  domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
   maxAge: 1000 * 60 * 60 * 24 * 30,
 });
   }
@@ -155,7 +155,7 @@ async login(
   secure: true,
   sameSite: 'none',
   path: '/',
-   domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
+ //  domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
   maxAge: 1000 * 60 * 60 * 24 * 30,
     });
   }
@@ -231,10 +231,10 @@ async login(
     // Clear JWT token cookie
     res.clearCookie('access_token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Use secure only in production
+      secure: true, // Use secure only in production
       path: '/',
       sameSite: 'none', // 'lax' is better for most cases
-      domain: process.env.COOKIE_DOMAIN,
+   //   domain: process.env.COOKIE_DOMAIN,
     });
 
      
@@ -242,10 +242,10 @@ async login(
     // Clear guest cart cookie
     res.clearCookie('guestCartId', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+       secure: true,
       path: '/',
       sameSite: 'none',
-      domain: process.env.COOKIE_DOMAIN,
+    //  domain: process.env.COOKIE_DOMAIN,
     });
 
      
