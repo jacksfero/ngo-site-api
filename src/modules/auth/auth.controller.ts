@@ -143,8 +143,8 @@ async login(
   if (result?.access_token) {
     res.cookie('access_token', result.access_token, {
   httpOnly: true,
-  secure: !isDev,          // Use false for localhost HTTP
-  sameSite: isDev ? 'lax' : 'none', 
+  secure: true,          // Use false for localhost HTTP
+  sameSite:   'none', 
   path: '/',
    // domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
   maxAge: 1000 * 60 * 60 * 24 * 30,
@@ -156,8 +156,8 @@ async login(
   if (req.cookies?.['guestCartId']) {
     res.clearCookie('guestCartId', {
      httpOnly: true,
-  secure: !isDev,          // Use false for localhost HTTP
-  sameSite: isDev ? 'lax' : 'none', 
+  secure: true,          // Use false for localhost HTTP
+  sameSite:   'none', 
   path: '/',
   //  domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
   maxAge: 1000 * 60 * 60 * 24 * 30,
