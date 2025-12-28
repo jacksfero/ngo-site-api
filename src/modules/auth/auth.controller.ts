@@ -148,7 +148,7 @@ export class AuthController {
         secure: true,          // Use false for localhost HTTP
         sameSite: 'none',
         path: '/',
-        domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
+       // domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
         maxAge: 1000 * 60 * 60 * 24 * 30,
       });
     }
@@ -161,7 +161,7 @@ export class AuthController {
         secure: true,          // Use false for localhost HTTP
         sameSite: 'none',
         path: '/',
-        domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
+      //  domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
         maxAge: 1000 * 60 * 60 * 24 * 30,
       });
     }
@@ -240,7 +240,7 @@ export class AuthController {
       secure: true, // Use secure only in production
       path: '/',
       sameSite: 'none', // 'lax' is better for most cases
-      domain: process.env.COOKIE_DOMAIN,
+    //  domain: process.env.COOKIE_DOMAIN,
     });
 
 
@@ -251,7 +251,7 @@ export class AuthController {
       secure: true,
       path: '/',
       sameSite: 'none',
-      domain: process.env.COOKIE_DOMAIN,
+     // domain: process.env.COOKIE_DOMAIN,
     });
 
 
