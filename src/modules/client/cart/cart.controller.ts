@@ -242,6 +242,7 @@ private setGuestCookie(res: Response, guestId: string) {
     httpOnly: true,   // prevents JS access
     secure: true,     // required for HTTPS (Render is HTTPS)
     sameSite: 'none', // VERY important for cross-domain
+    domain: process.env.COOKIE_DOMAIN,
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   });
 }
