@@ -146,7 +146,7 @@ export class AuthController {
       res.cookie('access_token', result.access_token, {
         httpOnly: true,
         secure: true,          // Use false for localhost HTTP
-        sameSite: 'none',
+        sameSite: 'lax',
         path: '/',
        // domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
         maxAge: 1000 * 60 * 60 * 24 * 30,
@@ -159,7 +159,7 @@ export class AuthController {
       res.clearCookie('guestCartId', {
         httpOnly: true,
         secure: true,          // Use false for localhost HTTP
-        sameSite: 'none',
+        sameSite: 'lax',
         path: '/',
       //  domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
         maxAge: 1000 * 60 * 60 * 24 * 30,
