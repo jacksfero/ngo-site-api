@@ -1,5 +1,5 @@
 import { Request as ExpressRequest } from 'express';
- 
+
 
 import {
   Controller,
@@ -7,7 +7,7 @@ import {
   Request as Req,
   UseGuards, Res,
   Post,
-  Body,Optional,Inject,
+  Body, Optional, Inject,
   Patch,
   Param,
   Delete,
@@ -17,7 +17,7 @@ import {
   UploadedFile,
   Query,
   BadRequestException,
-  ParseEnumPipe,Headers,
+  ParseEnumPipe, Headers,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Response } from 'express';
@@ -71,17 +71,17 @@ export class AuthController {
 
     private authUserProductService: AuthUserProductService,
 
-   // @Optional() @Inject(LocalStrategy) private localStrategy?: LocalStrategy
+    // @Optional() @Inject(LocalStrategy) private localStrategy?: LocalStrategy
   ) {
-   // console.log('🔧 AuthController - LocalStrategy injected:', !!localStrategy);
+    // console.log('🔧 AuthController - LocalStrategy injected:', !!localStrategy);
   }
 
- 
+
 
   /**
      * Step 1: Start Registration - Send OTP
      * POST /auth/start-registration
-     */ 
+     */
   @Public()
   @Post('start-email-verification')
   startEmail(@Body() dto: StartEmailVerificationDto, @Req() req: ExpressRequest) {
@@ -103,7 +103,7 @@ export class AuthController {
     const ipAddress = req.ip;
     return this.authService.resendOtp(dto, ipAddress);
   }
- 
+
 
   @Public()
   @Post('verify-otp')
@@ -119,52 +119,54 @@ export class AuthController {
   }
 
 
-@Public()
-@UseGuards(LocalAuthGuard)
-@Post('login')
-async login(
-  @Req() req: ExpressRequest,
-  @Res({ passthrough: true }) res: Response,
-) {
-  if (!req.user) {
-    throw new UnauthorizedException('User not found in request');
+  @Public()
+  @UseGuards(LocalAuthGuard)
+  @Post('login')
+  async login(
+    @Req() req: ExpressRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    if (!req.user) {
+      throw new UnauthorizedException('User not found in request');
+    }
+
+    const result = await this.authService.login(req.user as User, req); // ✅ pass req
+
+    // clear guestCartId cookie if exists
+    // if (req.cookies?.['guestCartId']) {
+    //   res.clearCookie('guestCartId', { httpOnly: true, sameSite: 'lax' });
+    // }
+    // 🔐 ADD COOKIE (non-breaking)
+    console.log(`process.env.NODE_ENV-------`, process.env.NODE_ENV)
+    console.log(`process.env.COOKIE_DOMAIN-------`, process.env.COOKIE_DOMAIN)
+    console.log(`process.token-------`, result.access_token)
+    console.log(`process.result-------`, result)
+    const isDev = process.env.NODE_ENV !== 'production';
+    if (result?.access_token) {
+      res.cookie('access_token', result.access_token, {
+        httpOnly: true,
+        secure: true,          // Use false for localhost HTTP
+        sameSite: 'none',
+        path: '/',
+        domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
+        maxAge: 1000 * 60 * 60 * 24 * 30,
+      });
+    }
+
+
+    // clear guest cart
+    if (req.cookies?.['guestCartId']) {
+      res.clearCookie('guestCartId', {
+        httpOnly: true,
+        secure: true,          // Use false for localhost HTTP
+        sameSite: 'none',
+        path: '/',
+        domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
+        maxAge: 1000 * 60 * 60 * 24 * 30,
+      });
+    }
+    return result;
   }
-
-  const result = await this.authService.login(req.user as User, req); // ✅ pass req
-
-  // clear guestCartId cookie if exists
-  // if (req.cookies?.['guestCartId']) {
-  //   res.clearCookie('guestCartId', { httpOnly: true, sameSite: 'lax' });
-  // }
- // 🔐 ADD COOKIE (non-breaking)
-  console.log(`process.env.NODE_ENV-------`,process.env.NODE_ENV)
-
- const isDev = process.env.NODE_ENV !== 'production';
-  if (result?.access_token) {
-    res.cookie('access_token', result.access_token, {
-  httpOnly: true,
-  secure: true,          // Use false for localhost HTTP
-  sameSite:   'none', 
-  path: '/',
-  //   domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
-  maxAge: 1000 * 60 * 60 * 24 * 30,
-});
-  }
-
- 
-  // clear guest cart
-  if (req.cookies?.['guestCartId']) {
-    res.clearCookie('guestCartId', {
-     httpOnly: true,
-  secure: true,          // Use false for localhost HTTP
-  sameSite:   'none', 
-  path: '/',
-  //  domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
-  maxAge: 1000 * 60 * 60 * 24 * 30,
-    });
-  }
-  return result;
-}
 
   @Public()
   @Post('send-login-otp')
@@ -177,12 +179,12 @@ async login(
   @Post('login-with-otp')
   async otpLogin(@Body() dto: VerifyOtpDto,
 
-) {
-   //  const guestId = req.cookies?.['guestCartId'];
+  ) {
+    //  const guestId = req.cookies?.['guestCartId'];
     return this.authService.loginWithOtp(dto);
   }
 
- @Public()
+  @Public()
   @Post('forgot-password')
   async forgotPassword(@Body() dto: SendOtpDto, @Ip() ipAddress?: string) {
     return this.authService.sendResetPasswordOtp(dto, ipAddress);
@@ -207,26 +209,26 @@ async login(
   async changePassword(@Req() req, @Body() dto: ChangePasswordDto) {
     return this.authService.changePassword(req.user.sub.toString(), dto);
   }
- 
-  
-// @Public()
-// @Post('logout')
-// async logout(@Res({ passthrough: true }) res: Response) {
-//   // Clear JWT token (if stored as cookie)
-//   res.clearCookie('access_token', {
-//     httpOnly: true,secure: true, path: "/",
-//     sameSite: 'none',
-//   });
 
-//   // Clear guest cart cookie
-//   res.clearCookie('guestCartId', {
-//     httpOnly: true,secure: true, path: "/",
-//     sameSite: 'none',
-//   });
 
-//   return { message: 'Logged out successfully' };
-// }
- @Public()
+  // @Public()
+  // @Post('logout')
+  // async logout(@Res({ passthrough: true }) res: Response) {
+  //   // Clear JWT token (if stored as cookie)
+  //   res.clearCookie('access_token', {
+  //     httpOnly: true,secure: true, path: "/",
+  //     sameSite: 'none',
+  //   });
+
+  //   // Clear guest cart cookie
+  //   res.clearCookie('guestCartId', {
+  //     httpOnly: true,secure: true, path: "/",
+  //     sameSite: 'none',
+  //   });
+
+  //   return { message: 'Logged out successfully' };
+  // }
+  @Public()
   @Post('logout')
   async logout(
     @Res({ passthrough: true }) res: Response,
@@ -238,21 +240,21 @@ async login(
       secure: true, // Use secure only in production
       path: '/',
       sameSite: 'none', // 'lax' is better for most cases
-   //   domain: process.env.COOKIE_DOMAIN,
+      domain: process.env.COOKIE_DOMAIN,
     });
 
-     
+
 
     // Clear guest cart cookie
     res.clearCookie('guestCartId', {
       httpOnly: true,
-       secure: true,
+      secure: true,
       path: '/',
       sameSite: 'none',
-        //domain: process.env.COOKIE_DOMAIN,
+      domain: process.env.COOKIE_DOMAIN,
     });
 
-     
+
 
     return {
       success: true,
@@ -260,32 +262,32 @@ async login(
       timestamp: new Date().toISOString(),
     };
   }
-   
+
 
   @Public()
   @Post('send-otp-cart')
-  async sendOtpCart(@Body('identifier') identifier: string, 
-  @Req() req: ExpressRequest,
-  
-) {
-  let guestId = req.cookies?.['guestCartId'];
+  async sendOtpCart(@Body('identifier') identifier: string,
+    @Req() req: ExpressRequest,
+
+  ) {
+    let guestId = req.cookies?.['guestCartId'];
     // Extract IP if you want to track OTP abuse attempts
     const ipAddress = req.ip || (req.headers['x-forwarded-for'] as string) || undefined;
     return await this.authService.cartLogin(identifier, ipAddress);
   }
 
-@Public()
+  @Public()
   @Post('send-otp-contact')
-  async sendOtpContact(@Body('identifier') identifier: string, 
-  @Req() req: ExpressRequest,  
-) {
-//  console.log('----send otp to contact------')
-  //let guestId = req.cookies?.['guestCartId'];
+  async sendOtpContact(@Body('identifier') identifier: string,
+    @Req() req: ExpressRequest,
+  ) {
+    //  console.log('----send otp to contact------')
+    //let guestId = req.cookies?.['guestCartId'];
     // Extract IP if you want to track OTP abuse attempts
     const ipAddress = req.ip || (req.headers['x-forwarded-for'] as string) || undefined;
     return await this.authService.ContactSendOTP(identifier, ipAddress);
   }
- 
+
 
   @Public()
   @Post('register-cart-login')
@@ -296,8 +298,8 @@ async login(
 
   ) {
     let guestId = req.cookies?.['guestCartId'];
- 
-     console.log('guestId---------', guestId);
+
+    console.log('guestId---------', guestId);
     return this.authService.registerCartUserAndLogin(dto, guestId);
   }
 
@@ -339,10 +341,10 @@ async login(
   @Public()
   @Get('by-role/')
   async getUsersByRole(
-         @Query('roles') roles: string,
-  
+    @Query('roles') roles: string,
+
   ) {
-      const roleList = roles.split(',').map(r => r.trim());
+    const roleList = roles.split(',').map(r => r.trim());
     return this.authService.findUsersByRole(roleList);
   }
 
@@ -356,7 +358,7 @@ async login(
   @UseGuards(AuthGuard('jwt'))
   @Post('about')
   createUserAbout(@Body() dto: CreateUsersAboutDto, @Req() req) {
- 
+
     return this.authUserAddressService.createUserAbout(dto, req.user);
   }
   @UseGuards(JwtAuthGuard)
@@ -392,8 +394,8 @@ async login(
   @UseGuards(JwtAuthGuard)
   @Post('user-kyc')
   createkycDetail(@Body() dto: CreateKycDetailDto, @Req() req) {
-  //  console.log('JWT User:', req.user);  // <--- check if user is set
-   // console.log('Body:', dto);
+    //  console.log('JWT User:', req.user);  // <--- check if user is set
+    // console.log('Body:', dto);
     return this.authUserAddressService.createkycDetail(dto, req.user);
   }
 
@@ -414,8 +416,8 @@ async login(
   @UseGuards(JwtAuthGuard)
   @Post('user-bank')
   createBankDetail(@Body() dto: CreateBankDetailDto, @Req() req) {
-   // console.log('JWT User:', req.user);  // <--- check if user is set
-   // console.log('Body:', dto);
+    // console.log('JWT User:', req.user);  // <--- check if user is set
+    // console.log('Body:', dto);
     return this.authUserAddressService.createBankDetail(dto, req.user);
   }
 
@@ -450,16 +452,16 @@ async login(
     // console.log('✅ Controller reached');
     //  console.log('AddressType:', addressType);
     //  console.log('JWT User:', req.user);
- 
+
     return this.authUserAddressService.findAllForUserAddress(addressType, req.user);
   }
 
-   @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('user-address/:id')
-  findOneAddress(@Param('id') id: number,  @Req() req) {
+  findOneAddress(@Param('id') id: number, @Req() req) {
     // console.log('update JWT User:', req.user);  // <--- check if user is set
     // console.log('update Body:', dto);
-    return this.authUserAddressService.findOneAddress(id,  req.user);
+    return this.authUserAddressService.findOneAddress(id, req.user);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -481,7 +483,7 @@ async login(
   /*************Start User Product Section */
   @UseGuards(JwtAuthGuard)
   @Post('products')
-   @RequirePermissions('create_artwork')
+  @RequirePermissions('create_artwork')
   @UseInterceptors(FileInterceptor('defaultImage'))
   create(
     @Body() createProductDto: CreateProductDto,
@@ -494,7 +496,7 @@ async login(
 
   @UseGuards(JwtAuthGuard)
   @Get('products')
-   @RequirePermissions('read_artwork')
+  @RequirePermissions('read_artwork')
   async findAll(
     @Query(new PaginationClinetPipe(PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE))
     @Query() paginationDto: ProductPaginationDto,
@@ -556,7 +558,7 @@ async login(
     return this.authUserProductService.deleteProductImage(imageId);
   }
 
- 
+
   /*************End User address Section */
   /*************Start User WishList Section */
   @UseGuards(JwtAuthGuard)
@@ -569,7 +571,7 @@ async login(
     return this.authService.addToWishlist(req.user, createWishlistDto);
   }
 
- 
+
 
   @UseGuards(JwtAuthGuard)
   @Get('wishlist')
