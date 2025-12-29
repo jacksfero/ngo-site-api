@@ -21,6 +21,11 @@ export class InventProductController {
   ): Promise<PaginationResponseDto<InventProdListDto>> {
     return this.inventProductService.findAll(paginationDto);
   } 
+   @Get('productsitemap')
+  async findAllProductSiteMap(   
+  ) {
+    return this.inventProductService.findAllSiteMap();
+  } 
 
     @Get('artworkbyartist')
   async getArtworkByArtist(

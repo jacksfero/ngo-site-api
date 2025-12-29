@@ -7,7 +7,7 @@ import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { Inventory } from 'src/shared/entities/inventory.entity';
 import { InventProdPaginatDto } from './dto/invent-product-paginate.dto';
-import { InventProdListArtistDto, InventProdListDto } from './dto/invent-prod-list.dto';
+import { InventProdListArtistDto, InventProdListDto, InventProdListSiteMapDto } from './dto/invent-prod-list.dto';
 import { InventProductDetailResponseDto } from './dto/invent-product-detail-response.dto';
 import { ProductStatus } from 'src/shared/entities/product.entity';
 import { CacheService } from 'src/core/cache/cache.service';
@@ -211,6 +211,51 @@ async findAll_new(
   await this.cacheService.set(cacheKey, response, { ttl: 300 });
 
   return response;
+}
+async findAllSiteMap(): Promise<InventProdListSiteMapDto[]> {
+  const cacheKey = 'frontend:sitemap:products';
+
+  try {
+    const cached = await this.cacheService.get<InventProdListSiteMapDto[]>(cacheKey);
+    if (cached) return cached;
+
+    const inventories = await this.inventoryRepo
+      .createQueryBuilder('inventory')
+      .leftJoin('inventory.product', 'product')
+      .select([
+        'inventory.id',
+        'product.id',
+        'product.slug',
+        'product.updatedAt',
+      ])
+      .where('inventory.quantity > 0')
+      .andWhere('inventory.status = true')
+      .andWhere('product.is_active = :isActive', {
+        isActive: ProductStatus.ACTIVE,
+      })
+      .getMany();
+
+    const response: InventProdListSiteMapDto[] = inventories.map((inv) => ({
+      id: inv.id,
+      product: inv.product
+        ? {
+            id: inv.product.id,
+            slug: inv.product.slug,
+            updatedAt: inv.product.updatedAt.toISOString(),
+          }
+        : undefined,
+    }));
+
+    await this.cacheService.set(cacheKey, response, { ttl: 3600 }); // ✅ 1 hour TTL
+    return response;
+
+  } catch (error) {
+    this.logger.error(
+      `Error in findAllSiteMap: ${error.message}`,
+      error.stack,
+    );
+    throw new InternalServerErrorException('Failed to fetch sitemap products');
+  }
 }
 
 async findAll(

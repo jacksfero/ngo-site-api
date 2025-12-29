@@ -51,23 +51,18 @@ export class ExhibitionService {
     return { success: true, liked: true };
   }
 
-  async addGlobalView(viewerIdentifier: string) {
-    // ✅ Check if already viewed
-    const existing = await this.viewRepo.findOne({
-      where: { viewerIdentifier },
-    });
+async addPageView(page: string, viewerIdentifier: string) {
+  // 1️⃣ Always save view (every refresh)
+  await this.viewRepo.save({
+    page,
+    viewerIdentifier,
+  });
 
-    if (existing) {
-      return { success: true, counted: false }; // ❌ do NOT increase again
-    }
+  // 2️⃣ Increment view counter for that page
+//await this.exhibitionRepo.increment({}, 'views', 1);
 
-    await this.viewRepo.save({ viewerIdentifier });
-
-    // ✅ Increase global counter
-    await this.exhibitionRepo.increment({}, 'views', 1);
-
-    return { success: true, counted: true };
-  }
+  return { success: true };
+}
 
   async getExhibitionStats() {
     try {

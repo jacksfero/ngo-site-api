@@ -10,16 +10,27 @@ import { AuthRequest } from 'src/core/types/auth-request.type';
 export class ExhibitionController {
   constructor(private readonly exhibitionService: ExhibitionService) {}
 
- @Post('view')
-  addView(@Req() req: AuthRequest) {
-    const viewerIdentifier =
-      req.user?.id ||
-      req.cookies?.viewerId ||
-      req.headers['x-forwarded-for'] ||
-      req.socket.remoteAddress;
+//  @Post('view')
+//   addView(@Req() req: AuthRequest) {
+//     const viewerIdentifier =
+//       req.user?.id ||
+//       req.cookies?.viewerId ||
+//       req.headers['x-forwarded-for'] ||
+//       req.socket.remoteAddress;
 
-    return this.exhibitionService.addGlobalView(String(viewerIdentifier));
-  }
+//     return this.exhibitionService.addGlobalView(String(viewerIdentifier));
+//   }
+@Post('view')
+addView(
+  @Body('page') page: string,
+  @Req() req: AuthRequest,
+) {
+  const viewerIdentifier =
+    req.headers['x-forwarded-for']?.toString() ||
+    req.socket.remoteAddress;
+
+  return this.exhibitionService.addPageView(page, String(viewerIdentifier));
+}
 
  @Post('like')
 async addLike(@Req() req: AuthRequest) {

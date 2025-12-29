@@ -173,7 +173,27 @@ export class ProductInvtArtistDto {
   artist: ArtistDto;
  
 }
- 
+ @Exclude()
+export class ProductInvtSitemapDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  slug: string;
+
+  @Expose()
+  updatedAt: string;
+}
+
+@Exclude()
+export class InventProdListSiteMapDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  @Type(() => ProductInvtSitemapDto)
+  product?: ProductInvtSitemapDto;
+}
 
 @Exclude()
 export class InventProdListDto {
