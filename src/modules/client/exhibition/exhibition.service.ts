@@ -50,6 +50,14 @@ export class ExhibitionService {
 
     return { success: true, liked: true };
   }
+async likePage(page: string, viewerIdentifier: string) {
+  try {
+    await this.likeRepo.save({ page, viewerIdentifier });
+    return { liked: true };
+  } catch (e) {
+    return { liked: false, message: 'Already liked' };
+  }
+}
 
 async addPageView(page: string, viewerIdentifier: string) {
   // 1️⃣ Always save view (every refresh)
@@ -64,7 +72,7 @@ async addPageView(page: string, viewerIdentifier: string) {
   return { success: true };
 }
 
-  async getExhibitionStats() {
+  async getExhibitionStatss() {
     try {
       const exhibition = await this.exhibitionRepo.find({
         select: ['views', 'likeCount'],
@@ -77,7 +85,38 @@ async addPageView(page: string, viewerIdentifier: string) {
       throw err;
     }
   }
- 
+ async getExhibitionStats(page: 'list' | 'live') {
+  try {
+    const [totalViews, uniqueViews, totalLikes] = await Promise.all([
+      // Total views
+      this.viewRepo.count({
+        where: { page },
+      }),
+
+      // Unique viewers
+      this.viewRepo
+        .createQueryBuilder('v')
+        .select('COUNT(DISTINCT v.viewerIdentifier)', 'count')
+        .where('v.page = :page', { page })
+        .getRawOne(),
+
+      // Total likes
+      this.likeRepo.count({
+        where: { page },
+      }),
+    ]);
+
+    return {
+      page,
+      views: totalViews,
+      uniqueViews: Number(uniqueViews.count),
+      likes: totalLikes,
+    };
+  } catch (err) {
+    console.error('Exhibition stats error', err);
+    throw err;
+  }
+}
 
   async findPublicAll(paginationDto: PaginationDto): Promise<PaginationResponseDto<ExhibitionListItemDto>> {
 

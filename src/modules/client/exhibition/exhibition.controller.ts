@@ -33,19 +33,19 @@ addView(
 }
 
  @Post('like')
-async addLike(@Req() req: AuthRequest) {
+async addLike( @Body('page') page: string,@Req() req: AuthRequest) {
   const viewerIdentifier =
     req.user?.id ||
     req.cookies?.viewerId ||
     req.headers['x-forwarded-for'] ||
     req.socket.remoteAddress;
 
-  return this.exhibitionService.addGlobalLike(String(viewerIdentifier));
+  return this.exhibitionService.likePage(page,String(viewerIdentifier));
 }
 
 @Get('stats')
-getStats() {
-  return this.exhibitionService.getExhibitionStats();
+getStats(@Query('page') page: 'list' | 'live') {
+  return this.exhibitionService.getExhibitionStats(page);
 }
 
  // ✅ Get currently live exhibitions
