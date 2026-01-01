@@ -230,7 +230,7 @@ const isSearch = Boolean(searchTerm);
     blog: { id: blogId },
     viewerIdentifier,
   });
-  console.log(`blog--------`,blog)
+ // console.log(`blog--------`,blog)
 
   // 3️⃣ Increment views in DB
   await this.blogRepo.increment({ id: blogId }, 'views', 1);
