@@ -225,31 +225,24 @@ const isSearch = Boolean(searchTerm);
 
     const blogId = blog.id; // ✅ define for later use
 
-    // ✅ Unique view logic
-    const existingView = await this.blogViewRepo.findOne({
-      where: { blog: { id: blogId }, viewerIdentifier },
-    });
+     // 2️⃣ Save view on EVERY refresh
+  await this.blogViewRepo.save({
+    blog: { id: blogId },
+    viewerIdentifier,
+  });
+  console.log(`blog--------`,blog)
 
-    if (!existingView) {
-      await this.blogViewRepo.save({
-        blog: { id: blogId },   viewerIdentifier,
-      });
+  // 3️⃣ Increment views in DB
+  await this.blogRepo.increment({ id: blogId }, 'views', 1);
+       blog.views = (blog.views ?? 0) + 1;
+      
 
-      // ✅ Increment in DB
-      await this.blogRepo.increment({ id: blogId }, 'views', 1);
-
-      // ✅ Increment in cache
-      if (typeof blog.views === 'number') {
-        blog.views += 1;
-        await this.cacheService.set(cacheKey, blog);
-      }
-    }
-
-    // ✅ Return DTO
-    const response = plainToInstance(BlogListDetailDto, blog, {
-      excludeExtraneousValues: true,
-    });
-    await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response)));
+       const response = plainToInstance(BlogListDetailDto, blog, {
+    excludeExtraneousValues: true,
+  });
+      // 6️⃣ Cache ONLY the final DTO
+ 
+  await this.cacheService.set(cacheKey, response);
     return response;
   }
 

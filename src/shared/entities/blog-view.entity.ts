@@ -1,8 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, Unique } from 'typeorm';
+import { Entity,Index, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, Unique } from 'typeorm';
 import { Blog } from './blog.entity';
 
 @Entity('blog_views')
-@Unique(['blog', 'viewerIdentifier']) // prevent duplicates
+@Index(['blog'])
 export class BlogView {
   @PrimaryGeneratedColumn()
   id: number;
