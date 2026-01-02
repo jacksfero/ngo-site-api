@@ -218,6 +218,7 @@ export class ProductsService {
        .leftJoin('product.productInventory', 'inventoryProduct')
        .leftJoin('product.category', 'category')
       .where('surface.status = :status', { status: true })
+      .andWhere('surface.id != :id', { id: 22 })
       .andWhere('product.is_active = :active', { active: true })
      // .andWhere('category.slug = :slug', { slug })
       .andWhere(slug !== 'all' ? 'category.slug = :slug' : '1=1', { slug })
@@ -299,7 +300,7 @@ export class ProductsService {
       order: { surfaceName: 'ASC' },
       where: {
        status: true, // only active surfaces
-       id: Not(22),
+     //  id: Not(11),
      }
     });
     const response =  plainToInstance(SurfaceResponseDto, style, {
