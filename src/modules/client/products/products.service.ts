@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { Repository,Not } from 'typeorm';
  
 import { Product } from 'src/shared/entities/product.entity';
 import { ProductFilterDto } from './dto/product-filter.dto';
@@ -299,6 +299,7 @@ export class ProductsService {
       order: { surfaceName: 'ASC' },
       where: {
        status: true, // only active surfaces
+       id: Not(22),
      }
     });
     const response =  plainToInstance(SurfaceResponseDto, style, {
