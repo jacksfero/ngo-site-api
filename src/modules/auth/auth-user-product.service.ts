@@ -157,7 +157,7 @@ return result;
     const queryBuilder = this.productRepository.createQueryBuilder('product')
       .leftJoinAndSelect('product.artist', 'artist')
       .leftJoinAndSelect('product.category', 'category')
-      .andWhere('product.createdBy = :createdBy', { createdBy: userId });
+      .andWhere('product.owner_id = :createdBy', { createdBy: userId });
     if (search) {
       queryBuilder.andWhere('product.name LIKE :search', { search: `%${search}%` });
     }
