@@ -153,8 +153,8 @@ export class BlogListDetailDto {
   @Expose()
   h1Title: string;
 
- /* @Expose()
-  blogContent: string;*/
+  @Expose()
+  likeCount: number; 
 
  
   @Expose()
