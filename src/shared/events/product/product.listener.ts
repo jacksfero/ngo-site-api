@@ -14,17 +14,17 @@ export class ProductListener {
   async handleProductCreated(payload: ProductCreatedPayload) {
     this.logger.log(`📦 Product created event received for: ${payload.productName}`);
     const template = 'Artwork-Submission-Mailer'; // ✅ Constant template name
-    const cc = ['info@indigalleria.com'];
-    const bcc = ['indigalleria@gmail.com'];
-   // const to = payload.to;
-   const to = 'jayprakash005@gmail.com'
+    const bcc = ['info@indigalleria.com'];
+    const cc = ['indigalleria@gmail.com'];
+    const to = payload.to;
+ //  const to = 'jayprakash005@gmail.com'
     const subject = `Artwork Submission Received | IndiGalleria`;
 
     try {
       await this.mailService.sendTemplateEmail({
         to: payload.to,
         cc,
-        bcc,
+       // bcc,
         subject ,
         template,
         context: payload,
