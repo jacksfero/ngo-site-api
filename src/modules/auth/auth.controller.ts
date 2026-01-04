@@ -148,7 +148,8 @@ export class AuthController {
         secure: true,          // Use false for localhost HTTP
         sameSite: 'none',
         path: '/',
-         domain: isDev ? "localhost" : process.env.COOKIE_DOMAIN, // ✅ REQUIRED
+      //   domain: isDev ? "localhost" : process.env.COOKIE_DOMAIN, // ✅ REQUIRED
+          domain:   process.env.COOKIE_DOMAIN,  
         maxAge: 1000 * 60 * 60 * 24 * 30,
       });
     }
