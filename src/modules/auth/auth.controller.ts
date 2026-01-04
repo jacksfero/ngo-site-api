@@ -137,10 +137,10 @@ export class AuthController {
     //   res.clearCookie('guestCartId', { httpOnly: true, sameSite: 'lax' });
     // }
     // 🔐 ADD COOKIE (non-breaking)
-    console.log(`process.env.NODE_ENV-------`, process.env.NODE_ENV)
-    console.log(`process.env.COOKIE_DOMAIN-------`, process.env.COOKIE_DOMAIN)
-    console.log(`process.token-------`, result.access_token)
-    console.log(`process.result-------`, result)
+    // console.log(`process.env.NODE_ENV-------`, process.env.NODE_ENV)
+    // console.log(`process.env.COOKIE_DOMAIN-------`, process.env.COOKIE_DOMAIN)
+    // console.log(`process.token-------`, result.access_token)
+    // console.log(`process.result-------`, result)
     const isDev = process.env.NODE_ENV !== 'production';
     if (result?.access_token) {
       res.cookie('access_token', result.access_token, {
@@ -148,12 +148,11 @@ export class AuthController {
         secure: true,          // Use false for localhost HTTP
         sameSite: 'none',
         path: '/',
-         domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
+         domain: isDev ? "localhost" : process.env.COOKIE_DOMAIN, // ✅ REQUIRED
         maxAge: 1000 * 60 * 60 * 24 * 30,
       });
     }
-
-
+ 
     // clear guest cart
     if (req.cookies?.['guestCartId']) {
       res.clearCookie('guestCartId', {
@@ -299,7 +298,7 @@ export class AuthController {
   ) {
     let guestId = req.cookies?.['guestCartId'];
 
-    console.log('guestId---------', guestId);
+   // console.log('guestId---------', guestId);
     return this.authService.registerCartUserAndLogin(dto, guestId);
   }
 
