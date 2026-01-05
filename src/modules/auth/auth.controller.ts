@@ -175,45 +175,42 @@ export class AuthController {
   }
 
 
-  @Public()
-  @Post('login-with-otp')
-  async otpLogin(@Body() dto: VerifyOtpDto,
- @Req() req: ExpressRequest,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    //  const guestId = req.cookies?.['guestCartId'];
-   // return this.authService.loginWithOtp(dto);
+@Public()
+@Post('login-with-otp')
+async otpLogin(
+  @Body() dto: VerifyOtpDto,
+  @Req() req: ExpressRequest,
+  @Res({ passthrough: true }) res: Response,
+) {
+  const result = await this.authService.loginWithOtp(dto);
 
-    // if (!req.user) {
-    //   throw new UnauthorizedException('User not found in request');
-    // }
-
-    const result = await this.authService.loginWithOtp(dto); // ✅ pass req
-
-    if (result?.access_token) {
-      res.cookie('access_token', result.access_token, {
-        httpOnly: true,
-        secure: true,          // Use false for localhost HTTP
-        sameSite: 'none',
-        path: '/',     
-          domain:   process.env.COOKIE_DOMAIN,  
-        maxAge: 1000 * 60 * 60 * 24 * 30,
-      });
-    }
- 
-    // clear guest cart
-    if (req.cookies?.['guestCartId']) {
-      res.clearCookie('guestCartId', {
-        httpOnly: true,
-        secure: true,          // Use false for localhost HTTP
-        sameSite: 'none',
-        path: '/',
-        domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
-        maxAge: 1000 * 60 * 60 * 24 * 30,
-      });
-    }
-    return result;
+  if (!result?.access_token) {
+    throw new UnauthorizedException('Invalid or expired OTP');
   }
+
+  res.cookie('access_token', result.access_token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+    path: '/',
+    domain: process.env.COOKIE_DOMAIN,
+    maxAge: 1000 * 60 * 60 * 24 * 30,
+  });
+
+  // clear guest cart
+  if (req.cookies?.['guestCartId']) {
+    res.clearCookie('guestCartId', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      path: '/',
+      domain: process.env.COOKIE_DOMAIN,
+    });
+  }
+
+  return result;
+}
+
 
   @Public()
   @Post('forgot-password')
