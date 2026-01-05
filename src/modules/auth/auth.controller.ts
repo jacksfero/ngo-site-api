@@ -184,9 +184,9 @@ export class AuthController {
     //  const guestId = req.cookies?.['guestCartId'];
    // return this.authService.loginWithOtp(dto);
 
-    if (!req.user) {
-      throw new UnauthorizedException('User not found in request');
-    }
+    // if (!req.user) {
+    //   throw new UnauthorizedException('User not found in request');
+    // }
 
     const result = await this.authService.loginWithOtp(dto); // ✅ pass req
 
