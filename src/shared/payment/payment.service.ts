@@ -145,7 +145,8 @@ export class PaymentService {
     const shasum = crypto.createHmac('sha256', secret);
     shasum.update(JSON.stringify(body));
     const digest = shasum.digest('hex');
-
+    console.log(`body---------`,body)
+ console.log(`signature---------`,signature)
     if (digest !== signature) {
       throw new Error('Invalid Razorpay Webhook Signature');
     }
