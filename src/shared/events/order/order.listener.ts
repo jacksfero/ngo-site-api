@@ -29,8 +29,8 @@ if (this.configService.get('MAIL_ENABLED') !== 'true') {
          
        const cc = ['indigalleria@gmail.com'];
     //  const bcc = ['indigalleria@gmail.com'];
-     // const to = payload.to;
-     const to = 'jayprakash005@gmail.com';
+       const to = payload.to;
+    // const to = 'jayprakash005@gmail.com';
       let subject = `Payment Failed for Your Order ${payload.orderId}`;
    if (payload.paymentStatus === 'SUCCESS') {
       template = 'Successful_Payment_Mailer_with_Order';

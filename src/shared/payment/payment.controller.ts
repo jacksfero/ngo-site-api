@@ -96,6 +96,10 @@ async webhook(
   @Req() req: Request,
   @Headers('x-razorpay-signature') signature: string,
 ) {
+  //  console.log('🔔 Razorpay Webhook HIT');
+  // console.log('Headers:', req.headers);
+  // console.log('Signature:', signature);
+  // console.log('Raw body length:', (req.body as Buffer)?.length);
   return this.paymentService.handleWebhook(req.body as Buffer, signature);
 }
  

@@ -20,6 +20,7 @@ export class SizeService {
     if (activeOnly) {
       return this.sizeRepo.find({ where: { status: true } });
     }
+   // console.log(`size----------------`,this.sizeRepo.find());
     return this.sizeRepo.find();
   }
   async findOne(id: number): Promise<Size> {
