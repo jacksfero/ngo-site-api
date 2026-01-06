@@ -25,7 +25,11 @@ constructor(private readonly config: ConfigService) {
     const order = await this.razorpay.orders.create({
       amount: dto.amount * 100, // Razorpay works in paise
       currency: 'INR',
-      receipt: `order_rcptid_${dto.orderId}`,
+     receipt: `order_${dto.orderId}`,
+      notes: {
+        orderId: dto.orderId,
+       // userId: dto.userId,
+     },
     });
 
     return {
@@ -34,7 +38,8 @@ constructor(private readonly config: ConfigService) {
       txnId: order.id,
       amount: dto.amount,
       currency: 'INR',
-      key: process.env.RAZORPAY_KEY_ID,
+      key: this.keyId,               // ✅ from ConfigService
+     // key: process.env.RAZORPAY_KEY_ID,
     };
   }
 

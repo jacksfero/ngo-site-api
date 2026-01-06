@@ -89,28 +89,14 @@ async paypalCancel(@Query('token') token: string, @Res() res: Response) {
       `${this.failureRedirectUrl}?txnId=${token}&status=cancelled`,
     );
 }
-
-// Razorpay Webhook
-//https://yourdomain.com/payment/webhook/razorpay.
-  // @Post('webhooka/razorpay')
-  // async handleRazorpayWebhook(
-  //   @Body() body: any,
-  //   @Headers('x-razorpay-signature') signature: string,
-  // ) {
-  //   return this.paymentService.handleRazorpayWebhook(body, signature);
-  // }
+ 
 
    @Post('webhook/razorpay')
 async webhook(@Body() body: any, @Headers('x-razorpay-signature') signature: string) {
   return this.paymentService.handleWebhook(body, signature);
 }
-
-// @Post('razorpay/callback')
-// async razorpayCallback(@Body() body: any) {
-//   return this.paymentService.handleCallbackRazor(body);
-// }
-
-
+ 
+ 
 @Post('razorpay/callback')
 async razorpayCallback(@Res() res: Response, @Body() body: any) {
   try {
