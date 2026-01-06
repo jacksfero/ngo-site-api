@@ -156,7 +156,7 @@ export class PaymentService {
 
     const payment = await this.paymentRepo.findOne({
       where: [{ txnId: paymentEntity.order_id },
-        { gatewayPaymentId: paymentEntity.id },
+       // { gatewayPaymentId: paymentEntity.id },
       ],
       relations: ['order'],
     });
