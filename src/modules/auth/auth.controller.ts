@@ -328,7 +328,38 @@ async otpLogin(
     let guestId = req.cookies?.['guestCartId'];
 
    // console.log('guestId---------', guestId);
-    return this.authService.registerCartUserAndLogin(dto, guestId);
+    const result = await this.authService.registerCartUserAndLogin(dto, guestId);
+
+
+
+   // 1. Correct the check path
+  if (!result?.data?.token) {
+    throw new UnauthorizedException('Invalid or expired OTP');
+  }
+
+ res.cookie('access_token', result.data.token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+    path: '/',
+    domain: process.env.COOKIE_DOMAIN,
+    maxAge: 1000 * 60 * 60 * 24 * 30,
+  });
+
+  // clear guest cart
+  if (req.cookies?.['guestCartId']) {
+    res.clearCookie('guestCartId', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      path: '/',
+      domain: process.env.COOKIE_DOMAIN,
+    });
+  }
+
+
+return result;
+
   }
 
 

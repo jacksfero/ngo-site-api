@@ -7,7 +7,7 @@ import {
   ForbiddenException,forwardRef,
   Inject,Scope,
 } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
+ 
 import * as bcrypt from 'bcrypt';
 
 import { UsersService } from 'src/modules/admin/users/users.service';
