@@ -10,6 +10,8 @@ import { Request, Response, NextFunction } from 'express';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 //import { setGlobalEmitter } from './shared/events/emitters/global-emitter';
+import * as bodyParser from 'body-parser';
+
 
 async function bootstrap() {
   try {
@@ -45,6 +47,13 @@ async function bootstrap() {
 
       next();
     });
+
+app.use(
+  '/api/payment/webhook/razorpay',
+  bodyParser.raw({ type: 'application/json' }),
+);
+
+    
 
     // ✅ CORS configuration
     app.enableCors({

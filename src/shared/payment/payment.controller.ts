@@ -1,4 +1,4 @@
-import { Controller,Headers, Get, Res, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller,Headers, Get,Req, Res, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { Response } from 'express';
 import { PaymentService } from './payment.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
@@ -6,7 +6,7 @@ import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { PaymentRequestDto } from './dto/payment-request.dto';
 import { InitiatePaymentDto } from './dto/initiate-payment.dto';
 import { ConfigService } from '@nestjs/config';
-
+import { Request } from 'express';
 
 @Controller('payment')
 export class PaymentController {
@@ -91,9 +91,12 @@ async paypalCancel(@Query('token') token: string, @Res() res: Response) {
 }
  
 
-   @Post('webhook/razorpay')
-async webhook(@Body() body: any, @Headers('x-razorpay-signature') signature: string) {
-  return this.paymentService.handleWebhook(body, signature);
+@Post('webhook/razorpay')
+async webhook(
+  @Req() req: Request,
+  @Headers('x-razorpay-signature') signature: string,
+) {
+  return this.paymentService.handleWebhook(req.body as Buffer, signature);
 }
  
  

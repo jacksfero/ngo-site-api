@@ -140,16 +140,26 @@ export class PaymentService {
     return { success: false, status: 'CANCELLED', txnId: token, orderId: order.id };
   }
 
-  async handleWebhook(body: any, signature: string) {
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET!;
-    const shasum = crypto.createHmac('sha256', secret);
-    shasum.update(JSON.stringify(body));
-    const digest = shasum.digest('hex');
-    console.log(`body---------`,body)
+async handleWebhook(rawBody: Buffer, signature: string) {
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET!;
+
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(rawBody)
+    .digest('hex');
+     
+
+    // const shasum = crypto.createHmac('sha256', secret);
+    // shasum.update(JSON.stringify(body));
+    // const digest = shasum.digest('hex');
+   // console.log(`body---------`,body)
  console.log(`signature---------`,signature)
-    if (digest !== signature) {
-      throw new Error('Invalid Razorpay Webhook Signature');
-    }
+    if (expectedSignature !== signature) {
+    throw new Error('Invalid Razorpay Webhook Signature');
+  }
+
+
+ const body = JSON.parse(rawBody.toString());
 
     const event = body.event;
     const paymentEntity = body.payload?.payment?.entity;
