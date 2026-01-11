@@ -1,7 +1,7 @@
 // modules/client/blog/blog-client.service.ts
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { Like, MoreThan, Repository } from 'typeorm';
 import { Blog } from '../../../shared/entities/blog.entity';
 import { plainToInstance } from 'class-transformer';
 
@@ -245,7 +245,32 @@ const isSearch = Boolean(searchTerm);
   await this.cacheService.set(cacheKey, response);
     return response;
   }
+async incrementView(slug: string, ip: string): Promise<void> {
+    // 1. Find the blog first to get the ID
+    const blog = await this.blogRepo.findOne({ where: { slug } });
+    if (!blog) throw new NotFoundException('Blog not found');
 
+    // 2. OPTIONAL: Check if this IP viewed this blog in the last 24 hours
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const recentView = await this.blogViewRepo.findOne({
+      where: {
+        blog: { id: blog.id },
+        viewerIdentifier: ip,
+        viewedAt: MoreThan(oneDayAgo),
+      },
+    });
+
+    // 3. If no recent view from this IP, increment and log
+    if (!recentView) {
+      await Promise.all([
+        this.blogRepo.increment({ id: blog.id }, 'views', 1),
+        this.blogViewRepo.save({
+          blog: { id: blog.id },
+          viewerIdentifier: ip,
+        }),
+      ]);
+    }
+  }
 
   /*async findBlogsByCategory(categoryId: number, page = 1, limit = 10): Promise<PaginationResponseDto<BlogListDto>> {
   const [result, total] = await this.blogRepo.findAndCount({

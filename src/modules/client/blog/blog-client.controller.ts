@@ -71,6 +71,21 @@ export class BlogClientController {
   ): Promise<PaginationResponseDto<BlogListDto>> {
     return this.blogService.findBlogsByTagSlug(slug, paginationDto);
   }
+  
+@Post(':slug/view')
+  async incrementView(
+    @Param('slug') slug: string, 
+   @Req() req: Request
+  ) {
+     const viewerIdentifier =
+      (req as any)?.user?.id?.toString() || (req as any)?.ip || 'unknown';
+    await this.blogService.incrementView(slug, viewerIdentifier);
+    return { 
+      success: true, 
+      message: 'View count processed' 
+    };
+  }
+ 
 
   @Get(':slug')
   async getBlog(@Param('slug') slug: string, @Req() req: Request) {
@@ -80,4 +95,8 @@ export class BlogClientController {
 
     return this.blogService.getBlogBySlug(slug, viewerIdentifier);
   }
+
+
+
+
 }
