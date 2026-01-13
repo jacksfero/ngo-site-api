@@ -397,6 +397,13 @@ return result;
     return this.authService.getArtistListFeatured(id);
   }
 
+    @Public()
+  @Get('artistslistfeaturedhome')
+  async getArtistListFeaturedHome(     
+  ) {
+    return this.authService.getArtistListFeaturedHome();
+  }
+
   @Public()
   @Get('by-role/')
   async getUsersByRole(

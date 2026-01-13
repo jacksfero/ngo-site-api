@@ -201,6 +201,28 @@ export class AuthService {
     }
     return artists;
   }
+  async getArtistListFeaturedHome() {
+    const artists = await this.userRepository
+      .createQueryBuilder('user')
+      .innerJoin('user.roles', 'roles')
+      .innerJoinAndSelect('user.profileImage', 'profileimg')
+      .innerJoinAndSelect('user.addresses', 'address')
+      .innerJoinAndSelect('user.aboutDetails', 'about')
+      .where('roles.id = :roleId', { roleId: 4 })
+      .andWhere('user.status = :status', { status: true })
+     
+      //.andWhere('user.featured_artist = :featured_artist', { featured_artist: true })
+      .andWhere('user.homePageDisplay = :homePageDisplay', { homePageDisplay: true })
+      .andWhere('address.type = :type', { type: AddressType.PERSONAL })
+      .select(['user.id', 'user.username', 'address.city', 'about.awards', 'about.shows', 'about.about', 'address.state', 'address.country', 'profileimg.imageUrl', 'user.artist_type_id'])
+      .orderBy('user.username', 'ASC')
+      .getMany();
+
+    if (artists.length === 0) {
+      throw new NotFoundException('Artists not found');
+    }
+    return artists;
+  }
 
 
   async getLoggedInUser(users: any): Promise<User> {
