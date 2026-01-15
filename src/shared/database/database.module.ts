@@ -18,7 +18,7 @@ import { DatabaseHealthService } from './database.health.service';
         database: configService.get<string>('DB_NAME'),
 
         // ⚠️ Recommended for production
-        synchronize: false,
+        synchronize: true,
        /// migrationsRun: true,
 
         autoLoadEntities: true,

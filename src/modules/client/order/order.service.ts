@@ -14,10 +14,15 @@ import { UsersAddress } from 'src/shared/entities/users-address.entity';
 import { Shipping } from 'src/shared/entities/shipping.entity';
 import { Payment    } from 'src/shared/entities/payment.entity';
 import { PaymentStatus } from 'src/shared/payment/enum/payment-status.enum';
+import * as countries from 'i18n-iso-countries';
+ 
 
 @Injectable()
 export class OrderService {
+  
   constructor(
+  // countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
+    
     @InjectRepository(Order)
     private orderRepo: Repository<Order>,
 
@@ -54,7 +59,7 @@ export class OrderService {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-
+ 
     try {
       console.log('🟢 Starting checkout process for user:', userId);
       // 1️⃣ Convert userId to number
@@ -85,7 +90,33 @@ export class OrderService {
       console.log('📬 Shipping Address ID:', shippingAddressId);
       console.log('📭 Billing Address ID:', billingAddressId);
       // 3️⃣ Fetch addresses (FIXED)
-      let shippingAddress: UsersAddress | null = null;
+   let shippingAddressSnapshot = '';
+    let billingAddressSnapshot = '';
+
+    if (shippingAddressId) {
+      const sAddr = await queryRunner.manager.findOne(UsersAddress, {
+        where: { id: shippingAddressId },
+      });
+      if (!sAddr) throw new BadRequestException('Shipping address not found');
+      
+      const countryLabel = countries.getName(sAddr.country, "en") || sAddr.country;
+      // Formatting as a clean string for 80G/Labels
+      shippingAddressSnapshot = `${sAddr.name}, ${sAddr.address}, ${sAddr.city}, ${sAddr.state} - ${sAddr.pin}, ${countryLabel},
+       \n ${sAddr.phonecode}  ${sAddr.contact}, ${sAddr.phonecode_other} ${sAddr.other_phone}`;
+    }
+
+    if (billingAddressId) {
+      const bAddr = await queryRunner.manager.findOne(UsersAddress, {
+        where: { id: billingAddressId },
+      });
+      if (!bAddr) throw new BadRequestException('Billing address not found');
+      
+      const countryLabel = countries.getName(bAddr.country, "en") || bAddr.country;
+      billingAddressSnapshot = `${bAddr.name}, ${bAddr.address}, ${bAddr.city}, ${bAddr.state} - ${bAddr.pin}, ${countryLabel},
+       \n ${bAddr.phonecode}  ${bAddr.contact}, ${bAddr.phonecode_other} ${bAddr.other_phone},\n ${bAddr.trade_name}, ${bAddr.pan_gstin}`;
+    }
+
+     /* let shippingAddress: UsersAddress | null = null;
       let billingAddress: UsersAddress | null = null;
 
       if (shippingAddressId) {
@@ -108,7 +139,7 @@ export class OrderService {
         if (!billingAddress) {
           throw new BadRequestException('Billing address not found');
         }
-      }
+      }*/
 
       // 4️⃣ Validate inventory & calculate totals
       let total = 0;
@@ -124,6 +155,7 @@ export class OrderService {
 
         const inventory = await queryRunner.manager.findOne(Inventory, {
           where: { id: cartItem.inventoryId },
+         // relations: ['shippingWeight'] // Ensure this is loaded
         });
 
         if (!inventory) {
@@ -179,7 +211,7 @@ export class OrderService {
 
         orderItems.push(orderItem);
       }
-
+console.log(`shipping and billind id`,shippingAddressId,`---`,billingAddressId)
       // 5️⃣ Create order (FIXED ADDRESSES)
       const order = queryRunner.manager.create(Order, {
         user: { id: numericUserId } as User,
@@ -189,9 +221,11 @@ export class OrderService {
         country: cart.shippingCountry,
         exchangeRate: cart.exchangeRate,
         currency: cart.currency,
-        shippingAddress: { id: shippingAddressId } as UsersAddress,  // Use actual entity
-        billingAddress: { id: billingAddressId } as UsersAddress,    // Use actual entity
-        status: OrderStatus.PENDING,
+        shippingAddressId:   shippingAddressId  ,  // Use actual entity
+        billingAddressId:   billingAddressId  ,    // Use actual entity
+     shippingAddressSnapshot, 
+      billingAddressSnapshot,
+         status: OrderStatus.PENDING,
       });
 
       order.generateOrderNumber();
@@ -213,7 +247,7 @@ export class OrderService {
       }
 
       // 8️⃣ Mark cart as checked out
-      cart.isCheckedOut = true;
+     // cart.isCheckedOut = true;
       await queryRunner.manager.save(cart);
 
       // 9️⃣ Save order & order items in one go

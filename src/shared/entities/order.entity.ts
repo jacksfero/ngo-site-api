@@ -48,13 +48,18 @@ export class Order {
   })
   items: OrderItem[];
 
-  @ManyToOne(() => UsersAddress, { eager: true, nullable: true })
-  @JoinColumn({ name: 'shipping_address_id' })
-  shippingAddress: UsersAddress;
+@Column({ name: 'shipping_address_id', type: 'int', nullable: true })
+  shippingAddressId: number;
 
-  @ManyToOne(() => UsersAddress, { eager: true, nullable: true })
-  @JoinColumn({ name: 'billing_address_id' })
-  billingAddress: UsersAddress;
+  @Column({ name: 'billing_address_id', type: 'int', nullable: true })
+  billingAddressId: number;
+
+ // Your existing snapshot columns
+  @Column({ type: 'text', nullable: true })
+  shippingAddressSnapshot: string;
+
+  @Column({ type: 'text', nullable: true })
+  billingAddressSnapshot: string;
 
   @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.PENDING })
   status: OrderStatus;
