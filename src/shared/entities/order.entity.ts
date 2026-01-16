@@ -48,6 +48,10 @@ export class Order {
   })
   items: OrderItem[];
 
+@Column({ nullable: true, length: 50 })
+  @Index({ unique: true }) // Ensures no two orders have the same invoice number
+  invoiceNo: string;
+
 @Column({ name: 'shipping_address_id', type: 'int', nullable: true })
   shippingAddressId: number;
 

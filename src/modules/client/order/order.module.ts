@@ -12,11 +12,12 @@ import { Inventory } from 'src/shared/entities/inventory.entity';
 import { UsersAddress } from 'src/shared/entities/users-address.entity';
 import { Shipping } from 'src/shared/entities/shipping.entity';
 import { Payment } from 'src/shared/entities/payment.entity';
+import { OrderCronService } from './order-cron.service';
 
 @Module({
   imports:[TypeOrmModule.forFeature([Order,OrderItem,Product,User,Cart,CartItem,
     Inventory,UsersAddress,Shipping,Payment])],
-  controllers: [OrderController],
+  controllers: [OrderController,OrderCronService],
   providers: [OrderService],
 })
 export class OrderModule {}
