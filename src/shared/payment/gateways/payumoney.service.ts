@@ -18,13 +18,13 @@ export class PayUMoneyService {
   // private merchantKey = process.env.PAYU_KEY || 'Qu5Kb7';       // test/prod merchant key
   // private merchantSalt = process.env.PAYU_SALT || 'MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDsLjkNpxdiTri198kvVohJOrGRVB1DoAzgRBmUqQmRICUrUSuC53Hj950i79dx5mHZ9jKH7Oz' ;     // test/prod salt
   // private baseUrl = process.env.PAYU_BASE_URL || 'https://test.payu.in'; 
-  private readonly eventEmitter: EventEmitter2;
+ 
   private merchantKey: string;
   private merchantSalt: string;
   private baseUrl: string;
 
   constructor(
-
+     private readonly eventEmitter: EventEmitter2,
     private readonly config: ConfigService,
 
     @InjectRepository(Payment)
