@@ -8,6 +8,7 @@ import { PaymentStatus } from '../enum/payment-status.enum';
 import { PaymentCallbackResult } from '../dto/payment-callback-result';
 import { ConfigService } from '@nestjs/config';
 import { Order, OrderStatus } from 'src/shared/entities/order.entity';
+import { Cart } from 'src/shared/entities/cart.entity';
 
 @Injectable()
 export class PayUMoneyService {
@@ -28,6 +29,9 @@ export class PayUMoneyService {
 
     @InjectRepository(Order)
     private readonly orderRepo: Repository<Order>,
+
+    @InjectRepository(Cart)
+        private cartRepo: Repository<Cart>,
   ) {
       this.merchantKey = this.config.get<string>('payu.key')!;
     this.merchantSalt = this.config.get<string>('payu.salt')!;
@@ -137,6 +141,17 @@ export class PayUMoneyService {
   if (payment.order) {
     if (status === PaymentStatus.SUCCESS) {
       payment.order.status = OrderStatus.CONFIRMED; // or PAID, depending on your design
+    if (payment.order.user) {
+        await this.cartRepo.update(
+          { 
+            user: { id: payment.order.user.id }, 
+            isCheckedOut: false 
+          },
+          { isCheckedOut: true }
+        );
+        console.log(`🛒 Cart closed for user: ${payment.order.user.id}`);
+      }
+    
     } else {
       payment.order.status = OrderStatus.CANCELLED;
       payment.order.cancelledAt = new Date();

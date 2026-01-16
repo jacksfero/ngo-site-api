@@ -11,9 +11,11 @@ import { AuthService } from 'src/modules/auth/auth.service';
 import { UsersService } from 'src/modules/admin/users/users.service';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { UsersModule } from 'src/modules/admin/users/users.module';
+import { Cart } from '../entities/cart.entity';
+import { Inventory } from '../entities/inventory.entity';
 
 @Module({
-   imports: [TypeOrmModule.forFeature([Payment,Order]),
+   imports: [TypeOrmModule.forFeature([Payment,Order,Cart,Inventory]),
    // UsersModule,        // 👈 MUST BE HERE
     AuthModule,         // if required
   ],

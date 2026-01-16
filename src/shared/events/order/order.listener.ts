@@ -17,7 +17,7 @@ export class OrderListener {
   ) {}
 
   @OnEvent('order.payment.failed', { async: true })
-  async handleProductCreated(payload: OrderPaymentFailedPayload) {
+  async handleOrderPaymentEvent(payload: OrderPaymentFailedPayload) {
 
 if (this.configService.get('MAIL_ENABLED') !== 'true') {
    this.logger.warn(`🚫 Mail disabled. Order Success and Failed email not sent to ${payload.to}`);
@@ -25,17 +25,19 @@ if (this.configService.get('MAIL_ENABLED') !== 'true') {
   }
 
       this.logger.log(`📦   order Failed event received for: ${payload.totalAmount}`);
-      let template = 'Failed_Payment_Mailer_with_Order';  
-         
-       const cc = ['indigalleria@gmail.com'];
-    //  const bcc = ['indigalleria@gmail.com'];
-       const to = payload.to;
-    // const to = 'jayprakash005@gmail.com';
-      let subject = `Payment Failed for Your Order ${payload.orderId}`;
-   if (payload.paymentStatus === 'SUCCESS') {
-      template = 'Successful_Payment_Mailer_with_Order';
-       subject = `Payment Successful for Your Order ${payload.orderId}`;
-   }
+      // 2. Determine Template and Subject based on Status
+  let template: string;
+  let subject: string;
+  const cc = ['indigalleria@gmail.com'];
+  const to = payload.to;
+
+  if (payload.paymentStatus === 'SUCCESS') {
+    template = 'Successful_Payment_Mailer_with_Order';
+    subject = `Order Confirmed! Your Order #${payload.orderId} was successful`;
+  } else {
+    template = 'Failed_Payment_Mailer_with_Order';
+    subject = `Payment Failed for Your Order #${payload.orderId}`;
+  }
 
   
       try {

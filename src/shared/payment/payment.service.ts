@@ -16,6 +16,8 @@ import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrderPaymentFailedPayload } from '../events/interfaces/event-payload.interface';
 import { AuthService } from 'src/modules/auth/auth.service';
+import { Cart } from '../entities/cart.entity';
+import { Inventory } from '../entities/inventory.entity';
 
 @Injectable()
 export class PaymentService {
@@ -30,6 +32,12 @@ export class PaymentService {
 
     @InjectRepository(Order)
     private readonly orderRepo: Repository<Order>,   // ✅ add this
+
+    @InjectRepository(Cart)
+            private cartRepo: Repository<Cart>,
+
+              @InjectRepository(Inventory)
+                private inventoryRepo: Repository<Inventory>,
 
     private readonly payuService: PayUMoneyService,
 
@@ -99,7 +107,8 @@ export class PaymentService {
     // ✅ Update payment in DB
     const payment = await this.paymentRepo.findOne({
       where: { txnId: capture.txnId },
-      relations: ['order'], // load order relation
+    //  relations: ['order'], // load order relation
+      relations: ['order', 'order.user'], // Added 'order.user'
     });
 
     if (!payment) throw new Error('Payment not found!');
@@ -107,11 +116,29 @@ export class PaymentService {
     payment.status = PaymentStatus.SUCCESS;
     await this.paymentRepo.save(payment);
 
+
     // ✅ Update linked order
     const order = payment.order;
     order.updatePaymentStatus(payment);
     order.status = OrderStatus.CONFIRMED;
     await this.orderRepo.save(order);
+     
+
+
+if (order.user && order.user.id) {
+  await this.cartRepo.update(
+    { 
+      user: { id: order.user.id }, 
+      isCheckedOut: false 
+    },
+    { isCheckedOut: true }
+  );
+
+}
+
+
+
+
 
     return { ...capture, orderId: order.id };
   }
@@ -139,8 +166,104 @@ export class PaymentService {
 
     return { success: false, status: 'CANCELLED', txnId: token, orderId: order.id };
   }
-
 async handleWebhook(rawBody: Buffer, signature: string) {
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET!;
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(rawBody)
+    .digest('hex');
+
+  if (expectedSignature !== signature) {
+    throw new Error('Invalid Razorpay Webhook Signature');
+  }
+
+  const body = JSON.parse(rawBody.toString());
+  const event = body.event;
+  const paymentEntity = body.payload?.payment?.entity;
+
+  // 1️⃣ Load order.user so we can clear the cart
+  const payment = await this.paymentRepo.findOne({
+    where: { txnId: paymentEntity.order_id },
+    relations: ['order', 'order.user', 'order.items'], 
+  });
+
+  if (!payment) return { success: false };
+
+ // const userdetails = await this.authService.getUserDetailsById(payment.userId);
+  const order = payment.order;
+  const user = order.user;
+  let orderstatus_mail = 'Cancelled';
+
+  if (event === 'payment.captured') {
+    payment.status = PaymentStatus.SUCCESS;
+    payment.gatewayResponse = paymentEntity;
+    payment.gatewayPaymentId = paymentEntity.id;
+    orderstatus_mail = 'Under Process';
+
+    // 2️⃣ ✅ Update Order Status
+    if (order) {
+      order.status = OrderStatus.CONFIRMED;
+      order.paymentStatus = PaymentStatus.SUCCESS;
+     // order.generateInvoiceNumber(); // Generate invoice
+      await this.orderRepo.save(order);
+
+      // 3️⃣ ✅ MARK CART AS CHECKED OUT
+      if (order.user) {
+        await this.cartRepo.update(
+          { user: { id: order.user.id }, isCheckedOut: false },
+          { isCheckedOut: true }
+        );
+        console.log(`🛒 Razorpay: Cart closed for user ${order.user.id}`);
+      }
+    }
+ 
+    // Emit Success Email
+    this.eventEmitter.emit('order.payment.failed', this.buildEmailPayload(payment, user, order, orderstatus_mail));
+
+  } else if (event === 'payment.failed') {
+    payment.status = PaymentStatus.FAILED;
+    payment.gatewayResponse = paymentEntity;
+    payment.gatewayPaymentId = paymentEntity.id;
+    orderstatus_mail = 'Cancelled';
+
+    if (order) {
+      order.status = OrderStatus.FAILED;
+      order.paymentStatus = PaymentStatus.FAILED;
+      await this.orderRepo.save(order);
+      
+      // 4️⃣ Optional: Restore Inventory on failure
+      for (const item of order.items) {
+          await this.inventoryRepo.increment({ id: item.inventoryId }, 'quantity', item.quantity);
+      }
+    }
+
+    // Emit Failed Email
+    this.eventEmitter.emit('order.payment.failed', this.buildEmailPayload(payment, user, order, orderstatus_mail));
+  }
+
+  await this.paymentRepo.save(payment);
+  return { success: true };
+}
+
+// Helper to keep code clean
+private buildEmailPayload(payment, userdetails, order, orderstatus_mail) {
+  const date = new Date(payment.createdAt);
+  const formattedDateTime = date.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) + ' at ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+  return {
+    orderId: String(payment.orderId),
+    currency: String(payment.currency),
+    totalAmount: String(payment.amount),
+    orderDate: formattedDateTime,
+    paymentGatway: payment.paymentGateway,
+    paymentStatus: payment.status,
+    orderStatus: orderstatus_mail,
+    name: userdetails.username,
+    to: userdetails.email,
+    items: order.items.map(i => ({ productName: i.productName })),
+  };
+}
+async handleWebhookss(rawBody: Buffer, signature: string) {
   const secret = process.env.RAZORPAY_WEBHOOK_SECRET!;
 
   const expectedSignature = crypto
@@ -168,7 +291,8 @@ async handleWebhook(rawBody: Buffer, signature: string) {
       where: [{ txnId: paymentEntity.order_id },
        // { gatewayPaymentId: paymentEntity.id },
       ],
-      relations: ['order'],
+    //  relations: ['order'],
+      relations: ['order', 'order.user', 'order.items'],
     });
     if (!payment) return { success: false };
 
@@ -235,6 +359,10 @@ async handleWebhook(rawBody: Buffer, signature: string) {
         payment.order.paymentStatus = payment.status;
         if (payment.status === PaymentStatus.SUCCESS) {
           payment.order.status = OrderStatus.CONFIRMED;
+
+
+
+          
         } else if (payment.status === PaymentStatus.FAILED) {
           payment.order.status = OrderStatus.FAILED;
         }
