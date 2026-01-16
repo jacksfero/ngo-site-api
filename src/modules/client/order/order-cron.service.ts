@@ -9,18 +9,22 @@ import { PaymentStatus } from 'src/shared/payment/enum/payment-status.enum';
 @Injectable()
 export class OrderCronService {
   private readonly logger = new Logger(OrderCronService.name);
-private dataSource: DataSource; // ✅ For transactions
+
   constructor(
      @InjectRepository(Order)
     private orderRepo: Repository<Order>,
+
+    private dataSource: DataSource, // ✅ For transactions
   ) {}
 
   // ✅ Run every hour (adjust if needed)
-  @Cron(CronExpression.EVERY_30_MINUTES)
+//  @Cron(CronExpression.EVERY_30_MINUTES)
+   // @Cron(CronExpression.EVERY_MINUTE)
+     @Cron(CronExpression.EVERY_30_MINUTES)
   async handleOrderCleanup() {
     this.logger.log('🚀 Starting Cron: Cleaning up unpaid ghost orders...');
 
-    const queryRunner = this.dataSource.createQueryRunner();
+     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
