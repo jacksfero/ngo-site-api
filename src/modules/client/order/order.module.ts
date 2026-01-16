@@ -17,7 +17,7 @@ import { OrderCronService } from './order-cron.service';
 @Module({
   imports:[TypeOrmModule.forFeature([Order,OrderItem,Product,User,Cart,CartItem,
     Inventory,UsersAddress,Shipping,Payment])],
-  controllers: [OrderController,],
+  controllers: [OrderController],
   providers: [OrderService,OrderCronService],
 })
 export class OrderModule {}
