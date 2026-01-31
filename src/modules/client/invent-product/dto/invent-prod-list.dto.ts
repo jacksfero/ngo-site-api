@@ -101,14 +101,14 @@ export class ProductInvtDto {
   @Type(() => SurfaceDto)
   surface: SurfaceDto;
 
-   @Expose()
+  /* @Expose()
   @Type(() => SubjectDto)
   subjects: SubjectDto;
 
 
    @Expose()
   @Type(() => styleDto)
-  styles: styleDto;
+  styles: styleDto;*/
 
   @Expose()
   @Type(() => MediumDto)
