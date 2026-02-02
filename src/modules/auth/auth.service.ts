@@ -397,7 +397,7 @@ export class AuthService {
       mobile, 
        termscondition,
       isSubscribe,
-      status: true, is_verified: false,
+      status: false, is_verified: false,
       password: await bcrypt.hash(password, 10),
       roles: [role], // assign role in array for ManyToMany
     });
