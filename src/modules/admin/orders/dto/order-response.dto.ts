@@ -104,6 +104,13 @@ paymentStatus: PaymentStatus;
    @Expose()
   currency: number;
 
+
+   @Expose()
+  shippingAddressSnapshot: string;
+
+   @Expose()
+  billingAddressSnapshot: string;
+
   @Expose()
   createdAt: Date;
 
@@ -115,14 +122,7 @@ paymentStatus: PaymentStatus;
   @Type(() => UserDto)
   user: UserDto;
 
-  // ✅ shipping address
- @Expose()
-  @Type(() => UsersAddressDTO)
-  shippingAddress: UsersAddressDTO;
-
-    @Expose()
-    @Type(() => UsersAddressDTO)
-   billingAddress: UsersAddressDTO;
+  
 
   // // ✅ order items
    @Expose()
