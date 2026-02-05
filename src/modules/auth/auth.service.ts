@@ -436,7 +436,7 @@ export class AuthService {
       } as Partial<User>);
       await this.userRepository.save(user);
     }
-console.log('guest ID ---Register--1--------',guestCartId)
+//console.log('guest ID ---Register--1--------',guestCartId)
 //     // 3️⃣ Merge guest cart
     let mergedCart: Cart | undefined;
   if (guestCartId) {
