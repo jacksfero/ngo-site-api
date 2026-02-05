@@ -397,7 +397,7 @@ export class AuthService {
       mobile, 
        termscondition,
       isSubscribe,
-      status: false, is_verified: false,
+      status: true, is_verified: false,
       password: await bcrypt.hash(password, 10),
       roles: [role], // assign role in array for ManyToMany
     });
@@ -430,7 +430,7 @@ export class AuthService {
         email: type === OtpType.EMAIL ? identifier : null,
         mobile: type === OtpType.MOBILE ? identifier : null,
         status: true,
-        is_verified: true,
+        is_verified: false,
         password: null,
         roles: [role],
       } as Partial<User>);
@@ -516,7 +516,7 @@ console.log('guest ID ---Register--1--------',guestCartId)
     if (!identifier) {
       throw new BadRequestException('Email or mobile must be provided.');
     }
- console.log('----send otp to contact---2222222222---')
+ //console.log('----send otp to contact---2222222222---')
     try {
       let user: User | null = null;
       let type: OtpType;
@@ -526,7 +526,7 @@ console.log('guest ID ---Register--1--------',guestCartId)
  
         type = OtpType.EMAIL;     // ✅ enum value
         user = await this.findByEmail(identifier);
-         console.log(type,'-----send otp to contact---3333333--',identifier)
+        // console.log(type,'-----send otp to contact---3333333--',identifier)
 
       } else if (this.isValidMobile(identifier)) {
         type = OtpType.MOBILE;    // ✅ enum value
@@ -635,7 +635,7 @@ console.log('guest ID ---Register--1--------',guestCartId)
 // ✅ Now use async/await to get the context
    // const guestCartId = this.request?.cookies?.['guestCartId'];
    const guestCartId = req?.cookies?.['guestCartId'];
- console.log('guest ID ---Login--1--------',guestCartId)
+ //console.log('guest ID ---Login--1--------',guestCartId)
 
   let mergedCart: Cart | undefined;
   if (guestCartId) {
