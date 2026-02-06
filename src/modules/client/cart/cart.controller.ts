@@ -251,6 +251,7 @@ private setGuestCookie(res: Response, guestId: string) {
     ...(isProd && process.env.COOKIE_DOMAIN ? { domain: process.env.COOKIE_DOMAIN } : {}),
   });
 }
+}
  /*  @Put('update/:itemId')
   async updateCartItem(
     @Param('itemId') itemId: number,
