@@ -16,7 +16,7 @@ import * as bodyParser from 'body-parser';
 async function bootstrap() {
   try {
     console.log('🚀 Starting application bootstrap...');
-    
+
     const app = await NestFactory.create<NestExpressApplication>(AppModule, {
       bufferLogs: true,
     });
@@ -30,11 +30,11 @@ async function bootstrap() {
     // ✅ Cookie parser
     app.use(cookieParser());
 
-     // ✅ Request logging middleware
+    // ✅ Request logging middleware
     app.use((req: Request, res: Response, next: NextFunction) => {
       const start = Date.now();
       console.log(`➡️ [${new Date().toISOString()}] ${req.method} ${req.url}`);
-      
+
       res.on('finish', () => {
         const duration = Date.now() - start;
         console.log(`⬅️ [${new Date().toISOString()}] ${req.method} ${req.url} - ${res.statusCode} - ${duration}ms`);
@@ -48,12 +48,12 @@ async function bootstrap() {
       next();
     });
 
-app.use(
-  '/api/payment/webhook/razorpay',
-  bodyParser.raw({ type: 'application/json' }),
-);
+    app.use(
+      '/api/payment/webhook/razorpay',
+      bodyParser.raw({ type: 'application/json' }),
+    );
 
-    
+
 
     // ✅ CORS configuration
     app.enableCors({
@@ -63,14 +63,11 @@ app.use(
         'https://indigalleria-backend.onrender.com',
         'https://www.indigalleria.com',
         'https://indigalleria.com',
-        'wwww.indigalleria.com',
-        'indigalleria.com',
-        'admin.indigalleria.com',
         'https://admin.indigalleria.com',
-        
+
       ],
       methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'set-cookie'],
       credentials: true,
       preflightContinue: false,
       optionsSuccessStatus: 204,
@@ -106,12 +103,12 @@ app.use(
     app.useGlobalFilters(new GlobalExceptionFilter());
 
     // ✅ Use only JwtAuthGuard globally
-   // app.useGlobalGuards(app.get(JwtAuthGuard));
+    // app.useGlobalGuards(app.get(JwtAuthGuard));
 
     // ✅ Global interceptors
     app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
-   
+
 
     // ✅ Start server
     const port = process.env.PORT || 3030;

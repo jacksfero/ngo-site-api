@@ -238,15 +238,19 @@ async updateShipping(
    }
 
 private setGuestCookie(res: Response, guestId: string) {
+  const isProd = process.env.NODE_ENV === 'production';
+  
   res.cookie('guestCartId', guestId, {
-    httpOnly: true,   // prevents JS access
-    secure: true,     // required for HTTPS (Render is HTTPS)
-    sameSite: 'none', // VERY important for cross-domain
-    domain: process.env.COOKIE_DOMAIN,
-    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    httpOnly: true,
+    // ✅ Use 'none' for cross-domain (Prod), 'lax' for same-domain (Local)
+    sameSite: isProd ? 'none' : 'lax', 
+    // ✅ Secure MUST be true if sameSite is 'none'
+    secure: isProd ? true : false, 
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+    // ✅ Don't set domain for localhost
+    ...(isProd && process.env.COOKIE_DOMAIN ? { domain: process.env.COOKIE_DOMAIN } : {}),
   });
 }
-} 
  /*  @Put('update/:itemId')
   async updateCartItem(
     @Param('itemId') itemId: number,
