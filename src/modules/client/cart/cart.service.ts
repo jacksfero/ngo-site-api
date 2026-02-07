@@ -42,13 +42,17 @@ export class CartService {
   // ✅ FIXED: Accept both string and number user IDs
   async getOrCreateCart(userId?: string | number, guestId?: string): Promise<Cart> {
     let cart: Cart | null = null;
-
+    console.log(`guestId--cart service 1---${guestId}------userId------${userId}`);
     if (userId) {
+          console.log(`guestId--cart service 2---${guestId}------userId------${userId}`);
+
       cart = await this.cartRepo.findOne({
         where: { user: { id: Number(userId) }, isCheckedOut: false },
         relations: ['items', 'items.product'],
       });
     } else if (guestId) {
+          console.log(`guestId--cart service 3---${guestId}------userId------${userId}`);
+
       cart = await this.cartRepo.findOne({
         where: { guestId, isCheckedOut: false },
         relations: ['items', 'items.product'],
