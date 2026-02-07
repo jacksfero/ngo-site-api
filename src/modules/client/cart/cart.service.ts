@@ -65,11 +65,13 @@ export class CartService {
          
         exchangeRate: 1,
       });
-
+      console.log(`guestId--3---${guestId}------userId------${userId}`);
       if (userId) {
         cart.user = { id: Number(userId) } as User;
+         console.log(`guestId--4---${guestId}------userId------${userId}`);
       } else {
         cart.guestId = guestId;
+         console.log(`guestId--5---${guestId}------userId------${userId}`);
       }
 
       await this.cartRepo.save(cart);
