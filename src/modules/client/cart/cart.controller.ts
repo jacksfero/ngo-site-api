@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Req, Res, UseGuards, HttpException, HttpStatus, ParseIntPipe, Param, Delete, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req, Res, UseGuards, HttpException, HttpStatus, ParseIntPipe, Param, Delete, Patch, ConsoleLogger } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { AddToCartDto, UpdateCartItemDto } from './dto/cart.dto';
 import { CheckoutDto } from './dto/checkout.dto';
@@ -31,9 +31,12 @@ export class CartController {
     try {
       const userId =  req.user?.sub?.toString(); // Safe for guests // ✅ Use sub from JWT
       let guestId = req.cookies?.['guestCartId'];
+      console.log(`guestId--1---${guestId}------userId------${userId}`);
+
 
       if (!userId && !guestId) {
         guestId = uuidv4();
+        console.log(`guestId--2---${guestId}------userId------${userId}`);
         this.setGuestCookie(res, guestId);
       }
 
