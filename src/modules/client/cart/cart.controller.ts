@@ -31,7 +31,7 @@ export class CartController {
     try {
       const userId =  req.user?.sub?.toString(); // Safe for guests // ✅ Use sub from JWT
       let guestId = req.cookies?.['guestCartId'];
-      console.log(`guestId--1---${guestId}------userId------${userId}`);
+      console.log(`guestId--1---${guestId}------ip------${req.ip}--ip ---`);
 
 
       if (!userId && !guestId) {
