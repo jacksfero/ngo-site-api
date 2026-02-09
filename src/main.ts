@@ -59,15 +59,15 @@ async function bootstrap() {
     app.enableCors({
       origin: [
         'http://localhost:3000',
-        'https://indiagalleri-frontend.vercel.app',
-        'https://indigalleria-backend.onrender.com',
+     //   'https://indiagalleri-frontend.vercel.app',
+       //'https://indigalleria-backend.onrender.com',
         'https://www.indigalleria.com',
         'https://indigalleria.com',
         'https://admin.indigalleria.com',
 
       ],
-      methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'set-cookie'],
+      methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE' ],
+      allowedHeaders: ['Content-Type','Cache-Control', 'Authorization', 'X-Requested-With', 'set-cookie'],
       credentials: true,
       preflightContinue: false,
       optionsSuccessStatus: 204,
