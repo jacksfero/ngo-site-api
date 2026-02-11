@@ -7,8 +7,19 @@ export class StyleResponseDto {
   @Expose()
   title: string;
 
-    @Expose()
-   description: string;
+    //  @Expose()
+   // description: string;
+ 
+}
+export class StyleContentDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  title: string;
+
+     @Expose()
+    description: string;
  
 }
 export class SurfaceResponseDto {
@@ -28,6 +39,16 @@ export class MediumResponseDto {
  
 }
 export class SubjectResponseDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  subject: string;
+
+   // @Expose()
+   // description: string;
+}
+export class SubjectContentDto {
   @Expose()
   id: number;
 

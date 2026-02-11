@@ -50,6 +50,15 @@ export class ProductsController {
     return this.productsService.getActiveProdStyleList(slug);
   }
 
+  @Get('stylecontent/:slug')
+  getStyleContentBySlug(@Param('slug') slug: number) {
+    return this.productsService.getStyleContentBySlug(slug);
+  }
+  @Get('subjectcontent/:slug')
+  getSubjectContentBySlug(@Param('slug') slug: number) {
+    return this.productsService.getSubjectContentBySlug(slug);
+  }
+
  @Get()
   getAllProducts(@Query() filterDto: ProductFilterDto) {
     return this.productsService.findAll(filterDto);

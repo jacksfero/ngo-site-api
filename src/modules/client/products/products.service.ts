@@ -9,7 +9,7 @@ import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { plainToInstance } from 'class-transformer';
 import { ProductListItemDto } from './dto/product-list-item.dto';
 import { Style } from 'src/shared/entities/style.entity';
-import { MediumResponseDto, StyleResponseDto,SubjectResponseDto,SurfaceResponseDto } from './dto/style-response.dto';
+import { MediumResponseDto,StyleContentDto, StyleResponseDto,SubjectContentDto,SubjectResponseDto,SurfaceResponseDto } from './dto/style-response.dto';
 import { Surface } from 'src/shared/entities/surface.entity';
 import { Medium } from 'src/shared/entities/medium.entity';
 import { Subject } from 'src/shared/entities/subject.entity';
@@ -218,7 +218,7 @@ export class ProductsService {
        .leftJoin('product.productInventory', 'inventoryProduct')
        .leftJoin('product.category', 'category')
       .where('surface.status = :status', { status: true })
-      .andWhere('surface.id != :id', { id: 22 })
+      .andWhere('surface.id != :id', { id: 12 })
       .andWhere('product.is_active = :active', { active: true })
      // .andWhere('category.slug = :slug', { slug })
       .andWhere(slug !== 'all' ? 'category.slug = :slug' : '1=1', { slug })
@@ -234,6 +234,59 @@ export class ProductsService {
 
   return response;
   }
+
+async getStyleContentBySlug(slug: number): Promise<StyleContentDto> {
+  const cacheKey = `frontend:Style:content:${slug}`;
+  const cached = await this.cacheService.get<StyleContentDto>(cacheKey);
+  
+  if (cached) return cached;
+
+  const style = await this.styleRepo.findOne({
+    // If 'slug' is a number, you are likely querying the primary key 'id'
+    where: { id: slug, status: true }, 
+    select: ['id', 'title', 'description'],
+  });
+
+  if (!style) {
+    throw new NotFoundException(`Style with ID ${slug} not found`);
+  }
+
+  const response = plainToInstance(StyleContentDto, style, {
+    excludeExtraneousValues: true,
+  });
+
+   
+  await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response))); 
+  
+  return response;
+}
+
+async getSubjectContentBySlug(slug: number): Promise<SubjectContentDto> {
+  const cacheKey = `frontend:Style:content:${slug}`;
+  const cached = await this.cacheService.get<SubjectContentDto>(cacheKey);
+  
+  if (cached) return cached;
+
+  const style = await this.subjectRepo.findOne({
+    // If 'slug' is a number, you are likely querying the primary key 'id'
+    where: { id: slug, status: true }, 
+    select: ['id', 'subject', 'description'],
+  });
+
+  if (!style) {
+    throw new NotFoundException(`Style with ID ${slug} not found`);
+  }
+
+  const response = plainToInstance(SubjectContentDto, style, {
+    excludeExtraneousValues: true,
+  });
+
+   
+  await this.cacheService.set(cacheKey, JSON.parse(JSON.stringify(response))); 
+  
+  return response;
+}
+
   async getActiveProdStyleList(slug: string): Promise<StyleResponseDto[]> {
 
     const cacheKey = `frontend:Style:active:${slug}`;
@@ -243,6 +296,12 @@ export class ProductsService {
       }
    const styles = await this.styleRepo
     .createQueryBuilder('style' )
+    .select([
+      'style.id', 
+      'style.title', 
+      // 'style.description', 
+     // 'style.slug' // Only select what's needed for filters
+    ])
     .leftJoin('style.products', 'product')  
     .leftJoin('product.productInventory', 'inventory') 
     .leftJoin('product.category', 'category')
@@ -271,7 +330,13 @@ export class ProductsService {
       }
 
     const surfaces =  await this.subjectRepo
-      .createQueryBuilder('subject')     
+      .createQueryBuilder('subject') 
+      .select([
+      'subject.id', 
+      'subject.subject', 
+      // 'style.description', 
+     
+    ])    
       .leftJoin('subject.products', 'product')  
        .leftJoin('product.productInventory', 'inventoryProduct')
        .leftJoin('product.category', 'category')
