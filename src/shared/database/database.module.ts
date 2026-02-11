@@ -29,7 +29,7 @@ import { DatabaseHealthService } from './database.health.service';
 
         // ✔ MySQL2 pool settings
         extra: {
-          connectionLimit: 8,
+          connectionLimit: 5,
           waitForConnections: true,
           queueLimit: 0,
           charset: 'utf8mb4',
