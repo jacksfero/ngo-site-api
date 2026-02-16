@@ -404,7 +404,7 @@ async findAll(
      // ✅ Currency Conversion
     const rate = await this.getCurrencyRate(currency);
 
-    const computed = inventories.map((inventory) => {
+   const computed = inventories.map((inventory) => {
       const basePrice = Number(inventory.price || 0);
       const gst = Number(inventory.gstSlot || 0);
       const disc = Number(inventory.discount || 0);
@@ -417,7 +417,15 @@ async findAll(
       const displayPrice = Number((finalINR / rate).toFixed(2));
       const originalPrice =
         (basePrice * (1 + gst / 100) + shippingCost) / rate;
-       const data = plainToInstance(InventProdListDto, computed, {
+  return {
+        ...inventory,
+        displayPrice,
+        finaldiscountamount: Number(originalPrice.toFixed(2)),
+        currency: currency || 'INR',
+      };
+    });
+
+    const data = plainToInstance(InventProdListDto, computed, {
       excludeExtraneousValues: true,
     });
 
@@ -434,7 +442,7 @@ async findAll(
     throw new InternalServerErrorException('Failed to fetch products');
   }
 }
-
+ 
 async getArtworkByArtist(
   paginationDto: InventProdPaginatDto,
 ): Promise<PaginationResponseDto<InventProdListArtistDto>> {
