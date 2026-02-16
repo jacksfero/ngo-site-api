@@ -24,7 +24,7 @@ export class OtpListener {
     this.logger.log(`📦 Otp created event received for: ${payload.to}`);
    let template = 'email_verification_mailer';
   let subject = `Your IndiGalleria Email Verification Code ${payload.otp}`;
-
+  let from = this.configService.get('SES_FROM_INFO_EMAIL')
   if (payload.type === 'forgot_password') {
     template = 'Reset_Password_Mailer';
     subject = ` Reset Your IndiGalleria Password`;
@@ -36,6 +36,7 @@ export class OtpListener {
       subject,
       template,
       context: payload,
+      from
     });
 
  

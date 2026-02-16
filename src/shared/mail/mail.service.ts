@@ -22,6 +22,7 @@ interface SendMailOptions {
   context?: Record<string, any>;
   cc?: string | string[];
   bcc?: string | string[];
+   from?: string;
 }
 
 @Injectable()
@@ -83,7 +84,7 @@ const mailEnabled = this.configService.get<string>('MAIL_ENABLED') === 'true';
 
       // ✅ Build SES params
       const params = {
-        Source: this.fromEmail,
+        Source: options.from || this.fromEmail,
         Destination: {
           ToAddresses: Array.isArray(options.to) ? options.to : [options.to],
           CcAddresses: options.cc
