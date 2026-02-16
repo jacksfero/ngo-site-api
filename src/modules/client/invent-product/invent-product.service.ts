@@ -150,9 +150,9 @@ async findAll_new(
 
   // ---------- Sorting ----------
   if (sortPrice === 'low') {
-    qb.orderBy('displayPrice', 'ASC');
+    qb.orderBy('inventory.displayPriceExpr', 'ASC');
   } else if (sortPrice === 'high') {
-    qb.orderBy('displayPrice', 'DESC');
+    qb.orderBy('inventory.displayPriceExpr', 'DESC');
   } else {
     qb.orderBy('inventory.id', 'DESC');
   }
@@ -364,69 +364,60 @@ async findAll(
     if (affordable_art) qb.andWhere('product.affordable_art = :affordable_art', { affordable_art });
     if (discount === 1) qb.andWhere('inventory.discount > 0');
 
-    // ✅ Price filtering at database level (use base price)
-    if (minPrice !== undefined && maxPrice !== undefined) {
-      qb.andWhere('inventory.price BETWEEN :minPrice AND :maxPrice', { minPrice, maxPrice });
-    } else if (minPrice !== undefined) {
-      qb.andWhere('inventory.price >= :minPrice', { minPrice });
-    } else if (maxPrice !== undefined) {
-      qb.andWhere('inventory.price <= :maxPrice', { maxPrice });
-    }
 
-    // ✅ Sorting at database level
+ const priceFormula = `
+      (
+        (
+          inventory.price * (1 - IFNULL(inventory.discount, 0) / 100)
+        ) * (1 + IFNULL(inventory.gstSlot, 0) / 100)
+        + IFNULL(shipping.costINR, 0)
+      )
+    `;
+
+    qb.addSelect(priceFormula, 'displayPriceINR');
+
+
+   // ✅ Price Filtering (Correct)
+    if (minPrice !== undefined && maxPrice !== undefined) {
+      qb.andWhere(`${priceFormula} BETWEEN :minPrice AND :maxPrice`, {
+        minPrice,
+        maxPrice,
+      });
+    } else if (minPrice !== undefined) {
+      qb.andWhere(`${priceFormula} >= :minPrice`, { minPrice });
+    } else if (maxPrice !== undefined) {
+      qb.andWhere(`${priceFormula} <= :maxPrice`, { maxPrice });
+    }
+     // ✅ Total Count (CLONE BEFORE ORDER BY)
+    const total = await qb.clone().getCount();
+  // ✅ Sorting
     if (sortPrice === 'low') {
-      qb.orderBy('inventory.price', 'ASC');
+      qb.orderBy('displayPriceINR', 'ASC');
     } else if (sortPrice === 'high') {
-      qb.orderBy('inventory.price', 'DESC');
+      qb.orderBy('displayPriceINR', 'DESC');
     } else {
       qb.orderBy('inventory.id', 'DESC');
     }
+   // ✅ Pagination
+    const inventories = await qb.skip(skip).take(limit).getMany();
 
-    // ✅ Get total count
-    const total = await qb.getCount();
-
-    // ✅ Get paginated results
-    const inventories = await qb
-      .skip(skip)
-      .take(limit)
-      .getMany();
-
-    // ✅ Currency conversion
+     // ✅ Currency Conversion
     const rate = await this.getCurrencyRate(currency);
 
-    // ✅ Compute prices with proper logic
     const computed = inventories.map((inventory) => {
       const basePrice = Number(inventory.price || 0);
       const gst = Number(inventory.gstSlot || 0);
-      const discount = Number(inventory.discount || 0);
-      const shipping = Number(inventory.shippingWeight?.costINR || 0);
+      const disc = Number(inventory.discount || 0);
+      const shippingCost = Number(inventory.shippingWeight?.costINR || 0);
 
-      // Calculate price after discount
-      const priceAfterDiscount = basePrice * (1 - discount / 100);
-      
-      // Add GST to discounted price
+      const priceAfterDiscount = basePrice * (1 - disc / 100);
       const priceWithGST = priceAfterDiscount * (1 + gst / 100);
-      
-      // Add shipping
-      const finalINR = priceWithGST + shipping;
-      
-      // Convert to target currency
+      const finalINR = priceWithGST + shippingCost;
+
       const displayPrice = Number((finalINR / rate).toFixed(2));
-      
-      // Calculate original price for discount display
-      const originalPriceWithGST = (basePrice * (1 + gst / 100)) + shipping;
-      const finaldiscountamount = Number((originalPriceWithGST / rate).toFixed(2));
-
-      return {
-        ...inventory,
-        finaldiscountamount,
-        displayPrice,
-        currency: currency || 'INR',
-      };
-    });
-
-    // ✅ Transform to DTO
-    const data = plainToInstance(InventProdListDto, computed, {
+      const originalPrice =
+        (basePrice * (1 + gst / 100) + shippingCost) / rate;
+       const data = plainToInstance(InventProdListDto, computed, {
       excludeExtraneousValues: true,
     });
 
@@ -436,9 +427,8 @@ async findAll(
       limit,
     });
 
-    await this.cacheService.set(cacheKey, response); // Add TTL
+    await this.cacheService.set(cacheKey, response);
     return response;
-
   } catch (error) {
     this.logger.error(`Error in findAll: ${error.message}`, error.stack);
     throw new InternalServerErrorException('Failed to fetch products');
