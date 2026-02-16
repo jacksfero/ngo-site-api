@@ -31,7 +31,7 @@ async handleContactCreated(payload: ContactCreatedPayload) {
   let subject_admin = `New Contact Us Submission from ${payload.name}`; 
   let to = payload.to as string;
   let admin = 'info@indigalleria.com';  
-  //admin = 'jayprakash005@gmail.com';  
+ let from = this.configService.get('SES_FROM_INFO_EMAIL')  
 
   // ✅ contact_for_art type
   if (payload.type === 'contact_for_art') {
@@ -57,7 +57,7 @@ async handleContactCreated(payload: ContactCreatedPayload) {
       to,        
       subject: subject_client,
       template: template_client, // 👈 fixed: was using template_admin by mistake
-      context: payload,
+      context: payload,from
     });
 
   //  for admin

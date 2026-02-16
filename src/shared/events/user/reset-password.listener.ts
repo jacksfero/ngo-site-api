@@ -28,13 +28,13 @@ async handleResetPasswordCreated(payload: ResetPassCreatedPayload) {
 
   const template = 'Password_Reset_Confirmation_Mailer';
   const subject = `Password Reset Confirmation`;
-
+let from = this.configService.get('SES_FROM_INFO_EMAIL');
   try {
     await this.mailService.sendTemplateEmail({
       to: payload.to,
       subject,
       template,
-      context: payload,
+      context: payload,from
     });
 
     this.logger.log(`✅ Password reset email sent to ${payload.to}`);

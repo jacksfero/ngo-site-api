@@ -30,7 +30,7 @@ if (this.configService.get('MAIL_ENABLED') !== 'true') {
   let subject: string;
   const cc = ['indigalleria@gmail.com'];
   const to = payload.to;
-
+let from = this.configService.get('SES_FROM_INFO_EMAIL');
   if (payload.paymentStatus === 'SUCCESS') {
     template = 'Successful_Payment_Mailer_with_Order';
     subject = `Order Confirmed! Your Order #${payload.orderId} was successful`;
@@ -47,7 +47,7 @@ if (this.configService.get('MAIL_ENABLED') !== 'true') {
         //  bcc,
           subject ,
           template,
-          context: payload,
+          context: payload,from
         });
   
         this.logger.log(`✅ Order Failed email sent to ${payload.to}`);
