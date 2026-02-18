@@ -218,7 +218,7 @@ export class ProductsService {
        .leftJoin('product.productInventory', 'inventoryProduct')
        .leftJoin('product.category', 'category')
       .where('surface.status = :status', { status: true })
-      .andWhere('surface.id != :id', { id: 12 })
+      .andWhere('surface.id != :id', { id: 22 })
       .andWhere('product.is_active = :active', { active: true })
      // .andWhere('category.slug = :slug', { slug })
       .andWhere(slug !== 'all' ? 'category.slug = :slug' : '1=1', { slug })
