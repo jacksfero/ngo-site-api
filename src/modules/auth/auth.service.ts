@@ -97,7 +97,7 @@ export class AuthService {
   ) { }
 
   // artist.service.ts
-  async getArtistsWithArtworkCount(id: number) {
+  async getArtistsWithArtworkCount_old_no_use(id: number) {
     const roleId = 4; // ✅ Artist role ID (keep configurable at top)
 
     const artists = await this.userRepository
@@ -126,7 +126,50 @@ export class AuthService {
 
     return artists;
   }
+async getArtistsWithArtworkCount(id: number) {
+  const roleId = 4;
 
+  const artists = await this.userRepository
+    .createQueryBuilder('user')
+    .innerJoin('user.roles', 'roles')
+    .innerJoin('user.products', 'product')
+    .innerJoin('product.productInventory', 'inventory')
+    // Join a subquery that finds the LATEST product ID for each user
+    .innerJoin(
+      (subQuery) => {
+        return subQuery
+          .select('p.user_id', 'userId')
+          .addSelect('MAX(p.id)', 'latestId')
+          .from('products', 'p') // Ensure table name matches your entity
+          .groupBy('p.user_id');
+      },
+      'latest_prod',
+      'latest_prod.userId = user.id'
+    )
+    // Join the product table again to get the specific details of that latest ID
+    .innerJoin('products', 'latest_product', 'latest_product.id = latest_prod.latestId')
+    .where('roles.id = :roleId', { roleId })
+    .andWhere('user.artist_type_id = :artistTypeId', { artistTypeId: id })
+    .andWhere('user.status = :userstatus', { userstatus: true })
+    .andWhere('product.is_active = :productStatus', { productStatus: 'Active' })
+    .andWhere('inventory.status = :inventoryStatus', { inventoryStatus: true })
+    .select('user.id', 'id')
+    .addSelect('user.username', 'username')
+    .addSelect('latest_product.defaultImage', 'defaultImage') // ✅ Now getting the specific latest image
+    .addSelect('user.artist_type_id', 'artist_type_id')
+    .addSelect('COUNT(DISTINCT product.id)', 'artworkCount') // ✅ Distinct count to avoid duplicates from joins
+    .groupBy('user.id')
+    .addGroupBy('user.username')
+    .addGroupBy('user.artist_type_id')
+    .addGroupBy('latest_product.defaultImage')
+    .getRawMany();
+
+  if (artists.length === 0) {
+    throw new NotFoundException('No artists found with artworks');
+  }
+
+  return artists;
+}
 
   async getArtistsByUserId(id: number) {
     const roleId = 4; // ✅ Artist role ID (keep configurable at top)
