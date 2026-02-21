@@ -132,22 +132,17 @@ async getArtistsWithArtworkCount(id: number) {
   const artists = await this.userRepository
     .createQueryBuilder('user')
     .innerJoin('user.roles', 'roles')
-    .innerJoin('user.products', 'product')
+    .innerJoin('user.products', 'product') 
     .innerJoin('product.productInventory', 'inventory')
-    // Join a subquery that finds the LATEST product ID for each user
-    .innerJoin(
-      (subQuery) => {
-        return subQuery
-          .select('p.user_id', 'userId')
-          .addSelect('MAX(p.id)', 'latestId')
-          .from('products', 'p') // Ensure table name matches your entity
-          .groupBy('p.user_id');
-      },
-      'latest_prod',
-      'latest_prod.userId = user.id'
-    )
-    // Join the product table again to get the specific details of that latest ID
-    .innerJoin('products', 'latest_product', 'latest_product.id = latest_prod.latestId')
+    // ✅ Fix: Changed 'products' to 'my_product'
+    .leftJoin((subQuery) => {
+      return subQuery
+        .select('p.artist_id', 'artistId') // Assuming 'artist_id' is the FK in my_product
+        .addSelect('p.defaultImage', 'latestImage')
+        .from('my_product', 'p') // Must match your DB table name
+        .where('p.is_active = :pActive', { pActive: 'Active' })
+        .orderBy('p.id', 'DESC');
+    }, 'latest_img_search', 'latest_img_search.artistId = user.id')
     .where('roles.id = :roleId', { roleId })
     .andWhere('user.artist_type_id = :artistTypeId', { artistTypeId: id })
     .andWhere('user.status = :userstatus', { userstatus: true })
@@ -155,13 +150,12 @@ async getArtistsWithArtworkCount(id: number) {
     .andWhere('inventory.status = :inventoryStatus', { inventoryStatus: true })
     .select('user.id', 'id')
     .addSelect('user.username', 'username')
-    .addSelect('latest_product.defaultImage', 'defaultImage') // ✅ Now getting the specific latest image
+    .addSelect('MAX(latest_img_search.latestImage)', 'defaultImage') 
     .addSelect('user.artist_type_id', 'artist_type_id')
-    .addSelect('COUNT(DISTINCT product.id)', 'artworkCount') // ✅ Distinct count to avoid duplicates from joins
+    .addSelect('COUNT(DISTINCT product.id)', 'artworkCount')
     .groupBy('user.id')
     .addGroupBy('user.username')
     .addGroupBy('user.artist_type_id')
-    .addGroupBy('latest_product.defaultImage')
     .getRawMany();
 
   if (artists.length === 0) {
