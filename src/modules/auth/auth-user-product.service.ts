@@ -111,7 +111,9 @@ export class AuthUserProductService {
     if (dto.stylesIds?.length) {
       product.styles = await this.styleRepo.findBy({ id: In(dto.stylesIds) });
     }
-
+  if (titleImage) {
+  product.alt_text = dto.alt_text ?? null;
+}
     const result = await this.productRepository.save(product);
 
      const userdetails = await this.authService.getLoggedInUser(user);
@@ -238,7 +240,7 @@ return result;
     if (updateProductDto.remark_to_artist !== undefined) {
       product.remark_to_artist = updateProductDto.remark_to_artist;
     }
-
+    product.alt_text = updateProductDto.alt_text ?? null;
 
     product.category = { id: updateProductDto.category_id } as Productcategory;
     product.packingMode = { id: updateProductDto.packingModeId } as PackingModeEntity;
