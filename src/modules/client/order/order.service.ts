@@ -273,7 +273,7 @@ console.log(`shipping and billind id`,shippingAddressId,`---`,billingAddressId)
     }
   }
 
-async findAll(userId: string): Promise<Order[]> {
+async findAll_backup(userId: string): Promise<Order[]> {
   const numericUserId = parseInt(userId, 10);
   if (isNaN(numericUserId)) {
     throw new BadRequestException('Invalid user ID');
@@ -301,7 +301,25 @@ async findAll(userId: string): Promise<Order[]> {
     // ])
     .getMany();
 }
+async findAll(userId: string): Promise<Order[]> {
+  const numericUserId = parseInt(userId, 10);
+  if (isNaN(numericUserId)) {
+    throw new BadRequestException('Invalid user ID');
+  }
 
+  return this.orderRepo
+    .createQueryBuilder('order')
+    .leftJoinAndSelect('order.items', 'items')
+    .leftJoinAndSelect('items.product', 'product')
+    .leftJoinAndSelect('order.user', 'user')
+    // 🔹 Add this to get payment history
+    .leftJoinAndSelect('order.payments', 'payments') 
+    .where('user.id = :userId', { userId: numericUserId })
+    // 🔹 Sort payments by newest first inside each order
+    .addOrderBy('payments.createdAt', 'DESC') 
+    .orderBy('order.createdAt', 'DESC')
+    .getMany();
+}
 
 
 

@@ -172,9 +172,10 @@ export class PayUMoneyService {
             await this.inventoryRepo.increment({ id: item.inventoryId }, 'quantity', item.quantity);
           }
         }
-         order.updatePaymentStatus(payment);
-        await this.orderRepo.save(order);
+       
       }
+        order.updatePaymentStatus(payment);
+        await this.orderRepo.save(order);
       // 4️⃣ ✅ EMIT EMAIL EVENT
     if (user) {
       const emailPayload = this.buildEmailPayload(payment, user, order, orderstatus_mail);
