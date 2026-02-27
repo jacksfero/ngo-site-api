@@ -282,6 +282,7 @@ async findAll(
       maxPrice,
       sortPrice,
       currency,
+      random,
     } = paginationDto;
 
     const skip = (page - 1) * limit;
@@ -289,7 +290,7 @@ async findAll(
     
     const cacheKey = `frontend:Artwork:All:${page}:${limit}:${searchTerm || ''}:${JSON.stringify({
       categoryId, artistId, styleId, subjectId, orientationId, sizeId, mediumId, surfaceId,
-      affordable_art, eliteChoice, new_arrival, discount, minPrice, maxPrice, sortPrice, currency
+      affordable_art, eliteChoice, new_arrival, discount, minPrice, maxPrice, sortPrice, currency,random
     })}`;
 
     const cached = await this.cacheService.get<PaginationResponseDto<InventProdListDto>>(cacheKey);
@@ -391,7 +392,11 @@ async findAll(
      // ✅ Total Count (CLONE BEFORE ORDER BY)
     const total = await qb.clone().getCount();
   // ✅ Sorting
-    if (sortPrice === 'low') {
+  if (random) {
+      // Use RANDOM() for Postgres or RAND() for MySQL
+      qb.orderBy('RAND()'); 
+    }
+   else if (sortPrice === 'low') {
       qb.orderBy('displayPriceINR', 'ASC');
     } else if (sortPrice === 'high') {
       qb.orderBy('displayPriceINR', 'DESC');

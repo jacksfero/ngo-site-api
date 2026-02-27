@@ -126,15 +126,14 @@ export class AuthService {
 
     return artists;
   }
-async getArtistsWithArtworkCount(id: number) {
+async getArtistsWithArtworkCount_bk(id: number) {
   const roleId = 4;
 
   const artists = await this.userRepository
     .createQueryBuilder('user')
     .innerJoin('user.roles', 'roles')
     .innerJoin('user.products', 'product') 
-    .innerJoin('product.productInventory', 'inventory')
-    // ✅ Fix: Changed 'products' to 'my_product'
+    .innerJoin('product.productInventory', 'inventory')    
     .leftJoin((subQuery) => {
       return subQuery
         .select('p.artist_id', 'artistId') // Assuming 'artist_id' is the FK in my_product
@@ -159,6 +158,54 @@ async getArtistsWithArtworkCount(id: number) {
     .getRawMany();
 
   if (artists.length === 0) {
+    throw new NotFoundException('No artists found with artworks');
+  }
+
+  return artists;
+}
+
+async getArtistsWithArtworkCount(id: number) {
+  const roleId = 4;
+
+  const artists = await this.userRepository
+    .createQueryBuilder('user')
+    .innerJoin('user.roles', 'roles')
+    // We join products to filter artists who actually have active stock
+    .innerJoin('user.products', 'product') 
+    .innerJoin('product.productInventory', 'inventory')    
+    // Subquery to find the LATEST product ID for each artist
+    .leftJoin((subQuery) => {
+      return subQuery
+        .select('p.artist_id', 'artistId')
+        .addSelect('MAX(p.id)', 'latestId') // Get highest ID (most recent)
+        .from('my_product', 'p')
+        .where('p.is_active = :pActive', { pActive: 'Active' })
+        .groupBy('p.artist_id');
+    }, 'latest_ref', 'latest_ref.artistId = user.id')
+    // Join again to get the image from that specific latest ID
+    .leftJoin('my_product', 'latest_product', 'latest_product.id = latest_ref.latestId')
+    .where('roles.id = :roleId', { roleId })
+    .andWhere('user.artist_type_id = :artistTypeId', { artistTypeId: id })
+    .andWhere('user.status = :userstatus', { userstatus: true })
+    .andWhere('product.is_active = :productStatus', { productStatus: 'Active' })
+    .andWhere('inventory.status = :inventoryStatus', { inventoryStatus: true })
+    .select([
+      'user.id AS id',
+      'user.username AS username',
+      'user.artist_type_id AS artist_type_id',
+      'latest_product.defaultImage AS defaultImage', // The image from the newest product
+      'COUNT(DISTINCT product.id) AS artworkCount',
+      'MAX(product.id) AS newest_product_id' // Helper for ordering
+    ])
+    .groupBy('user.id')
+    .addGroupBy('user.username')
+    .addGroupBy('user.artist_type_id')
+    .addGroupBy('latest_product.defaultImage')
+    // Order by the most recently added product across the whole artist list
+    .orderBy('newest_product_id', 'DESC') 
+    .getRawMany();
+
+  if (!artists || artists.length === 0) {
     throw new NotFoundException('No artists found with artworks');
   }
 
