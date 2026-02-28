@@ -68,6 +68,10 @@ nextonlineExhi(@Param('id', ParseIntPipe) id: number) {
   return this.exhibitionService.nextonlineExhi(id);
 }
 
+@Get('isliveexhibition')
+isLiveExhibition() {  
+  return this.exhibitionService.isLiveExhibition();
+}
 
 
 

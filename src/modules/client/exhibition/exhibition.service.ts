@@ -338,5 +338,35 @@ async addPageView(page: string, viewerIdentifier: string) {
     });
     return rate?.value ?? 1;
   }
+ 
+
+
+async isLiveExhibition(): Promise<boolean> {
+  const cacheKey = 'frontend:exhibitions:IsLiveStatus';
+  
+  // 1. Check Cache first
+  // We use a strict check for null/undefined because 'false' is a valid cached value
+  const cached = await this.cacheService.get<boolean>(cacheKey);
+  if (cached !== null && cached !== undefined) {
+    return cached;
+  }
+
+  const now = new Date();
+
+  // 2. Use .exists() for maximum database performance
+  // This generates: SELECT 1 FROM exhibition WHERE ... LIMIT 1
+  const isLive = await this.exhibitionRepo.exists({
+    where: {
+      status: true,
+      dateStart: LessThanOrEqual(now),
+      dateEnd: MoreThanOrEqual(now),
+    },
+  });
+
+  // 3. Save to cache (TTL: 3600 seconds = 1 hour)
+  await this.cacheService.set(cacheKey, isLive);
+
+  return isLive;
+}
 
 }
