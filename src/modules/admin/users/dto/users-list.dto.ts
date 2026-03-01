@@ -35,7 +35,7 @@ export class UsersListDto {
   is_verified: boolean;
 
   @Expose()
-  createdAt: Date;
+  updatedAt: Date;
   
   @Expose()
   @Type(() => RoleDto)
