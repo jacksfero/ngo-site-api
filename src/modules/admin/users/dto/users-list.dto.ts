@@ -36,6 +36,9 @@ export class UsersListDto {
 
   @Expose()
   updatedAt: Date;
+
+  @Expose()
+  createdAt: Date;
   
   @Expose()
   @Type(() => RoleDto)
