@@ -129,7 +129,7 @@ const cached = await this.cacheService.get(cacheKey);
   
  // ✅ Define default fields (always selected)
  const defaultInventoryFields = ['id', 'status', 'price', 'discount','gstSlot','shippingSlot','updatedAt'];
- const defaultProductFields = ['id', 'productTitle', 'defaultImage'];
+ const defaultProductFields = ['id', 'productTitle','slug', 'defaultImage'];
  const defaultArtistFields = ['id', 'username'];
  const defaultShippingFields = ['weightSlot', 'costINR', 'CostOthers'];
 
