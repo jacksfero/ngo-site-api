@@ -37,6 +37,9 @@ export class ProductInvtDto {
   @Expose()
   defaultImage: string;
 
+    @Expose()
+  slug: string;
+
   // // ✅ If you just need artistId
   // @Expose()
   // get artistId(): number {
