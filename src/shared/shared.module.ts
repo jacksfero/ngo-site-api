@@ -6,12 +6,12 @@ import { S3Module } from './s3/s3.module';
 import { OtpModule } from './otp/otp.module';
 import { DatabaseModule } from './database/database.module';
  
-import { PackingModeModule } from './packing-mode/packing-mode.module';
-import { CommisionTypeModule } from './commision-type/commision-type.module';
-import { ShippingTimeModule } from './shipping-time/shipping-time.module';
-import { SizeModule } from './size/size.module';
-import { OrientationModule } from './orientation/orientation.module';
-import { PaymentModule } from './payment/payment.module';
+// import { PackingModeModule } from './packing-mode/packing-mode.module';
+// import { CommisionTypeModule } from './commision-type/commision-type.module';
+// import { ShippingTimeModule } from './shipping-time/shipping-time.module';
+// import { SizeModule } from './size/size.module';
+// import { OrientationModule } from './orientation/orientation.module';
+// import { PaymentModule } from './payment/payment.module';
 import { MailModule } from './mail/mail.module';
 import { EventsModule } from './events/events.module'; // 👈 import this
 import { SmsModule } from './sms/sms.module';
@@ -22,16 +22,16 @@ import { SmsModule } from './sms/sms.module';
     S3Module,
     MailModule, SmsModule,
     EventsModule,
-    PackingModeModule,
-    PaymentModule,
+    // PackingModeModule,
+    // PaymentModule,
     
-    CommisionTypeModule,
+    // CommisionTypeModule,
     
-    ShippingTimeModule,
+    // ShippingTimeModule,
     
-    SizeModule,
+    // SizeModule,
     
-    OrientationModule,
+    // OrientationModule,
     //  RolesModule,
     // PermissionsModule,
 

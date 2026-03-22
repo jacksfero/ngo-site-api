@@ -24,7 +24,7 @@ export class UserListener {
       to: user.email,
       subject: '🎉 Welcome to IndiGalleria!',
       template: 'welcome',
-      context: { name: user.username },
+      context: { name: user.username }, 
     });
 
     // OR 2️⃣ Directly send via MailService (if you prefer inline)

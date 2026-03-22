@@ -30,13 +30,7 @@ export class BlogListDto {
   @Expose()
   titleImage: string;
 
-  @Expose()
-  get contentSnippet(): string {
-    if (!this.blogContent) return '';
-    return this.blogContent.length > 15
-      ? this.blogContent.substring(0, 15) + '...'
-      : this.blogContent;
-  } 
+  
  
   @Expose()
   blogContent?: string; // keep original for mapping

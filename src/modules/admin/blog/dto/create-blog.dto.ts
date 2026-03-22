@@ -38,12 +38,12 @@ export class CreateBlogDto {
 
   @IsString()
   @IsOptional()
-  descriptionTag?: string | null;  // Add null type
+  metaDescription?: string | null;  // Add null type
  
  
   @IsString()
   @IsOptional()
-  keywordsTag?: string | null;  // Add null type
+  metaKeywords?: string | null;  // Add null type
  
   @IsOptional()
   @IsString() 
@@ -51,7 +51,7 @@ export class CreateBlogDto {
 
   @IsString()
   @IsOptional()
-  optionalTitle?: string | null;   // Add null type
+  metaTitle?: string | null;   // Add null type
  
 
   @IsBoolean()

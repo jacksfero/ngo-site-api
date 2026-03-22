@@ -80,12 +80,12 @@ export class BlogService {
     blog.slug = await this.generateUniqueSlug(dto.slug);
     blog.h1Title = dto.h1Title || dto.title;
     blog.blogContent = dto.blogContent;
-    blog.descriptionTag = dto.descriptionTag || ''; // Handle undefined
-    blog.optionalTitle = dto.optionalTitle || '';   // Handle undefined
-  //  blog.titleImage = imageFilename ? `/blog-images/${imageFilename}` : null;
+    blog.metaDescription = dto.metaDescription || ''; // Handle undefined
+    blog.metaTitle = dto.metaTitle || '';   // Handle undefined
+     blog.titleImage = imageFilename ? `/blog-images/${imageFilename}` : null;
     blog.titleImage = titleImage;
-    blog.status = dto.status ?? false;
-    blog.isPublished = dto.isPublished ?? false;
+     blog.metaKeywords = dto.metaKeywords  || '';
+  //  blog.isPublished = dto.isPublished ?? false;
     blog.scheduledPublishDate = dto.scheduledPublishDate || null;
     blog.category = category;
     blog.tags = tags;
@@ -119,12 +119,9 @@ private async deleteImageFile(filename: string): Promise<void> {
   }
 
   async findAll(
-    paginationDto: BlogPaginationDto,
+    paginationDto: BlogPaginationDto ,
   ): Promise<PaginationResponseDto<BlogListDto>> {
-   /* return this.blogRepository.find({
-       relations: ['category', 'tags', 'author'],
-      order: { createdAt: 'DESC' },
-    });*/
+   
     const { page , limit, search,status   } = paginationDto;
     const skip = (page - 1) * limit;
     //const search = search || '';
@@ -146,13 +143,13 @@ private async deleteImageFile(filename: string): Promise<void> {
       queryBuilder.andWhere(
         `(LOWER(blog.title) LIKE :search 
       OR LOWER(category.name) LIKE :search
-      OR LOWER(author.username) LIKE :search)`,
+      OR LOWER(author.name) LIKE :search)`,
         { search: `%${search.toLowerCase()}%` },
       );
     }
-    if (typeof status === 'boolean') {
-      queryBuilder.andWhere('blog.status = :status', { status });
-    }
+    // if (typeof status === 'boolean') {
+    //   queryBuilder.andWhere('blog.status = :status', { status });
+    // }
 
     const [result, total] = await queryBuilder.getManyAndCount();
 
@@ -177,7 +174,7 @@ private async deleteImageFile(filename: string): Promise<void> {
 
   async publish(id: number) {
     await this.blogRepository.update(id, {
-      isPublished: true,
+    //  isPublished: true,
       scheduledPublishDate: null,
     });
   }
@@ -252,9 +249,9 @@ if (dto.author) {
   blog.titleImage = titleImage;       
      
   }
-  blog.keywordsTag = dto.keywordsTag??'';    
+  blog.metaKeywords = dto.metaKeywords??'';    
   blog.scheduledPublishDate = dto.scheduledPublishDate??null;  
-  blog.descriptionTag = dto.descriptionTag??'';      
+  blog.metaDescription = dto.metaDescription??'';      
     //return this.blogRepository.save(blog);
      const response = this.blogRepository.save(blog);
      await this.cacheService.deletePattern('Admin:blog:*');
@@ -307,7 +304,7 @@ if (dto.author) {
       if (!blog) {
         throw new NotFoundException(`blog   with ID ${id} not found`);
       }
-      blog.status = !blog.status;
+      //blog.status = !blog.status;
       //content.updatedBy = user.sub.toString(); // or user.sub.toString()
   
       const response = this.blogRepository.save(blog);

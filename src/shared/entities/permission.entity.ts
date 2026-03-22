@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, Index } from 'typeorm';
 
 import { Role } from './role.entity'; // For runtime (if absolutely needed)
 
@@ -9,12 +9,13 @@ import { Role } from './role.entity'; // For runtime (if absolutely needed)
 //   Role,
 // );
 
-@Entity()
+@Index(['resource', 'action'], { unique: true })
+@Entity('permissions')
 export class Permission {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
+  @Column()
   name: string; // Example: 'create_user', 'delete_post'
 
   @Column()
@@ -29,3 +30,34 @@ export class Permission {
   @ManyToMany(() => Role, (role) => role.permissions)
   roles: Role[];
 }
+
+
+
+/*******
+ * 
+ Recommended NGO Permission Structure
+
+ users.create
+users.read
+users.update
+users.delete
+
+campaigns.create
+campaigns.update
+campaigns.delete
+
+donations.view
+donations.approve
+
+blogs.create
+blogs.update
+blogs.delete
+
+
+Guards Implementation (Important)
+
+@UseGuards(PermissionsGuard)
+@Permissions('campaign', 'create')
+
+
+ */

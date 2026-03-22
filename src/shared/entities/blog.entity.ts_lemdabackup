@@ -1,0 +1,69 @@
+import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, ManyToMany, JoinTable } from 'typeorm';
+
+import { Category } from './category.entity';
+import { Tag } from './tag.entity';
+import { User } from './user.entity';
+
+@ObjectType()
+@Entity('blogs')
+export class Blog {
+
+  @Field(() => Int)
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Field(() => Category)
+  @ManyToOne(() => Category, (category) => category.blogs, { eager: true })
+  category: Category;
+
+  @Field(() => [Tag])
+  @ManyToMany(() => Tag)
+  @JoinTable({
+    name: 'blog_posts_tags',
+    joinColumn: { name: 'blog_post_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'tag_id', referencedColumnName: 'id' },
+  })
+  tags: Tag[];
+
+  @Field(() => User)
+  @ManyToOne(() => User, (user) => user.blogs)
+  author: User;
+
+  @Field()
+  @Column({ type: 'varchar', length: 200 })
+  title: string;
+
+  @Field()
+  @Column({ type: 'varchar', length: 200 })
+  slug: string;
+
+  @Field()
+  @Column({ type: 'varchar', length: 200 })
+  h1Title: string;
+
+  @Field()
+  @Column({ default: 0 })
+  views: number;
+
+  @Field()
+  @Column({ default: 0 })
+  likeCount: number;
+
+  @Field()
+  @Column({ type: 'longtext' })
+  blogContent: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  summary: string;
+
+  @Field()
+  @Column({
+    type: 'enum',
+    enum: ['draft', 'published', 'scheduled'],
+    default: 'draft',
+  })
+  status: string;
+
+}

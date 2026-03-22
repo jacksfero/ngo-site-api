@@ -1,6 +1,6 @@
 import { Entity,Index, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
 import { Blog } from './blog.entity';
-import { Product } from './product.entity';
+//import { Product } from './product.entity';
 
 @Entity('tags')
 export class Tag {
@@ -16,8 +16,8 @@ export class Tag {
   @ManyToMany(() => Blog, (blog) => blog.tags, )
   blogs: Blog[];
 
-@ManyToMany(() => Product, product => product.tags)
-products: Product[]; // Fixed: should be Product[] not Tag[]
+// @ManyToMany(() => Product, product => product.tags)
+// products: Product[]; // Fixed: should be Product[] not Tag[]
 
 
 

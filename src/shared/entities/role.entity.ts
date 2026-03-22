@@ -24,7 +24,7 @@ export class Role {
   @Column({ nullable: true })
   description: string;
 
-  @ManyToMany(() => Permission, { eager: true })
+  @ManyToMany(() => Permission,  )
   @JoinTable({
     name: 'role_permissions',
     joinColumn: { name: 'role_id', referencedColumnName: 'id' },

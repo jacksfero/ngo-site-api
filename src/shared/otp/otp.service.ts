@@ -274,7 +274,7 @@ async sendOtp(
 if(type === 'email'){
     let mail_name = "User"
   if(userType === UserType.FORGOT_PASSWORD){
-    mail_name = user ? user.username:"User";
+    mail_name = user ? user.name:"User";
   }
   
 // 2️⃣ Emit email event (async background process)

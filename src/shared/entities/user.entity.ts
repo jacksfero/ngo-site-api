@@ -11,34 +11,37 @@ import {
 } from 'typeorm';
 
 import { Role } from './role.entity';
-import { Wishlist } from './wishlist.entity';
+ 
 import { Blog } from './blog.entity';
-import { ExhibitionProduct } from './exhibition-product.entity';
-import { Video } from './video.entity';
-import { Cart } from './cart.entity';
+ 
+ 
 import { UsersAddress } from './users-address.entity';
 import { BankDetail } from './user-bank-detail.entity';
 import { KycDetails } from './user-kyc.entity';
 import { UserProfileImage } from './user-profile-image.entity';
-import { ArtistType } from './artist-type.entity';
-import { Product } from './product.entity';
+ 
 import { UsersAbout } from './users-about.entity';
+import { NgoSite } from './ngo-site.entity';
 
 
-@Entity('user') 
+@Entity('users') 
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Index()
   @Column({ type: 'varchar', length: 150, nullable: true })
-  username: string;
+  username?: string;
+  
+    
+  @Column({ type: 'varchar', length: 150, nullable: true })
+  name: string;
 
   @Column({ type: 'varchar', length: 150, unique: true, nullable: true })
   email: string;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
-  phonecode: string;
+  phonecode?: string;
 
   @Column({ type: 'varchar', length: 150, unique: true, nullable: true })
   mobile: string;
@@ -53,22 +56,7 @@ export class User {
     inverseJoinColumn: { name: 'role_id', referencedColumnName: 'id' },
   })
   roles: Role[];
-
-  @OneToMany(() => Wishlist, (wishlist) => wishlist.user)
-  wishlists: Wishlist[];
-
-  @OneToMany(() => Video, (video) => video.user)
-  videos: Video[];
-
-  @OneToMany(() => Blog, (blog) => blog.author)
-  blogs: Blog[];
-
-  @OneToMany(() => Product, (product) => product.artist)
-  products: Blog[];
-
-  @OneToMany(() => ExhibitionProduct, (map) => map.user)
-  displayMappings: ExhibitionProduct[];
-
+ 
   @Index()
   @Column({ type: 'boolean', nullable: true, })
   is_verified: boolean;
@@ -78,28 +66,23 @@ export class User {
   status: boolean;
 
   @Column({ type: 'boolean', default: false, select: false })
-  featured_artist: boolean;
+  featured_artist?: boolean;
 
   @Column({ type: 'boolean', default: false, select: false })
-  homePageDisplay: boolean;
-
-  @Column({ type: 'boolean', default: false, select: false })
-  profileEdit: boolean;
+  homePageDisplay?: boolean;
+ 
 
   @Column({ type: 'varchar', length: 255, nullable: true, select: false })
-  adminRemark: string;
+  adminRemark?: string;
 
   // 🟢 Add relation to Artist test Type
-  @Index()
-  @ManyToOne(() => ArtistType, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'artist_type_id' })
-  artistType: ArtistType | null;
+ 
 
   @Column({ type: 'boolean', default: true, select: false })
-  termscondition: boolean;
+  termscondition?: boolean;
 
   @Column({ type: 'boolean', default: true, select: false })
-  isSubscribe: boolean;
+  isSubscribe?: boolean;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
   createdBy: string;
@@ -115,6 +98,14 @@ export class User {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+  @OneToMany(() => Blog, (blog) => blog.author)
+  blogs: Blog[];
+
+
+@OneToOne(() => NgoSite, (site) => site.owner)
+site: NgoSite;
+
 
 
   @OneToMany(() => UsersAddress, (address) => address.user, { cascade: true })
@@ -135,3 +126,16 @@ export class User {
 }
 
 
+/*******
+ * 
+ * 
+ * 
+ * Need to delete below coloum
+ * 
+featured_artist
+homePageDisplay
+profileEdit
+adminRemark
+isSubscribe
+termscondition
+ */

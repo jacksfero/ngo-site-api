@@ -1,23 +1,23 @@
-import { Column, Index, JoinTable, OneToMany, ManyToMany, ManyToOne, Entity, PrimaryGeneratedColumn, Unique, BeforeInsert, BeforeUpdate } from 'typeorm';
+import { Column, Index, JoinTable, OneToMany, ManyToMany, ManyToOne, Entity, PrimaryGeneratedColumn, Unique, BeforeInsert, BeforeUpdate, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 import { Category } from './category.entity';
 import { Tag } from './tag.entity';
 import { User } from './user.entity';
 import { BlogView } from './blog-view.entity';
 import { BlogLike } from './blog-like.entity';
+import { NgoSite } from './ngo-site.entity';
 
-@Entity('blog')
-@Unique(['slug']) // Enforce unique slug
-@Unique(['title']) // Enforce unique title
+@Entity('blogs')
 export class Blog {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Index()
+
   @ManyToOne(() => Category, (category) => category.blogs, { eager: true })
+  @JoinColumn({ name: 'category_id' })
   category: Category;
 
-  @ManyToMany(() => Tag, { eager: true, cascade: true })
+  @ManyToMany(() => Tag)
   @JoinTable({
     name: 'blog_posts_tags',
     joinColumn: { name: 'blog_post_id', referencedColumnName: 'id' },
@@ -25,19 +25,23 @@ export class Blog {
   })
   tags: Tag[];
 
-  @Index()
-  @ManyToOne(() => User, (user) => user.blogs, { eager: true })
+
+  @ManyToOne(() => User, (user) => user.blogs)
+  @JoinColumn({ name: 'author_id' })
   author: User;
 
- 
+  @ManyToOne(() => NgoSite)
+  site: NgoSite;
+
+
   @Column({ type: 'varchar', length: 200 })
   title: string;
 
   @Column({ type: 'varchar', length: 200, nullable: true, default: null })
   titleImage: string | null;
 
-  
-  @Column({ type: 'varchar', length: 150 })
+  @Index(['slug'], { unique: true })
+  @Column({ type: 'varchar', length: 200 })
   slug: string;
 
   @Column({ type: 'varchar', length: 200 })
@@ -50,7 +54,7 @@ export class Blog {
   blogViews: BlogView[];
 
   @Column({ default: 0 })
-likeCount: number;
+  likeCount: number;
 
   @OneToMany(() => BlogLike, (like) => like.blog)
   likes: BlogLike[];
@@ -63,32 +67,33 @@ likeCount: number;
   })
   blogContent: string;
 
-  @Column({ type: 'text', nullable: true, default: null })
-  keywordsTag: string;
+  @Column({ type: 'text', nullable: true })
+  summary: string;
+
+  @Column({ type: 'text', nullable: true })
+  metaKeywords: string;
 
   @Column({ type: 'text', nullable: true, default: null })
-  descriptionTag: string;
+  metaDescription: string;
 
   @Column({ type: 'varchar', length: 150, nullable: true, default: null })
-  optionalTitle: string;
+  metaTitle: string;
 
-
-  @Index()
-  @Column({ type: 'boolean', default: false })
-  status: boolean;
-
-  @Index()
-  @Column({ default: false })
-  isPublished: boolean;
-
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
 
   @Column({
-    type: 'datetime',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
+    type: 'enum',
+    enum: ['draft', 'published', 'scheduled'],
+    default: 'draft',
   })
+  status: string;
+
+  @Column({ default: false })
+  isFeatured: boolean;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
   updatedAt: Date;
 
 
@@ -105,7 +110,7 @@ likeCount: number;
   normalizeFields() {
     // Normalize title
     if (this.title) {
-      this.title = this.title.trim().replace(/\s+/g, ' ');
+      this.title = this.title.trim().replace(/[^a-z0-9-]/g, '');
     }
 
     // Normalize slug (convert to lowercase and replace spaces with hyphens)
