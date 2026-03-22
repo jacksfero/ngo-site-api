@@ -1,4 +1,4 @@
-import { Expose,Exclude, Type } from 'class-transformer';
+import { Expose, Exclude, Type } from 'class-transformer';
 
 
 @Exclude()
@@ -7,25 +7,18 @@ export class RoleDto {
   name: string;
 }
 
-
 @Exclude()
 export class UsersListDto {
   @Expose()
   id: number;
 
   @Expose()
-  username: string;
-
-  @Expose()
-  adminRemark: string;
+  name: string;
 
   @Expose()
   email: string;
-
+ 
   @Expose()
-  phonecode: string;
-
-    @Expose()
   mobile: string;
 
   @Expose()
@@ -39,7 +32,7 @@ export class UsersListDto {
 
   @Expose()
   createdAt: Date;
-  
+
   @Expose()
   @Type(() => RoleDto)
   roles?: RoleDto[];

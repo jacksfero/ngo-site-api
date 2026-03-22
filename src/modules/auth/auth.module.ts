@@ -19,26 +19,26 @@ import { OtpModule } from 'src/shared/otp/otp.module';
 import { PasswordResetToken } from 'src/shared/entities/password-reset-token.entity';
 import { UsersAbout } from 'src/shared/entities/users-about.entity';
 import { UsersAddress } from 'src/shared/entities/users-address.entity';
-import { Product } from 'src/shared/entities/product.entity';
-import { ProductImage } from 'src/shared/entities/product-image.entity';
-import { Wishlist } from 'src/shared/entities/wishlist.entity';
+// import { Product } from 'src/shared/entities/product.entity';
+// import { ProductImage } from 'src/shared/entities/product-image.entity';
+// import { Wishlist } from 'src/shared/entities/wishlist.entity';
 import { BankDetail } from 'src/shared/entities/user-bank-detail.entity';
 import { KycDetails } from 'src/shared/entities/user-kyc.entity';
 import { UserProfileImage } from 'src/shared/entities/user-profile-image.entity';
-import { Surface } from 'src/shared/entities/surface.entity';
-import { Medium } from 'src/shared/entities/medium.entity';
-import { Productcategory } from 'src/shared/entities/productcategory.entity';
-import { Subject } from 'src/shared/entities/subject.entity';
-import { Style } from 'src/shared/entities/style.entity';
-import { Cart } from 'src/shared/entities/cart.entity';
+// import { Surface } from 'src/shared/entities/surface.entity';
+// import { Medium } from 'src/shared/entities/medium.entity';
+// import { Productcategory } from 'src/shared/entities/productcategory.entity';
+// import { Subject } from 'src/shared/entities/subject.entity';
+// import { Style } from 'src/shared/entities/style.entity';
+// import { Cart } from 'src/shared/entities/cart.entity';
 import { AuthUserAddressService } from './auth-user-address.service';
 import { AuthUserProductService } from './auth-user-product.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, Role, OtpVerification, PasswordResetToken,
-    UsersAbout, UsersAddress, BankDetail, KycDetails, Product, ProductImage, Surface, Medium,
-    Subject, Style, Productcategory, Wishlist, UserProfileImage, Cart,
+    UsersAbout, UsersAddress, BankDetail, KycDetails,  
+     UserProfileImage,  
     
   ]),
     UsersModule,

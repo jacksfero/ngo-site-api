@@ -33,11 +33,11 @@ async function bootstrap() {
     // ✅ Request logging middleware
     app.use((req: Request, res: Response, next: NextFunction) => {
       const start = Date.now();
-      console.log(`➡️ [${new Date().toISOString()}] ${req.method} ${req.url}`);
+      console.log(`➡️ [${new Date().toISOString()}] -------== ${req.method} ---------${req.url}`);
 
       res.on('finish', () => {
         const duration = Date.now() - start;
-        console.log(`⬅️ [${new Date().toISOString()}] ${req.method} ${req.url} - ${res.statusCode} - ${duration}ms`);
+        console.log(`⬅️ [${new Date().toISOString()}] ${req.method} ${req.url} - ${res.statusCode} -=== ${duration}ms`);
       });
 
       res.on('close', () => {
@@ -58,7 +58,7 @@ async function bootstrap() {
     // ✅ CORS configuration
     app.enableCors({
       origin: [
-        'http://localhost:3000',
+        'http://localhost:3000','http://localhost:5173','http://127.0.0.1:3000',
      //   'https://indiagalleri-frontend.vercel.app',
        //'https://indigalleria-backend.onrender.com',
         'https://www.indigalleria.com',
@@ -111,7 +111,7 @@ async function bootstrap() {
 
 
     // ✅ Start server
-    const port = process.env.PORT || 3030;
+    const port = process.env.PORT || 3006;
     await app.listen(port, '0.0.0.0');
 
     console.log('🎉 ==========================================');

@@ -1,0 +1,25 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Artwork {
+  artistName: String!
+  id: Int!
+  price: Int!
+  title: String!
+}
+
+input CreateArtworkInput {
+  artistName: String!
+  price: Int!
+  title: String!
+}
+
+type Mutation {
+  createArtwork(input: CreateArtworkInput!): Artwork!
+}
+
+type Query {
+  artworks: [Artwork!]!
+  sayHello: String!
+}

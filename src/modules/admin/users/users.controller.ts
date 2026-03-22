@@ -70,11 +70,7 @@ async getUsersByRoles(
   return users;
 }
 
-  @Get('artisttypelist')
-  @RequirePermissions('read_user')
-  GetArtistTypeList() {
-    return this.usersService.GetArtistTypeList();
-  }
+   
 
   @Post('upload/:userId')
   @RequirePermissions('create_user')

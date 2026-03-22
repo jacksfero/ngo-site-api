@@ -472,4 +472,62 @@ response
 
 
 
+src
+│
+├── main.ts
+├── app.module.ts
+│
+├── config
+│     ├── database.config.ts
+│     ├── jwt.config.ts
+│
+├── shared
+│     ├── database
+│     │      ├── database.module.ts
+│     │
+│     ├── entities
+│     │      ├── user.entity.ts
+│     │      ├── website.entity.ts
+│     │      ├── product.entity.ts
+│     │
+│     ├── dto
+│     │
+│     ├── guards
+│     │
+│     ├── interceptors
+│     │
+│     ├── filters
+│     │
+│     ├── utils
+│
+├── modules
+│
+│    ├── auth
+│    │      ├── auth.controller.ts
+│    │      ├── auth.service.ts
+│    │      ├── auth.module.ts
+│
+│    ├── admin
+│    │      ├── dashboard
+│    │      ├── users
+│    │      ├── websites
+│    │      ├── products
+│    │      ├── orders
+│    │
+│    ├── client
+│    │      ├── products
+│    │      ├── blogs
+│    │      ├── exhibitions
+│    │      ├── contact
+│
+│    ├── website
+│    │      ├── website.service.ts
+│    │      ├── website.module.ts
+│
+│    └── common
+│          ├── pagination
+│          ├── upload
+│
+
+
 

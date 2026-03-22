@@ -43,13 +43,11 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CreateUserAddressDto } from './dto/create-user-address.dto';
 import { UpdateUserAddressDto } from './dto/update-user-address.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CreateProductDto } from '../admin/product/dto/create-product.dto';
-import { ProductPaginationDto } from '../admin/product/dto/product-pagination.dto';
+ 
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
-import { ProductDto } from '../admin/product/dto/product.dto';
+ 
 import { FRONT_WISHLIST_INVENT_PRODUCTS_LIMIT, FRONT_WISHLIST_INVENT_PRODUCTS_MAX_LIMIT, FRONT_WISHLIST_INVENT_PRODUCTS_PAGE, PRODUCTS_LIMIT, PRODUCTS_MAX_LIMIT, PRODUCTS_PAGE } from 'src/shared/config/pagination.config';
-import { UpdateProductDto } from '../admin/product/dto/update-product.dto';
-import { CreateWishlistDto } from '../admin/wishlist/dto/create-wishlist.dto';
+ 
 import { CreateKycDetailDto, UpdateKycDetailDto } from '../admin/users/dto/create-user-kyc-detail.dto';
 import { CreateBankDetailDto } from '../admin/users/dto/create-user-bank-detail.dto';
 import { UpdateBankDetailDto } from '../admin/users/dto/update-user-bank-detail.dto';
@@ -57,7 +55,7 @@ import { FileValidationPipe } from 'src/shared/pipes/file-size-type-validation.p
 import { AddressType } from 'src/shared/entities/users-address.entity';
 import { PaginationClinetPipe } from 'src/shared/pipes/pagination-client.pipe';
 import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
-import { WishlistInventProdDto } from './dto/wishlist-invent-prod-list.dto';
+ 
 import { User } from 'src/shared/entities/user.entity';
 import { RequirePermissions } from './decorators/permissions.decorator';
 import { AuthUserAddressService } from './auth-user-address.service';
@@ -317,53 +315,53 @@ async otpLogin(
   }
 
 
-  @Public()
-  @Post('register-cart-login')
-  async registerCartUserAndLogin(
-    @Body() dto: RegisterCartUserDto,
-    @Req() req,
-    @Res({ passthrough: true }) res: Response,
+  // @Public()
+  // @Post('register-cart-login')
+  // async registerCartUserAndLogin(
+  //   @Body() dto: RegisterCartUserDto,
+  //   @Req() req,
+  //   @Res({ passthrough: true }) res: Response,
 
-  ) {
-    let guestId = req.cookies?.['guestCartId'];
+  // ) {
+  //   let guestId = req.cookies?.['guestCartId'];
 
-   // console.log('guestId---------', guestId);
-    const result = await this.authService.registerCartUserAndLogin(dto, guestId);
-
-
-
-   // 1. Correct the check path
-  if (!result?.data?.token) {
-    throw new UnauthorizedException('Invalid or expired OTP');
-  }
-
- res.cookie('access_token', result.data.token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'none',
-    path: '/',
-    domain: process.env.COOKIE_DOMAIN,
-    maxAge: 1000 * 60 * 60 * 24 * 30,
-  });
-
-  // clear guest cart
-  if (req.cookies?.['guestCartId']) {
-    res.clearCookie('guestCartId', {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      path: '/',
-      domain: process.env.COOKIE_DOMAIN,
-    });
-  }
-
-
-return result;
-
-  }
+  //  // console.log('guestId---------', guestId);
+  //   const result = await this.authService.registerCartUserAndLogin(dto, guestId);
 
 
 
+  //  // 1. Correct the check path
+  // if (!result?.data?.token) {
+  //   throw new UnauthorizedException('Invalid or expired OTP');
+  // }
+
+//  res.cookie('access_token', result.data.token, {
+//     httpOnly: true,
+//     secure: true,
+//     sameSite: 'none',
+//     path: '/',
+//     domain: process.env.COOKIE_DOMAIN,
+//     maxAge: 1000 * 60 * 60 * 24 * 30,
+//   });
+
+//   // clear guest cart
+//   if (req.cookies?.['guestCartId']) {
+//     res.clearCookie('guestCartId', {
+//       httpOnly: true,
+//       secure: true,
+//       sameSite: 'none',
+//       path: '/',
+//       domain: process.env.COOKIE_DOMAIN,
+//     });
+//   }
+
+
+// return result;
+
+//   }
+
+
+/*
   @Public()
   @Get('artistsartwork/:id')
   async getArtistsByUserId(
@@ -395,7 +393,7 @@ return result;
     @Param('id') id: number,
   ) {
     return this.authService.getArtistListFeatured(id);
-  }
+  }*/
 
     @Public()
   @Get('artistslistfeaturedhome')
@@ -547,7 +545,7 @@ return result;
 
 
   /*************Start User Product Section */
-  @UseGuards(JwtAuthGuard)
+ /* @UseGuards(JwtAuthGuard)
   @Post('products')
   @RequirePermissions('create_artwork')
   @UseInterceptors(FileInterceptor('defaultImage'))
@@ -622,12 +620,12 @@ return result;
   @RequirePermissions('delete_artwork')
   async deleteImage(@Param('imageId') imageId: number) {
     return this.authUserProductService.deleteProductImage(imageId);
-  }
+  }*/
 
 
   /*************End User address Section */
   /*************Start User WishList Section */
-  @UseGuards(JwtAuthGuard)
+ /* @UseGuards(JwtAuthGuard)
   @Post('wishlist')
   createsWishList(
     @Req() req,
@@ -656,7 +654,7 @@ return result;
   @Delete('wishlist/:id')
   removeWishList(@Param('id') id: string) {
     return this.authService.removeWishList(+id);
-  }
+  }*/
   /*************End User WishList Section */
 }
 

@@ -1,21 +1,17 @@
 FROM node:20-alpine
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files and install dependencies (includes devDependencies)
+# Step A: Use a more stable registry mirror
+RUN npm config set registry https://registry.npmmirror.com
+
 COPY package*.json ./
-RUN npm install
 
-# Install NestJS CLI globally (optional but helpful for debugging inside container)
-RUN npm install -g @nestjs/cli
+# Step B: Increase timeout even further
+RUN npm install --network-timeout=600000
 
-# Copy the rest of the project
 COPY . .
 
-# Expose your app port
 EXPOSE 3006
 
-# Start in development mode (with hot reload)
 CMD ["npm", "run", "start:dev"]
-

@@ -28,7 +28,7 @@ import { CreateBankDetailDto } from './dto/create-user-bank-detail.dto';
 import { UpdateBankDetailDto } from './dto/update-user-bank-detail.dto';
 import { KycDetails } from 'src/shared/entities/user-kyc.entity';
 import { CreateKycDetailDto, UpdateKycDetailDto } from './dto/create-user-kyc-detail.dto';
-import { ArtistType } from 'src/shared/entities/artist-type.entity';
+ 
 import { sanitizeFileName } from 'src/shared/utils/sanitizefilename';
 import { UserProfileImage } from 'src/shared/entities/user-profile-image.entity';
 import { S3Service } from 'src/shared/s3/s3.service'; 
@@ -62,32 +62,11 @@ export class UsersService {
 
     @InjectRepository(KycDetails)
     private kycRepo: Repository<KycDetails>,
-
-    @InjectRepository(ArtistType)
-    private artistTypeRepo: Repository<ArtistType>,
+ 
 
   ) {}
-  async GetArtistTypeList(): Promise<ArtistType[]> {
-
-      const cacheKey = 'Admin:ArtistType:all';
-       
-      const cached = await this.cacheService.get<ArtistType[]>(cacheKey);
-      if (cached && cached.length) {
-        return cached;
-      }
-
-
-    const user = await this.artistTypeRepo.find({
-      order:{
-        id: "ASC"
-    }      
-    });
-     // ✅ 3. Store in cache for 1 hour
-  await this.cacheService.set(cacheKey, user);
  
-    return user;
-  }
-
+ 
 
   async create(dto: CreateUserDto, currentUser: any): Promise<User> {
     const { roleIds, status, email, mobile, ...rest } = dto;
@@ -120,10 +99,10 @@ export class UsersService {
       });
       newUser.roles = roles;
     }
-    newUser.createdBy = currentUser.sub.toString();
-    if (dto.artist_type_id) newUser.artistType = { id: dto.artist_type_id } as ArtistType;
-    if (dto.featured_artist) newUser.featured_artist = dto.featured_artist;
-    if (dto.phonecode) newUser.phonecode = dto.phonecode;
+   // users.service.ts around line 102
+newUser.createdBy = currentUser?.sub ? currentUser.sub.toString() : '1';
+    
+    if (dto.name) newUser.name = dto.name;
 
     // You can optionally log or use currentUser here for audit tracking
   
@@ -169,18 +148,7 @@ export class UsersService {
   }
 
 
-async findByUsername_bk(username: string): Promise<User | null> {
-   //console.log(`User searchsssssssssssssssssss failed for ${username}` );
-  try {
-    return await this.userRepository.findOne({ 
-      where: { username },
-      select: ['id', 'username', 'password'] // Customize as needed
-    });
-  } catch (error) {
-    throw new Error(`User search failed for ${username}`, );
-   // return null; // Explicit null (TypeORM's standard)
-  }
-}
+ 
 
 async findByUsername(username: string): Promise<User | undefined> {
     const user = await this.userRepository.findOne({
@@ -336,20 +304,8 @@ async findOne(id: number) {
     //if (dto.artist_type_id) user.artistType = dto.artist_type_id;
   //  if (dto.artist_type_id) user.artistType = { id: dto.artist_type_id } as ArtistType;
 
-  if (dto.artist_type_id === null) {
-    user.artistType = null;
-  } else if (dto.artist_type_id !== undefined) {
-    user.artistType = { id: dto.artist_type_id } as ArtistType;
-  }
-
-
-
-
-    if (dto.featured_artist) user.featured_artist = dto.featured_artist;
-    if (dto.adminRemark) user.adminRemark = dto.adminRemark;
-    if (dto.phonecode) user.phonecode = dto.phonecode;
-    if (dto.homePageDisplay) user.homePageDisplay = dto.homePageDisplay;
-    if (dto.profileEdit) user.profileEdit = dto.profileEdit;
+  
+    if (dto.name) user.name = dto.name;
     if(dto.password){
       user.password = await bcrypt.hash(dto.password, 10)
       }
@@ -647,42 +603,4 @@ async findOne(id: number) {
   }
 }
 
-
-/*************
- * 
- * 
- * 
-@Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
-  }
-
-  @Put(':id')
-  update(@Param('id') id: number, @Body() dto: UpdateUserDto) {
-    return this.userService.update(id, dto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.userService.remove(id);
-  }
-} 
-
-
-
-async create(dto: CreateUserDto) {
-  const user = this.userRepo.create(dto);
-  return this.userRepo.save(user);
-}
-
-async update(id: number, dto: UpdateUserDto) {
-  await this.userRepo.update(id, dto);
-  return this.findOne(id);
-}
-
-async remove(id: number) {
-  await this.userRepo.softDelete(id); // or hard delete
-}
- * 
- * 
- * */
+ 

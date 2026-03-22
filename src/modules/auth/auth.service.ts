@@ -34,16 +34,15 @@ import { randomBytes } from 'crypto';
 import { ChangePasswordDto } from './dto/change-password.dto';
  import { AddressType, UsersAddress } from 'src/shared/entities/users-address.entity';
  import { S3Service } from 'src/shared/s3/s3.service';
-import { Product, ProductStatus } from 'src/shared/entities/product.entity';
+ 
  import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { plainToInstance } from 'class-transformer';
-import { CreateWishlistDto } from '../admin/wishlist/dto/create-wishlist.dto';
-import { Wishlist } from 'src/shared/entities/wishlist.entity';
+ 
 import { sanitizeFileName } from 'src/shared/utils/sanitizefilename';
 import { UserProfileImage } from 'src/shared/entities/user-profile-image.entity'; 
 import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
-import { WishlistInventProdDto } from './dto/wishlist-invent-prod-list.dto'; 
-import { Cart } from 'src/shared/entities/cart.entity';
+//import { WishlistInventProdDto } from './dto/wishlist-invent-prod-list.dto'; 
+ 
   import { REQUEST } from '@nestjs/core';
   import { Request } from 'express';
 import { ResetPassCreatedPayload } from 'src/shared/events/interfaces/event-payload.interface';
@@ -69,8 +68,7 @@ export class AuthService {
     private jwtService: JwtService,
     private readonly s3service: S3Service,
 
-    @InjectRepository(Product)
-    private productRepository: Repository<Product>,
+ 
   
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -89,11 +87,7 @@ export class AuthService {
 
     private readonly otpService: OtpService,
 
-    @InjectRepository(Wishlist)
-    private wishlistRepository: Repository<Wishlist>,
-
-    @InjectRepository(Cart)
-    private cartRepo: Repository<Cart>,
+ 
   ) { }
 
   // artist.service.ts
@@ -491,69 +485,7 @@ async getArtistsWithArtworkCount(id: number) {
     return { success: true, message: 'Registration complete', userId: user.id };
   }
 
-  async registerCartUserAndLogin(
-    dto: RegisterCartUserDto, guestCartId
-  ): Promise<RegisterCartUserResponse> {
-    const { identifier, type, otp, userType = UserType.CUSTOMER } = dto;
-
-    // 1️⃣ Verify OTP
-    const otpResult = await this.verifyOtp({ identifier, type, otp, userType });
-    let user: User | null = otpResult.user ?? null;
-
-    // 2️⃣ Register user if not exist
-    if (!user) {
-      const role = await this.roleRepository
-        .createQueryBuilder('role')
-        .where('LOWER(role.name) = LOWER(:name)', { name: userType })
-        .getOne();
-      if (!role) throw new BadRequestException(`Role '${userType}' not found`);
-
-      const username = identifier; // email or mobile
-      user = this.userRepository.create({
-        username,
-        email: type === OtpType.EMAIL ? identifier : null,
-        mobile: type === OtpType.MOBILE ? identifier : null,
-        status: true,
-        is_verified: false,
-        password: null,
-        roles: [role],
-      } as Partial<User>);
-      await this.userRepository.save(user);
-    }
-//console.log('guest ID ---Register--1--------',guestCartId)
-//     // 3️⃣ Merge guest cart
-    let mergedCart: Cart | undefined;
-  if (guestCartId) {
-    const guestCart = await this.cartRepo.findOne({
-      where: { guestId: guestCartId },
-      relations: ['items'], // optional
-    });
-
-    if (guestCart) {
-      guestCart.user = user;
-     // guestCart.guestId = null; // remove guest reference
-      mergedCart = await this.cartRepo.save(guestCart); // assign to outer variable
-    }
-  }
-
-    // 4️⃣ Generate JWT
-    const tokenResponse = await this.login(user);
-
-    return {
-      success: true,
-      message: 'User logged in successfully',
-      data: {
-        token: tokenResponse.access_token,
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email ?? undefined,
-          mobile: user.mobile ?? undefined,
-        },
-       // cart: mergedCart,
-      },
-    };
-  }
+   
 
 
   async cartLogin(identifier: string,  ipAddress?: string) {
@@ -721,32 +653,32 @@ async getArtistsWithArtworkCount(id: number) {
    const guestCartId = req?.cookies?.['guestCartId'];
  //console.log('guest ID ---Login--1--------',guestCartId)
 
-  let mergedCart: Cart | undefined;
-  if (guestCartId) {
-    const guestCart = await this.cartRepo.findOne({
-      where: { guestId: guestCartId },
-      relations: ['items', 'items.product'],
-    });
-//console.log('guest ID -----2--------',guestCartId)
-    if (guestCart) {
-      guestCart.user = user;
-      mergedCart = await this.cartRepo.save(guestCart);
+//   let mergedCart: Cart | undefined;
+//   if (guestCartId) {
+//     const guestCart = await this.cartRepo.findOne({
+//       where: { guestId: guestCartId },
+//       relations: ['items', 'items.product'],
+//     });
+// //console.log('guest ID -----2--------',guestCartId)
+//     if (guestCart) {
+//       guestCart.user = user;
+//       mergedCart = await this.cartRepo.save(guestCart);
 
-      this.logger?.log?.(
-        `Guest cart ${guestCartId} merged into user ${user.id}'s cart.`,
-      );
-    }
-  }
+//       this.logger?.log?.(
+//         `Guest cart ${guestCartId} merged into user ${user.id}'s cart.`,
+//       );
+//     }
+//   }
 
   const payload: JwtPayload = {
     sub: user.id,
-    username: user.username,
+    name: user.name,
     roles: user.roles?.map((r) => r.name),
   };
 
   return {
     access_token: this.jwtService.sign(payload),
-    ...(mergedCart ? { cart: mergedCart } : {}),
+    
   };
 }
 
@@ -804,7 +736,7 @@ async getArtistsWithArtworkCount(id: number) {
     /** Start Mail Service */
      const payload: ResetPassCreatedPayload = {
         context: {},
-        name: user.username,
+        name: user.name,
         to: user.email,
 };
 
@@ -893,135 +825,7 @@ this.eventEmitter.emit('reset_password.send', payload);
   }
   
   /**************Start Wish List Services Method********* */
-  async addToWishlist(
-    user: any,
-    dto: CreateWishlistDto,
-  ): Promise<Wishlist> {
-    const userId = user.sub.toString()
-    //  console.log('user id ----------', userId)
-    const product = await this.productRepository.findOneBy({
-      id: dto.productId,
-    });
-
-    if (!product) throw new NotFoundException('Product not found');
-
-    // ✅ Check if product already in wishlist
-    const existing = await this.wishlistRepository.findOne({
-      where: {
-        user: { id: userId },
-        product: { id: dto.productId },
-      },
-    });
-
-    if (existing) {
-      throw new ConflictException('Product already in wishlist');
-    }
-
-    // ✅ Create wishlist with user ID and product ID (not full objects)
-    const wishlist = this.wishlistRepository.create({
-      user: { id: userId }, // ✅ Pass only user ID
-      product: { id: dto.productId } // ✅ Pass only product ID
-    });
-
-    return this.wishlistRepository.save(wishlist);
-  }
-  async getUserWishlistsssssss(userId: number): Promise<Wishlist[]> {
-    return this.wishlistRepository.find({
-      where: { user: { id: userId } },
-      relations: ['product'],
-      order: { createdAt: 'DESC' },
-    });
-  }
-  async getUserWishlist(
-    paginationDto: PaginationBaseDto,
-    userId: number,
-  ): Promise<PaginationResponseDto<WishlistInventProdDto>> {
-    const { page = 1, limit = 10 } = paginationDto;
-
-    const qb = this.wishlistRepository.createQueryBuilder('wishlist')
-      // product must exist (use inner join)
-      .innerJoinAndSelect('wishlist.product', 'product')
-      // inventory must exist and be available -> inner join is OK because 1:1
-      .innerJoinAndSelect('product.productInventory', 'inventory')
-      // other product relations (optional)
-      .leftJoinAndSelect('product.artist', 'artist')
-      .leftJoinAndSelect('product.category', 'category')
-      .leftJoinAndSelect('product.surface', 'surface')
-      .leftJoinAndSelect('product.medium', 'medium')
-      .leftJoinAndSelect('inventory.shippingWeight', 'shipping')
-
-      // filters
-      .where('wishlist.user_id = :userId', { userId })
-      .andWhere('product.is_active = :isActive', { isActive: ProductStatus.ACTIVE })
-      .andWhere('inventory.status = :invStatus', { invStatus: true })
-
-      // pagination
-      .skip((page - 1) * limit)
-      .take(limit);
-
-    // Explicit select (helps reduce payload)
-    qb.select([
-      // wishlist
-      'wishlist.id',
-      'wishlist.createdAt',
-      'product.id',
-      'product.productTitle',
-      'product.slug',
-      'product.defaultImage',
-      'product.price_on_demand',
-      'product.weight',
-      'product.width',
-      'product.height',
-      'product.depth',
-      'product.is_active',
-
-      // category/artist/surface/medium minimal fields
-      'category.id',
-      'category.name',
-      'artist.id',
-      'artist.username',
-      'surface.id',
-      'surface.surfaceName',
-      'medium.id',
-      'medium.name',
-
-      // inventory fields
-      'inventory.id',
-      //'inventory.product_id', // if your inventory column name is product_id; use correct name
-      'inventory.price',
-      'inventory.discount',
-      'inventory.gstSlot',
-      'inventory.shippingSlot',
-      'inventory.status',
-      'inventory.updatedAt',
-
-      // shipping
-      'shipping.weightSlot',
-      'shipping.costINR',
-      'shipping.CostOthers',
-    ]);
-
-    const [result, total] = await qb.getManyAndCount();
-
-    // transform to DTOs
-    const data = plainToInstance(WishlistInventProdDto, result, {
-      excludeExtraneousValues: true,
-    });
-
-    return new PaginationResponseDto<WishlistInventProdDto>(data, {
-      total,
-      page,
-      limit,
-    });
-  }
-
-
-
-  async removeWishList(id: number): Promise<void> {
-    const wishlist = await this.wishlistRepository.findOne({ where: { id } });
-    if (!wishlist) throw new NotFoundException(`wishlist ${id} not found`);
-    await this.wishlistRepository.remove(wishlist);
-  }
+  
   /**************End Wish List Services Method********* */
 }
  

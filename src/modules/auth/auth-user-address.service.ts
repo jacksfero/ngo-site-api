@@ -34,17 +34,13 @@ import { CreateUserAddressDto } from './dto/create-user-address.dto';
 import { AddressType, UsersAddress } from 'src/shared/entities/users-address.entity';
 import { UpdateUserAddressDto } from './dto/update-user-address.dto';
 import { UserAddressResponseDto } from './dto/user-address-response.dto';
-import { CreateProductDto } from '../admin/product/dto/create-product.dto';
+ 
 import { S3Service } from 'src/shared/s3/s3.service';
-import { Product, ProductStatus } from 'src/shared/entities/product.entity';
-import { ProductImage } from 'src/shared/entities/product-image.entity';
-import { ProductPaginationDto } from '../admin/product/dto/product-pagination.dto';
+ 
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
-import { ProductDto } from '../admin/product/dto/product.dto';
+ 
 import { plainToInstance } from 'class-transformer';
-import { UpdateProductDto } from '../admin/product/dto/update-product.dto';
-import { CreateWishlistDto } from '../admin/wishlist/dto/create-wishlist.dto';
-import { Wishlist } from 'src/shared/entities/wishlist.entity';
+ 
 import { sanitizeFileName } from 'src/shared/utils/sanitizefilename';
 import { CreateKycDetailDto, UpdateKycDetailDto } from '../admin/users/dto/create-user-kyc-detail.dto';
 import { KycDetails } from 'src/shared/entities/user-kyc.entity';
@@ -53,21 +49,11 @@ import { UpdateBankDetailDto } from '../admin/users/dto/update-user-bank-detail.
 import { BankDetail } from 'src/shared/entities/user-bank-detail.entity';
 
 import { UserProfileImage } from 'src/shared/entities/user-profile-image.entity';
-import { Productcategory } from 'src/shared/entities/productcategory.entity';
-import { PackingModeEntity } from 'src/shared/entities/packing-mode.entity';
-import { CommissionType } from 'src/shared/entities/commission-type.entity';
-import { ShippingTime } from 'src/shared/entities/shipping-time.entity';
-import { Size } from 'src/shared/entities/size.entity';
-import { Orientation } from 'src/shared/entities/orientation.entity';
-import { InventProdListDto } from '../client/invent-product/dto/invent-prod-list.dto';
+ 
 import { PaginationBaseDto } from 'src/shared/dto/pagination-base.dto';
-import { WishlistInventProdDto } from './dto/wishlist-invent-prod-list.dto';
-import { Surface } from 'src/shared/entities/surface.entity';
-import { Medium } from 'src/shared/entities/medium.entity';
-import { Subject } from 'src/shared/entities/subject.entity';
-import { Style } from 'src/shared/entities/style.entity';
+ 
 import { slugify } from 'src/shared/utils/slugify';
-import { Cart } from 'src/shared/entities/cart.entity';
+ 
 import { MailService } from 'src/shared/mail/mail.service';
 
 // import { REQUEST } from '@nestjs/core';
@@ -86,17 +72,7 @@ export class AuthUserAddressService {
     private jwtService: JwtService,
     private readonly s3service: S3Service,
 
-    @InjectRepository(Product)
-    private productRepository: Repository<Product>,
-
-    @InjectRepository(Subject)
-    private subjectRepo: Repository<Subject>,
-
-    @InjectRepository(Style)
-    private styleRepo: Repository<Style>,
-
-    @InjectRepository(ProductImage)
-    private imageRepo: Repository<ProductImage>,
+ 
 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -392,7 +368,7 @@ export function toUserAddressResponse(address: UsersAddress): UserAddressRespons
     updatedAt: address.updatedAt,
     user: {
       id: address.user.id,
-      username: address.user.username,
+      name: address.user.name,
 
     },
   };

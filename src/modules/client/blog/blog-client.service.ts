@@ -212,7 +212,7 @@ const isSearch = Boolean(searchTerm);
     // ✅ Fix: remove re-declaration of "blog"
     if (!blog) {
       blog = await this.blogRepo.findOne({
-        where: { slug, status: true },
+        where: { slug,  },
         relations: ['category', 'tags', 'author.profileImage', 'author.aboutDetails'],
       });
 

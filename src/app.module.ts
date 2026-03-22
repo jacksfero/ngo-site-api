@@ -15,30 +15,45 @@ import paypalConfig from './shared/config/paypal.config';
 import razorpayConfig from './shared/config/razor.config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CoreModule } from './core/core.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { join } from 'path';
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 //import { PassportModule } from '@nestjs/passport';
-
+import { AppResolver } from './app.resolver';
 
 @Module({
   imports: [
-
-    CoreModule,   // only once
-      ScheduleModule.forRoot(),
+    // 1. Config and Core first
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configurationCache, payuConfig, paypalConfig, razorpayConfig],
     }),
+    CoreModule,
+    ScheduleModule.forRoot(),
     UnifiedCacheModule.registerAsync(),
+
+    // 2. Then GraphQL
+    // GraphQLModule.forRoot<ApolloDriverConfig>({
+    //   driver: ApolloDriver,
+    //   autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+    //   sortSchema: true,
+    //   playground: false, 
+    //   plugins: [ApolloServerPluginLandingPageLocalDefault()],
+    // }),
+
+    // 3. Then Feature Modules
     AuthModule,  
     AdminModule,
     ClientModule,
     SharedModule,
-   //  PassportModule.register({ session: false }),
-  //forwardRef(() => AuthModule),
   ],
-  controllers: [AppController], // ✅ Make sure AppController is here
+  controllers: [AppController],
   providers: [
-    AppService, // ✅ Make sure AppService is here
+    AppService, 
     ConfigService,
+    AppResolver, // Keep this here!
   ],
 })
 export class AppModule {}
+ 

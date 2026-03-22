@@ -23,29 +23,17 @@ import { Repository, In } from 'typeorm';
 import { OtpVerification } from 'src/shared/entities/OtpVerification.entity';
 
  
-import { CreateProductDto } from '../admin/product/dto/create-product.dto';
+ 
 import { S3Service } from 'src/shared/s3/s3.service';
-import { Product, ProductStatus } from 'src/shared/entities/product.entity';
-import { ProductImage } from 'src/shared/entities/product-image.entity';
-import { ProductPaginationDto } from '../admin/product/dto/product-pagination.dto';
+ 
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
-import { ProductDto } from '../admin/product/dto/product.dto';
+ 
 import { plainToInstance } from 'class-transformer';
-import { UpdateProductDto } from '../admin/product/dto/update-product.dto';
+ 
  
 import { sanitizeFileName } from 'src/shared/utils/sanitizefilename';
  
-import { Productcategory } from 'src/shared/entities/productcategory.entity';
-import { PackingModeEntity } from 'src/shared/entities/packing-mode.entity';
-import { CommissionType } from 'src/shared/entities/commission-type.entity';
-import { ShippingTime } from 'src/shared/entities/shipping-time.entity';
-import { Size } from 'src/shared/entities/size.entity';
-import { Orientation } from 'src/shared/entities/orientation.entity';
  
-import { Surface } from 'src/shared/entities/surface.entity';
-import { Medium } from 'src/shared/entities/medium.entity';
-import { Subject } from 'src/shared/entities/subject.entity';
-import { Style } from 'src/shared/entities/style.entity';
 import { slugify } from 'src/shared/utils/slugify';
  
 
@@ -65,23 +53,12 @@ export class AuthUserProductService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private readonly s3service: S3Service,
-
-    @InjectRepository(Product)
-    private productRepository: Repository<Product>,
-
-    @InjectRepository(Subject)
-    private subjectRepo: Repository<Subject>,
-
-    @InjectRepository(Style)
-    private styleRepo: Repository<Style>,
-
-    @InjectRepository(ProductImage)
-    private imageRepo: Repository<ProductImage>,
+ 
 
     
   ) {}
  
-
+/*
   async createProduct(dto: CreateProductDto, user: any, imageFilename?: Express.Multer.File): Promise<Product> {
     const userId = user.sub.toString();
     let titleImage: string | null = null;
@@ -117,7 +94,7 @@ export class AuthUserProductService {
     const result = await this.productRepository.save(product);
 
      const userdetails = await this.authService.getLoggedInUser(user);
- /** Start Mail Service */
+  
       const payload: ProductCreatedPayload = {  
   context: {   
   },   
@@ -128,7 +105,7 @@ export class AuthUserProductService {
   testingNote: 'Testing product update flow',
 };
 this.eventEmitter.emit('product.created', payload);     
-/** End Mail Service */
+ 
 
 return result;
   }
@@ -169,9 +146,7 @@ return result;
       .take(limit)
       .getManyAndCount();
 
-    /* const [result, products] = await queryBuilder.getManyAndCount();
  
-     const [result, total] = await queryBuilder.getManyAndCount();*/
 
     const data = plainToInstance(ProductDto, products, {
       excludeExtraneousValues: true,
@@ -324,6 +299,6 @@ return result;
     }
 
     return this.imageRepo.remove(image);
-  }
+  }*/
 
 }

@@ -1,15 +1,26 @@
-version: '3.8'
-
 services:
   api:
-    build: .
-    container_name: nestjs-api
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: ngo-site-api  # Use the image we just successfully built
+    container_name: ngo-site-api
     ports:
-      - "3006:3006"
-    environment:
-      - NODE_ENV=production
-    volumes:
-      - .:/app
-    command: npm run start:prod
+      - "3008:3006"
     env_file:
       - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run start:dev
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8
+    container_name: ngo-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: Pass@1234
+      MYSQL_DATABASE: ngo_db
+    ports:
+      - "3310:3306"

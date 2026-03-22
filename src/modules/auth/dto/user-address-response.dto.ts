@@ -20,7 +20,7 @@ export class UserAddressResponseDto {
   updatedAt: Date;
   user: {
     id: number;
-    username: string;
+    name: string;
     
   };
 }

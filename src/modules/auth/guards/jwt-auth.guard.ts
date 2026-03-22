@@ -14,11 +14,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   constructor(private reflector: Reflector) {
     super();
   }
-  canActivate(context: ExecutionContext) {
+async canActivate(context: ExecutionContext): Promise<boolean> {
 
-
-  const handler = context.getHandler();
-  const className = context.getClass().name;
+  // const handler = context.getHandler();
+  // const className = context.getClass().name;
 
   
     // 1. Check for @Public() decorator first
@@ -41,13 +40,13 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     }
 
     // 2. Proceed with standard JWT validation
-    return super.canActivate(context);
+   return (await super.canActivate(context)) as boolean;
   }
 
   handleRequest(err: any, user: any, info: any) {
     // 3. Custom error handling
     if (err || !user) {
-      throw err || new UnauthorizedException('Invalid or expired token aaaaaaaaaaaaaa');
+      throw err || new UnauthorizedException('Invalid or expired token ');
     }
     return user;
   }
