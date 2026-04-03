@@ -1,6 +1,4 @@
 import { Request as ExpressRequest } from 'express';
-
-
 import {
   Controller,
   Get,
@@ -22,13 +20,10 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
-
-
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { Public } from 'src/core/decorators/public.decorator';
 import { PublicGuard } from 'src/core/guards/public.guard';
-
 import { RegisterCartUserDto, VerifyOtpDto } from './dto/verify-otp.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { OtpType, StartEmailVerificationDto, UserType, StartMobileVerificationDto } from './dto/start-verification.dto';
