@@ -20,7 +20,9 @@ import { DatabaseHealthService } from './database.health.service';
         // ⚠️ Recommended for production
         synchronize: true,
        /// migrationsRun: true,
-
+          ssl: {
+              rejectUnauthorized: false, // Required for Aiven free tier
+            },
         autoLoadEntities: true,
         entityPrefix: 'ng_',
 
