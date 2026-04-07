@@ -20,9 +20,10 @@ import { DatabaseHealthService } from './database.health.service';
         // ⚠️ Recommended for production
         synchronize: true,
        /// migrationsRun: true,
-          ssl: {
-              rejectUnauthorized: false, // Required for Aiven free tier
-            },
+         ssl: {
+  rejectUnauthorized: false,
+},
+
         autoLoadEntities: true,
         entityPrefix: 'ng_',
 
@@ -38,6 +39,9 @@ import { DatabaseHealthService } from './database.health.service';
           multipleStatements: false,
           timezone: 'Z',
           decimalNumbers: true,
+          ssl: {
+    rejectUnauthorized: false,
+  },
         },
 
        // logging: ['error'],
@@ -47,10 +51,16 @@ import { DatabaseHealthService } from './database.health.service';
       }),
       
 
-     dataSourceFactory: async (options: DataSourceOptions) => {
+   
+      dataSourceFactory: async (options?: DataSourceOptions) => {
+  if (!options) {
+    throw new Error('DataSource options are undefined');
+  }
         const dataSource = new DataSource(options);
         await dataSource.initialize();
         return dataSource;
+
+     
       },
     }),
   ],
@@ -75,7 +85,7 @@ export class DatabaseModule implements OnApplicationShutdown, OnModuleDestroy {
         await this.dataSource.destroy();
         this.logger.log('✅ All database connections closed successfully');
       } catch (error) {
-        this.logger.error('❌ Error closing database connections', error.stack);
+        this.logger.error('❌ Error closing database connections', error);
       }
     }
   }
