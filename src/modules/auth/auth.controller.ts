@@ -138,7 +138,7 @@ export class AuthController {
     if (result?.access_token) {
       res.cookie('access_token', result.access_token, {
         httpOnly: true,
-        secure: false,          // Use false for localhost HTTP
+        secure: true,          // Use false for localhost HTTP
         sameSite: 'none',
         path: '/',
       //   domain: isDev ? "localhost" : process.env.COOKIE_DOMAIN, // ✅ REQUIRED
@@ -151,7 +151,7 @@ export class AuthController {
     if (req.cookies?.['guestCartId']) {
       res.clearCookie('guestCartId', {
         httpOnly: true,
-        secure: false,          // Use false for localhost HTTP
+        secure: true,          // Use false for localhost HTTP
         sameSite: 'none',
         path: '/',
         domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
