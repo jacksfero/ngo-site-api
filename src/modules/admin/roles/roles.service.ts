@@ -1,5 +1,5 @@
 // src/roles/roles.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Role } from '../../../shared/entities/role.entity';
@@ -40,34 +40,52 @@ export class RolesService {
     return `This action removes a #${id} role`;
   }
 
-  async createRole(roleData: CreateRoleDto): Promise<Role> {
-    const { permissionsIds, ...rest } = roleData;
-    const role = this.roleRepository.create(rest);
+async createRole(dto: CreateRoleDto, siteId: number): Promise<Role> {
+  const { permissionsIds, ...rest } = dto;
 
-  //  console.log('----1--permissoin id-----', permissionsIds);
 
-    // Step 2: Load roles and assign
-    if (permissionsIds?.length) {
-      const roles = await this.permissionRepository.find({
-        where: { id: In(permissionsIds) },
-      });
+  const existing = await this.roleRepository.findOne({
+  where: {
+    name: rest.name.trim().toLowerCase(),
+    site: { id: siteId },
+  },
+});
 
-     // console.log('--2----permissoin id-----', roles);
+if (existing) {
+  throw new BadRequestException('Role already exists for this site');
+}
 
-      role.permissions = roles;
+  const role = this.roleRepository.create({
+    ...rest,
+    name: rest.name.trim().toLowerCase(),
+    site: { id: siteId },
+  });
+
+  if (permissionsIds?.length) {
+    const permissions = await this.permissionRepository.find({
+      where: { id: In(permissionsIds) },
+    });
+
+    if (permissions.length !== permissionsIds.length) {
+      throw new BadRequestException('Some permissions not found');
     }
 
-    return this.roleRepository.save(role);
+    role.permissions = permissions;
   }
 
-  async findAllRoles(): Promise<Role[]> {
-     const cacheKey = 'Admin:roles:all';
+  return this.roleRepository.save(role);
+}
+
+  async findAllRoles(siteId: number): Promise<Role[]> {
+     const cacheKey = 'Admin:roles:siteId';
        
       const cached = await this.cacheService.get<Role[]>(cacheKey);
       if (cached && cached.length) {
         return cached;
       }
-   const response = await this.roleRepository.find({ relations: ['permissions'],order: {
+   const response = await this.roleRepository.find({
+      where: {   site: { id: siteId }, },
+    relations: ['permissions'],order: {
       id: 'DESC', // sort by newest first
     },
    });

@@ -6,7 +6,7 @@ import { APP_GUARD, RouterModule } from '@nestjs/core';
 // import { CurrencyModule } from './currency/currency.module';
 // import { StyleModule } from './style/style.module';
 // import { PolicyModule } from './policy/policy.module';
-// import { ContentModule } from './content/content.module';
+  import { ContentModule } from './content/content.module';
 import { BlogModule } from './blog/blog.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { RolesModule } from './roles/roles.module';
@@ -46,7 +46,7 @@ import { ArtworkModule } from './artwork/artwork.module';
     // CurrencyModule,
     // StyleModule,
     // PolicyModule,
-    // ContentModule,
+     ContentModule,
     BlogModule,
     // CategoryModule,
     // TagModule,
@@ -88,7 +88,7 @@ import { ArtworkModule } from './artwork/artwork.module';
           { path: 'blogs', module: BlogModule },
           // { path: 'categories', module: CategoryModule },
           // { path: 'tags', module: TagModule },
-          // { path: 'contents', module: ContentModule },
+            { path: 'contents', module: ContentModule },
           // { path: 'inventries', module: InventoryModule },
           
           // { path: 'carts', module: CartAdminModule},
@@ -109,7 +109,7 @@ import { ArtworkModule } from './artwork/artwork.module';
     //  { provide: APP_GUARD, useClass: JwtAuthGuard },
     //{ provide: APP_GUARD, useClass: RolesGuard },
     //{ provide: APP_GUARD, useClass: PermissionsGuard },
-   // { provide: APP_GUARD, useClass: AdminCompositeGuard }// Combines JwtAuth + Roles + Permissions for admin only
+     { provide: APP_GUARD, useClass: AdminCompositeGuard }// Combines JwtAuth + Roles + Permissions for admin only
   ],
 
 })

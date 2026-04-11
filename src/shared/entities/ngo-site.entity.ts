@@ -9,18 +9,18 @@ import {
   Index,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 
 import { User } from './user.entity';
 
-@Entity('ngo_sites')
+@Entity('sites')
 export class NgoSite {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Index({ unique: true })
-  @Column({ length: 200 })
-  domain: string;
+  @Column({ unique: true })
+  slug: string; // helpngo
 
   @Column({ length: 200 })
   siteName: string;
@@ -34,25 +34,24 @@ export class NgoSite {
   @Column({ nullable: true })
   themeColor: string;
 
-  @Column({ nullable: true })
-  contactEmail: string;
-
-  @Column({ nullable: true })
-  contactPhone: string;
-
-  @Column({ nullable: true })
-  address: string;
-
-  @Column({ nullable: true })
-  about: string;
-
   @Column({ default: true })
   status: boolean;
-
   // owner of this NGO site
-  @OneToOne(() => User)
+  // ✅ OWNER
+  @OneToOne(() => User, (user) => user.ownedSite)
   @JoinColumn({ name: 'owner_id' })
   owner: User;
+
+  // ✅ TEAM USERS
+  @OneToMany(() => User, (user) => user.site)
+  users: User[];
+
+  // @ManyToOne(() => NgoSite, (site) => site.users, { nullable: true })
+  // @JoinColumn({ name: 'site_id' })
+  // site: NgoSite;
+
+  @Column({ type: 'json', nullable: true })
+  settings: Record<string, any>;
 
   @CreateDateColumn()
   createdAt: Date;

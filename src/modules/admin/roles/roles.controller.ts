@@ -1,12 +1,13 @@
 import {
   Controller,
-  Get,
+  Get,Req,
   Post,
   Body,
   Patch,
   Param,
   Delete,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -22,14 +23,19 @@ export class RolesController {
 
   @Post()
  // @RequirePermissions('create_roles')
-  create(@Body() createRoleDto: CreateRoleDto) {
-    return this.rolesService.createRole(createRoleDto);
+  create(@Body() createRoleDto: CreateRoleDto,@Req() req) {
+    return this.rolesService.createRole(createRoleDto,req.user.siteId);
   }
 
   @Get()
-   @RequirePermissions('read_roles')
-  findAll() {
-    return this.rolesService.findAllRoles();
+ //   @RequirePermissions('read_roles')
+  findAll(@Req() req) {
+    const siteId = req.user?.siteId; // Use ?. to avoid crash
+  if (!siteId) {
+    throw new BadRequestException('User Site Context not found');
+  }
+    console.log(`req.user.siteId--------------`,req.user)
+    return this.rolesService.findAllRoles(siteId);
   }
 
   @Get(':id')

@@ -119,44 +119,7 @@ export class AuthService {
     }
 
     return artists;
-  }
-async getArtistsWithArtworkCount_bk(id: number) {
-  const roleId = 4;
-
-  const artists = await this.userRepository
-    .createQueryBuilder('user')
-    .innerJoin('user.roles', 'roles')
-    .innerJoin('user.products', 'product') 
-    .innerJoin('product.productInventory', 'inventory')    
-    .leftJoin((subQuery) => {
-      return subQuery
-        .select('p.artist_id', 'artistId') // Assuming 'artist_id' is the FK in my_product
-        .addSelect('p.defaultImage', 'latestImage')
-        .from('my_product', 'p') // Must match your DB table name
-        .where('p.is_active = :pActive', { pActive: 'Active' })
-        .orderBy('p.id', 'DESC');
-    }, 'latest_img_search', 'latest_img_search.artistId = user.id')
-    .where('roles.id = :roleId', { roleId })
-    .andWhere('user.artist_type_id = :artistTypeId', { artistTypeId: id })
-    .andWhere('user.status = :userstatus', { userstatus: true })
-    .andWhere('product.is_active = :productStatus', { productStatus: 'Active' })
-    .andWhere('inventory.status = :inventoryStatus', { inventoryStatus: true })
-    .select('user.id', 'id')
-    .addSelect('user.username', 'username')
-    .addSelect('MAX(latest_img_search.latestImage)', 'defaultImage') 
-    .addSelect('user.artist_type_id', 'artist_type_id')
-    .addSelect('COUNT(DISTINCT product.id)', 'artworkCount')
-    .groupBy('user.id')
-    .addGroupBy('user.username')
-    .addGroupBy('user.artist_type_id')
-    .getRawMany();
-
-  if (artists.length === 0) {
-    throw new NotFoundException('No artists found with artworks');
-  }
-
-  return artists;
-}
+  } 
 
 async getArtistsWithArtworkCount(id: number) {
   const roleId = 4;
@@ -616,12 +579,17 @@ async getArtistsWithArtworkCount(id: number) {
       const isPasswordValid = await bcrypt.compare(password, user.password);
 
       if (!isPasswordValid) {
-        this.logger.warn(`Invalid password attempt for user: ${user.id} - user data- ${user}`);
+        this.logger.warn(`Invalid password attempt for user: ${user.id}  `);
         throw new UnauthorizedException('Invalid credentials');
       }
 
-      const { password: _, ...result } = user;
-      return result;
+      //const { password: _, ...result } = user;
+      return {
+        id: user.id,
+        name: user.name,
+        siteId: user.siteId,
+        roles: user.roles,
+      };
 
     } catch (error) {
       if (error instanceof NotFoundException || error instanceof UnauthorizedException) {
@@ -647,32 +615,13 @@ async getArtistsWithArtworkCount(id: number) {
     this.logger?.warn?.('Login failed: user is undefined');
     throw new UnauthorizedException('Invalid login request');
   }
-   //const guestCartId = this.request?.cookies?.['guestCartId'];
-// ✅ Now use async/await to get the context
-   // const guestCartId = this.request?.cookies?.['guestCartId'];
-   const guestCartId = req?.cookies?.['guestCartId'];
- //console.log('guest ID ---Login--1--------',guestCartId)
-
-//   let mergedCart: Cart | undefined;
-//   if (guestCartId) {
-//     const guestCart = await this.cartRepo.findOne({
-//       where: { guestId: guestCartId },
-//       relations: ['items', 'items.product'],
-//     });
-// //console.log('guest ID -----2--------',guestCartId)
-//     if (guestCart) {
-//       guestCart.user = user;
-//       mergedCart = await this.cartRepo.save(guestCart);
-
-//       this.logger?.log?.(
-//         `Guest cart ${guestCartId} merged into user ${user.id}'s cart.`,
-//       );
-//     }
-//   }
+ 
+  //console.log(`user--------------------------`,user);
 
   const payload: JwtPayload = {
     sub: user.id,
     name: user.name,
+     siteId:user.siteId,
     roles: user.roles?.map((r) => r.name),
   };
 
@@ -804,15 +753,15 @@ this.eventEmitter.emit('reset_password.send', payload);
 
   async findByEmail(email: string) {
     return this.userRepository.findOne({
-      where: { email }, relations: ['roles', 'roles.permissions'],
-      select: ['id', 'email', 'password', 'mobile', 'is_verified', 'username']
+      where: { email }, relations: ['roles' ],
+      select: ['id', 'name', 'password','siteId',  'is_verified', ]
     });
   }
 
   async findByMobile(mobile: string) {
     return this.userRepository.findOne({
-      where: { mobile }, relations: ['roles', 'roles.permissions'],
-      select: ['id', 'email', 'password', 'mobile', 'is_verified', 'username']
+      where: { mobile }, relations: ['roles' ],
+      select: ['id', 'name', 'password','siteId',  'is_verified', ]
     });
   }
 

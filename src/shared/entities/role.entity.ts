@@ -5,33 +5,43 @@ import {
   Column,
   ManyToMany,
   JoinTable,
+  Index,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Permission } from './permission.entity';
-/*
-//console.log('-----Role Entiry---------- DEBUG:In Roles  User is', User);
-//console.log('----Role Entiry-------- DEBUG:In Roles Permission is', Permission);
+import { NgoSite } from './ngo-site.entity';
 
-//console.log('💡 [DEBUG] User is:', User);*/
-@Entity()
+
+@Entity('roles')
 export class Role {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
-  @Column({ unique: true })
-  name: string;
+  @Index()
+  @Column({ length: 100 })
+  name!: string; // admin, editor, volunteer
 
   @Column({ nullable: true })
-  description: string;
+  description?: string;
 
-  @ManyToMany(() => Permission,  )
+  // 🔥 MULTI-TENANT
+  @ManyToOne(() => NgoSite, { nullable: false, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'site_id' })
+  site: NgoSite;
+
+ 
+  @ManyToMany(() => Permission, (permission) => permission.roles, {
+    eager: true, // ✅ good for RBAC
+  })
   @JoinTable({
     name: 'role_permissions',
     joinColumn: { name: 'role_id', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'permission_id', referencedColumnName: 'id' },
   })
-  permissions: Permission[];
+  permissions!: Permission[];
 
   @ManyToMany(() => User, (user) => user.roles)
-  users: User[];
+  users!: User[];
 }
