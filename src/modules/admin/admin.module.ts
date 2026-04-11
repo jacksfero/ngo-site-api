@@ -109,7 +109,7 @@ import { ArtworkModule } from './artwork/artwork.module';
     //  { provide: APP_GUARD, useClass: JwtAuthGuard },
     //{ provide: APP_GUARD, useClass: RolesGuard },
     //{ provide: APP_GUARD, useClass: PermissionsGuard },
-     { provide: APP_GUARD, useClass: AdminCompositeGuard }// Combines JwtAuth + Roles + Permissions for admin only
+      { provide: APP_GUARD, useClass: AdminCompositeGuard }// Combines JwtAuth + Roles + Permissions for admin only
   ],
 
 })
