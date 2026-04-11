@@ -126,11 +126,13 @@ export class AuthController {
     const result = await this.authService.login(req.user as User, req); // ✅ pass req
 
 const isProd = process.env.NODE_ENV === 'production';
-
+console.log(`ISPRod-----------`,isProd);
 res.cookie('access_token', result.access_token, {
   httpOnly: true,
-  secure: isProd, // ✅ only true in production
-  sameSite: isProd ? 'none' : 'lax', // ✅ fix
+  secure: true,
+//  secure: isProd, // ✅ only true in production
+sameSite: 'none',
+ // sameSite: isProd ? 'none' : 'lax', // ✅ fix
  // domain: isProd ? '.onrender.com' : undefined, // ✅ VERY IMPORTANT
   path: '/',
 });
