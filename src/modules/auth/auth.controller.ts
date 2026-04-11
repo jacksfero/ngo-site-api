@@ -134,17 +134,18 @@ export class AuthController {
     // console.log(`process.env.COOKIE_DOMAIN-------`, process.env.COOKIE_DOMAIN)
     // console.log(`process.token-------`, result.access_token)
     // console.log(`process.result-------`, result)
-    const isDev = process.env.NODE_ENV !== 'production';
+  //  const isDev = process.env.NODE_ENV !== 'production';
+    const isDev = process.env.NODE_ENV === 'development';
     if (result?.access_token) {
-      res.cookie('access_token', result.access_token, {
-        httpOnly: true,
-        secure: true,          // Use false for localhost HTTP
-        sameSite: 'none',
-        path: '/',
-      //   domain: isDev ? "localhost" : process.env.COOKIE_DOMAIN, // ✅ REQUIRED
-          domain:   process.env.COOKIE_DOMAIN,  
-        maxAge: 1000 * 60 * 60 * 24 * 30,
-      });
+     res.cookie('access_token', result.access_token, {
+  httpOnly: true,
+  secure: true, // Keep true! Chrome requires it for SameSite: 'none'
+  sameSite: 'none',
+  path: '/',
+  // ⬇️ THE FIX: If dev, don't set a domain. Let the browser handle it.
+  domain: isDev ? undefined : '.onrender.com', 
+  maxAge: 1000 * 60 * 60 * 24 * 30,
+});
     }
  
     // clear guest cart
