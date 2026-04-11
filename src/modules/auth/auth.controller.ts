@@ -125,40 +125,20 @@ export class AuthController {
 
     const result = await this.authService.login(req.user as User, req); // ✅ pass req
 
-    // clear guestCartId cookie if exists
-    // if (req.cookies?.['guestCartId']) {
-    //   res.clearCookie('guestCartId', { httpOnly: true, sameSite: 'lax' });
-    // }
-    // 🔐 ADD COOKIE (non-breaking)
-    // console.log(`process.env.NODE_ENV-------`, process.env.NODE_ENV)
-    // console.log(`process.env.COOKIE_DOMAIN-------`, process.env.COOKIE_DOMAIN)
-    // console.log(`process.token-------`, result.access_token)
-    // console.log(`process.result-------`, result)
-  //  const isDev = process.env.NODE_ENV !== 'production';
-  const origin = req.headers.origin;
+   const origin = req.headers.origin;
 const isLocalhost = origin?.includes('localhost');
-    if (result?.access_token) {
-    res.cookie('access_token', result.access_token, {
-  httpOnly: true,
-  secure: true, // Required for sameSite: 'none'
-  sameSite: 'none',
-  // ⬇️ IF LOCALHOST, DOMAIN MUST BE UNDEFINED
-  domain: process.env.NODE_ENV === 'development' ? undefined : '.onrender.com',
-  path: '/',
-});
-    }
+
+if (result?.access_token) {
+  res.cookie('access_token', result.access_token, {
+    httpOnly: true,
+    secure: !isLocalhost, // ✅ false for localhost
+    sameSite: isLocalhost ? 'lax' : 'none', // ✅ fix
+    domain: isLocalhost ? undefined : '.onrender.com', // ✅ fix
+    path: '/',
+  });
+}
  
-    // clear guest cart
-    if (req.cookies?.['guestCartId']) {
-      res.clearCookie('guestCartId', {
-        httpOnly: true,
-        secure: true,          // Use false for localhost HTTP
-        sameSite: 'none',
-        path: '/',
-        domain: process.env.COOKIE_DOMAIN, // ✅ REQUIRED
-        maxAge: 1000 * 60 * 60 * 24 * 30,
-      });
-    }
+    
     return result;
   }
 
@@ -310,51 +290,7 @@ async otpLogin(
     return await this.authService.ContactSendOTP(identifier, ipAddress);
   }
 
-
-  // @Public()
-  // @Post('register-cart-login')
-  // async registerCartUserAndLogin(
-  //   @Body() dto: RegisterCartUserDto,
-  //   @Req() req,
-  //   @Res({ passthrough: true }) res: Response,
-
-  // ) {
-  //   let guestId = req.cookies?.['guestCartId'];
-
-  //  // console.log('guestId---------', guestId);
-  //   const result = await this.authService.registerCartUserAndLogin(dto, guestId);
-
-
-
-  //  // 1. Correct the check path
-  // if (!result?.data?.token) {
-  //   throw new UnauthorizedException('Invalid or expired OTP');
-  // }
-
-//  res.cookie('access_token', result.data.token, {
-//     httpOnly: true,
-//     secure: true,
-//     sameSite: 'none',
-//     path: '/',
-//     domain: process.env.COOKIE_DOMAIN,
-//     maxAge: 1000 * 60 * 60 * 24 * 30,
-//   });
-
-//   // clear guest cart
-//   if (req.cookies?.['guestCartId']) {
-//     res.clearCookie('guestCartId', {
-//       httpOnly: true,
-//       secure: true,
-//       sameSite: 'none',
-//       path: '/',
-//       domain: process.env.COOKIE_DOMAIN,
-//     });
-//   }
-
-
-// return result;
-
-//   }
+ 
 
 
 /*
