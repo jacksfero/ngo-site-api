@@ -135,15 +135,18 @@ export class AuthController {
     // console.log(`process.token-------`, result.access_token)
     // console.log(`process.result-------`, result)
   //  const isDev = process.env.NODE_ENV !== 'production';
-    const isDev = process.env.NODE_ENV === 'development';
+  const origin = req.headers.origin;
+const isLocalhost = origin?.includes('localhost');
     if (result?.access_token) {
      res.cookie('access_token', result.access_token, {
   httpOnly: true,
-  secure: true, // Keep true! Chrome requires it for SameSite: 'none'
+  secure: true, 
   sameSite: 'none',
   path: '/',
-  // ⬇️ THE FIX: If dev, don't set a domain. Let the browser handle it.
-  domain: isDev ? undefined : '.onrender.com', 
+  // ⬇️ CRITICAL FIX
+  // If it's localhost, do NOT set a domain. 
+  // This allows the browser to 'map' it correctly in a cross-site context.
+  domain: isLocalhost ? undefined : '.onrender.com', 
   maxAge: 1000 * 60 * 60 * 24 * 30,
 });
     }
