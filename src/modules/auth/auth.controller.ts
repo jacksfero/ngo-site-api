@@ -125,18 +125,15 @@ export class AuthController {
 
     const result = await this.authService.login(req.user as User, req); // ✅ pass req
 
-   const origin = req.headers.origin;
-const isLocalhost = origin?.includes('localhost');
+const isProd = process.env.NODE_ENV === 'production';
 
-if (result?.access_token) {
-  res.cookie('access_token', result.access_token, {
-    httpOnly: true,
-    secure: !isLocalhost, // ✅ false for localhost
-    sameSite: isLocalhost ? 'lax' : 'none', // ✅ fix
-    domain: isLocalhost ? undefined : '.onrender.com', // ✅ fix
-    path: '/',
-  });
-}
+res.cookie('access_token', result.access_token, {
+  httpOnly: true,
+  secure: isProd, // ✅ only true in production
+  sameSite: isProd ? 'none' : 'lax', // ✅ fix
+  domain: isProd ? '.onrender.com' : undefined, // ✅ VERY IMPORTANT
+  path: '/',
+});
  
     
     return result;
@@ -162,25 +159,25 @@ async otpLogin(
     throw new UnauthorizedException('Invalid or expired OTP');
   }
 
-  res.cookie('access_token', result.access_token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'none',
-    path: '/',
-    domain: process.env.COOKIE_DOMAIN,
-    maxAge: 1000 * 60 * 60 * 24 * 30,
-  });
+  // res.cookie('access_token', result.access_token, {
+  //   httpOnly: true,
+  //   secure: true,
+  //   sameSite: 'none',
+  //   path: '/',
+  //   domain: process.env.COOKIE_DOMAIN,
+  //   maxAge: 1000 * 60 * 60 * 24 * 30,
+  // });
 
-  // clear guest cart
-  if (req.cookies?.['guestCartId']) {
-    res.clearCookie('guestCartId', {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      path: '/',
-      domain: process.env.COOKIE_DOMAIN,
-    });
-  }
+  // // clear guest cart
+  // if (req.cookies?.['guestCartId']) {
+  //   res.clearCookie('guestCartId', {
+  //     httpOnly: true,
+  //     secure: true,
+  //     sameSite: 'none',
+  //     path: '/',
+  //     domain: process.env.COOKIE_DOMAIN,
+  //   });
+  // }
 
   return result;
 }
