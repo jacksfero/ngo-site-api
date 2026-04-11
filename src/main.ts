@@ -63,7 +63,7 @@ async function bootstrap() {
        //'https://indigalleria-backend.onrender.com',
         'https://www.indigalleria.com',
         'https://indigalleria.com',
-        'https://admin.indigalleria.com',
+       
 
       ],
       methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE' ],
