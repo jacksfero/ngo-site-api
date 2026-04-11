@@ -138,16 +138,13 @@ export class AuthController {
   const origin = req.headers.origin;
 const isLocalhost = origin?.includes('localhost');
     if (result?.access_token) {
-     res.cookie('access_token', result.access_token, {
+    res.cookie('access_token', result.access_token, {
   httpOnly: true,
-  secure: true, 
+  secure: true, // Required for sameSite: 'none'
   sameSite: 'none',
+  // ⬇️ IF LOCALHOST, DOMAIN MUST BE UNDEFINED
+  domain: process.env.NODE_ENV === 'development' ? undefined : '.onrender.com',
   path: '/',
-  // ⬇️ CRITICAL FIX
-  // If it's localhost, do NOT set a domain. 
-  // This allows the browser to 'map' it correctly in a cross-site context.
-  domain: isLocalhost ? undefined : '.onrender.com', 
-  maxAge: 1000 * 60 * 60 * 24 * 30,
 });
     }
  
