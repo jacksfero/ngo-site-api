@@ -131,7 +131,7 @@ res.cookie('access_token', result.access_token, {
   httpOnly: true,
   secure: isProd, // ✅ only true in production
   sameSite: isProd ? 'none' : 'lax', // ✅ fix
-  domain: isProd ? '.onrender.com' : undefined, // ✅ VERY IMPORTANT
+ // domain: isProd ? '.onrender.com' : undefined, // ✅ VERY IMPORTANT
   path: '/',
 });
  
