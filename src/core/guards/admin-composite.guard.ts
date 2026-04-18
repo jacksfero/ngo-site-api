@@ -12,6 +12,7 @@ import {
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/modules/auth/guards/roles.guard';
 import { PermissionsGuard } from 'src/modules/auth/guards/permissions.guard';
+import { json } from 'body-parser';
 
 @Injectable()
 export class AdminCompositeGuard implements CanActivate {
@@ -29,7 +30,18 @@ export class AdminCompositeGuard implements CanActivate {
       const jwtOk = await this.jwtAuthGuard.canActivate(context);
       if (!jwtOk) throw new UnauthorizedException('Invalid or missing token');
 
+      // 2. Get the user from the request (attached by jwtAuthGuard)
+    const user = req.user;
+    const roleNames = user?.roles?.map((r) => r) || [];
+  // console.log(jwtOk,`----====${JSON.stringify(user)}======---rolesOk-----`,roleNames)
+    // 3. THE BYPASS: If Super Admin, allow everything immediately
+    if (roleNames.includes('super admin')) {
+    //   console.log(jwtOk,`---/////////----rolesOk-----`,roleNames)
+      return true; 
+    }
+
       const rolesOk = await this.rolesGuard.canActivate(context);
+    //  console.log(jwtOk,`-------rolesOk-----`,rolesOk)
       if (!rolesOk) throw new ForbiddenException('Insufficient role');
 
       // Step 2a: Enforce base admin roles for ALL /admin routes

@@ -8,14 +8,22 @@ import {
   Param,
   Delete,
   Req,
+  Query,
 } from '@nestjs/common';
 
 import { ContentService } from './content.service';
 import { CreateContentDto } from './dto/create-content.dto';
 import { UpdateContentDto } from './dto/update-content.dto';
 import { RequirePermissions } from 'src/modules/auth/decorators/permissions.decorator';
+import { Roles } from 'src/modules/auth/decorators/roles.decorator';
+import { PaginationClinetPipe } from 'src/shared/pipes/pagination-client.pipe';
+import { CONTENT_PAGE, CONTENT_PAGE_LIMIT, CONTENT_PAGE_MAX_LIMIT } from 'src/shared/config/pagination.config';
+import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
+import { ContentPaginationDto } from './dto/content-pagination.dto';
+import { ContentListDto } from './dto/content-list.dto';
 
-@Controller('content')
+@Controller()
+ @Roles('admin','super admin')
 export class ContentController {
   constructor(private readonly contentService: ContentService) { }
 
@@ -25,17 +33,20 @@ export class ContentController {
   create(@Body() dto: CreateContentDto, @Req() req) {
     return this.contentService.create(
       dto,
-      req.site.id,      // 🔥 IMPORTANT
-      req.user?.id,
+      req.user?.siteId,      // 🔥 IMPORTANT
+      req.user?.sub,
     );
   }
 
   // ✅ Admin list
   @Get()
   @RequirePermissions('read_content')
-  findAll(@Req() req) {
-    return this.contentService.findAll(req.site.id);
-  }
+  async findAll(
+      @Query(new PaginationClinetPipe(CONTENT_PAGE_LIMIT, CONTENT_PAGE_MAX_LIMIT, CONTENT_PAGE))
+      paginationDto: ContentPaginationDto, @Req() req
+    ): Promise<PaginationResponseDto<ContentListDto>> {
+      return this.contentService.findAll(paginationDto,req.user?.siteId);
+    } 
 
   // ✅ Get by ID (admin)
   @Get(':id')

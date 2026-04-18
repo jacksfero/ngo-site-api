@@ -17,6 +17,10 @@ export const USERS_LIMIT = parseInt(process.env.USERS_LIMIT ?? '10');
 export const USERS_MAX_LIMIT = parseInt(process.env.USERS_MAX_LIMIT ?? '500');
 export const USERS_PAGE = parseInt(process.env.USERS_PAGE ?? '1');
 
+export const CONTENT_PAGE_LIMIT = parseInt(process.env.CONTENT_PAGE_LIMIT ?? '10');
+export const CONTENT_PAGE_MAX_LIMIT = parseInt(process.env.CONTENT_PAGE_MAX_LIMIT ?? '50');
+export const CONTENT_PAGE = parseInt(process.env.CONTENT_PAGE ?? '1');
+
 export const PRODUCTS_LIMIT = parseInt(process.env.PRODUCTS_LIMIT ?? '10');
 export const PRODUCTS_MAX_LIMIT = parseInt(process.env.PRODUCTS_MAX_LIMIT ?? '500');
 export const PRODUCTS_PAGE = parseInt(process.env.PRODUCTS_PAGE ?? '1');

@@ -17,12 +17,12 @@ import { RequirePermissions } from 'src/modules/auth/decorators/permissions.deco
 
 @Controller()
 //@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
- @Roles('Admin','Super Admin')
+ @Roles('admin','super admin')
 export class PermissionsController {
   constructor(private readonly permissionsService: PermissionsService) {}
  
   @Post()
-  @RequirePermissions('create_permission')
+   @RequirePermissions('create_permission')
   create(@Body() createPermissionDto: CreatePermissionDto) {
     return this.permissionsService.createPermission(createPermissionDto);
   }

@@ -61,8 +61,7 @@ async function bootstrap() {
         'http://localhost:3000','http://localhost:5173','http://127.0.0.1:3000',
      //   'https://indiagalleri-frontend.vercel.app',
        //'https://indigalleria-backend.onrender.com',
-        'https://www.indigalleria.com',
-        'https://indigalleria.com',
+         
        
 
       ],
